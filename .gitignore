@@ -1,0 +1,38 @@
+# Node modules
+node_modules/
+
+# Data files
+data/users.json
+data/conversations.json
+data/knowledge.json
+
+# Chrome user data
+chrome-user-data/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+
+# API Keys (if stored separately)
+config/api-keys.json
+
+# Session data
+sessions/
+
+# Test output
+test-output/
