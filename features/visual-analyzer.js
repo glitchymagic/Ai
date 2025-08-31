@@ -2,6 +2,7 @@
 class VisualAnalyzer {
     constructor(page) {
         this.page = page;
+        this.deterministicSeed = null;
         
         // Visual cues to look for in images
         this.visualPatterns = {
@@ -28,7 +29,12 @@ class VisualAnalyzer {
             // Special
             error: ['miscut', 'misprint', 'error', 'crimp'],
             custom: ['custom', 'art', 'altered', 'painted'],
-            fake: ['fake', 'counterfeit', 'proxy']
+            fake: ['fake', 'counterfeit', 'proxy'],
+            
+            // Event/poster detection
+            event: ['tournament', 'regionals', 'championship', 'event', 'competition'],
+            poster: ['poster', 'flyer', 'announcement', 'schedule', 'bracket'],
+            meets: ['meetup', 'gathering', 'artist meet', 'signing', 'convention']
         };
         
         // Common visual elements in Pokemon cards
@@ -44,6 +50,80 @@ class VisualAnalyzer {
         };
     }
     
+    // Set the seed for deterministic behavior
+    seedFrom(input) {
+        const strInput = typeof input === 'string' ? input : JSON.stringify(input);
+        this.deterministicSeed = strInput.split('').reduce((acc, char) => {
+            return ((acc << 5) - acc + char.charCodeAt(0)) & 0xFFFFFFFF;
+        }, 0);
+    }
+    
+    // Pick deterministically from an array based on seed
+    pickDeterministic(array) {
+        if (!array || array.length === 0) return null;
+        if (array.length === 1) return array[0];
+        
+        // Use the seed or create one from current state
+        if (!this.deterministicSeed) {
+            this.seedFrom(new Date().toISOString());
+        }
+        
+        // Generate index from seed
+        const index = Math.abs(this.deterministicSeed) % array.length;
+        
+        // Update seed for next pick
+        this.deterministicSeed = ((this.deterministicSeed << 5) - this.deterministicSeed + 1) & 0xFFFFFFFF;
+        
+        return array[index];
+    }
+    
+    // Classify if content is an event poster or artist meet
+    classifyEventPoster(text, visualData) {
+        const textLower = text.toLowerCase();
+        
+        // Check for event indicators
+        const eventKeywords = [
+            'tournament', 'regionals', 'championship', 'event',
+            'competition', 'battle', 'qualifier', 'league',
+            'tcg event', 'pokemon event', 'vgc', 'ptcg'
+        ];
+        
+        const posterKeywords = [
+            'poster', 'flyer', 'announcement', 'schedule',
+            'bracket', 'rounds', 'day 1', 'day 2', 'registration'
+        ];
+        
+        const artistKeywords = [
+            'artist', 'illustrator', 'signing', 'meetup',
+            'meet and greet', 'booth', 'convention', 'con',
+            'table', 'commissions', 'prints'
+        ];
+        
+        const hasEventKeyword = eventKeywords.some(keyword => textLower.includes(keyword));
+        const hasPosterKeyword = posterKeywords.some(keyword => textLower.includes(keyword));
+        const hasArtistKeyword = artistKeywords.some(keyword => textLower.includes(keyword));
+        
+        // Visual cues for posters/flyers
+        const hasMultipleImages = visualData && visualData.imageCount > 1;
+        const hasScheduleText = /\d{1,2}[:\.]\d{2}|am|pm|rounds?|day \d/i.test(text);
+        const hasDateText = /january|february|march|april|may|june|july|august|september|october|november|december|\d{1,2}\/\d{1,2}/i.test(text);
+        
+        // Classification logic
+        if ((hasEventKeyword || hasPosterKeyword) && (hasScheduleText || hasDateText)) {
+            return 'event_poster';
+        }
+        
+        if (hasArtistKeyword && (visualData?.hasImage || hasDateText)) {
+            return 'artist_meet';
+        }
+        
+        if (hasEventKeyword && visualData?.hasImage) {
+            return 'event_content';
+        }
+        
+        return null;
+    }
+    
     // Analyze visual content in a post
     async analyzeVisualContent(tweetElement) {
         try {
@@ -56,7 +136,9 @@ class VisualAnalyzer {
                     videoDescription: null,
                     visualContext: [],
                     cardCount: 'unknown',
-                    displayType: 'unknown'
+                    displayType: 'unknown',
+                    isEventPoster: false,
+                    isArtistMeet: false
                 };
                 
                 // Check for images
@@ -120,10 +202,40 @@ class VisualAnalyzer {
                     if (text.includes('centering')) {
                         data.visualContext.push('condition_focus');
                     }
+                    
+                    // Check for event/poster indicators
+                    if (text.includes('tournament') || text.includes('regionals') || 
+                        text.includes('championship') || text.includes('event')) {
+                        data.visualContext.push('event');
+                    }
+                    if (text.includes('poster') || text.includes('flyer') || 
+                        text.includes('schedule') || text.includes('bracket')) {
+                        data.visualContext.push('poster');
+                    }
+                    if (text.includes('artist') || text.includes('signing') || 
+                        text.includes('meet') || text.includes('booth')) {
+                        data.visualContext.push('artist_meet');
+                    }
                 }
                 
                 return data;
             });
+            
+            // Get tweet text for event classification
+            const tweetText = await tweetElement.evaluate(el => {
+                const textEl = el.querySelector('[data-testid="tweetText"]');
+                return textEl ? textEl.innerText : '';
+            });
+            
+            // Check if this is an event poster or artist meet
+            const eventType = this.classifyEventPoster(tweetText, visualData);
+            if (eventType === 'event_poster') {
+                visualData.isEventPoster = true;
+                visualData.displayType = 'event_poster';
+            } else if (eventType === 'artist_meet') {
+                visualData.isArtistMeet = true;
+                visualData.displayType = 'artist_meet';
+            }
             
             // Enhance with additional analysis
             visualData.analysis = this.interpretVisualContent(visualData);
@@ -155,6 +267,23 @@ class VisualAnalyzer {
             interpretation.focusArea = 'pack_opening'; // Most Pokemon videos are pack openings
             interpretation.suggestedResponse = 'video_reaction';
             interpretation.confidence = 'medium';
+            return interpretation;
+        }
+        
+        // Check for event posters and artist meets first
+        if (visualData.isEventPoster) {
+            interpretation.contentType = 'event_poster';
+            interpretation.focusArea = 'tournament_info';
+            interpretation.suggestedResponse = 'event_interest';
+            interpretation.confidence = 'high';
+            return interpretation;
+        }
+        
+        if (visualData.isArtistMeet) {
+            interpretation.contentType = 'artist_meet';
+            interpretation.focusArea = 'artist_event';
+            interpretation.suggestedResponse = 'artist_appreciation';
+            interpretation.confidence = 'high';
             return interpretation;
         }
         
@@ -204,53 +333,91 @@ class VisualAnalyzer {
         
         const { contentType, focusArea, suggestedResponse } = visualData.analysis;
         const textLower = text.toLowerCase();
+        const seed = `${text}|${contentType}|${visualData.imageCount||0}`;
         
-        // Response templates based on visual content type
+        // NEW: event poster specific handling
+        if (contentType === 'event_poster' || visualData.isEventPoster) {
+            const details = this.extractEventBits(text);
+            const options = [
+                `Tuesday tourneys? ${details.entry ? '$' + details.entry : '?'} entry is chill — what's the usual turnout?`,
+                `Love the flyer — format looks ${details.format || 'Standard'}; start time ${details.time || '?'} still correct?`,
+                `${details.venue || 'That spot'} runs weekly? Any prizing details or top cut?`,
+                `${details.day || 'Weekly'} events hit different — what's the meta like there?`
+            ];
+            return this.pickDeterministic(options, seed);
+        }
+        
+        // NEW: artist meet specific handling
+        if (contentType === 'artist_meet' || visualData.isArtistMeet) {
+            const options = [
+                `Meeting the artist is a flex — did you snag a signed print?`,
+                `That's a W meet-up. Any sketches/commissions or just vibes?`,
+                `Love seeing creators in the wild — fav piece from them?`,
+                `Artist meets are elite content — which cards did they illustrate?`
+            ];
+            return this.pickDeterministic(options, seed);
+        }
+        
+        // Enhanced response templates with more TCG expertise
         const responses = {
             // Single card responses
             grade_comment: [
-                "That grade looks well deserved! Centering is on point",
-                "Beautiful slab! PSA got it right on that one",
-                "Gem mint for sure! Congrats on the grade"
+                "That centering looks 50/50 or better - PSA 10 potential for sure",
+                "Clean surface and edges! What grading company you thinking?",
+                "Gem mint candidate! CGC has been fast lately if you're grading"
             ],
             condition_comment: [
-                "The condition looks incredible from here",
-                "Centering and corners look perfect",
-                "That's grading worthy for sure"
+                "Back corners look sharp! Check under a loupe for surface scratches",
+                "Centering looks 55/45 front - within PSA 10 tolerance",
+                "Print quality on that one is exceptional - grade it before prices climb"
             ],
             appreciation: [
-                "That card photographs so well!",
-                "The artwork really pops in that lighting",
-                "Beautiful card! One of my favorites from the set"
+                "That texture pattern hits different in hand! One of the best from the set",
+                "The holo pattern on that era was unmatched - modern just doesn't compare",
+                "Underrated art from that set! Prices been climbing on those"
             ],
             
             // Multiple cards responses
             collection_comment: [
-                "Solid collection! Love the organization",
-                "Your binder is looking stacked!",
-                "Great collection! What's your favorite page?"
+                "That's a focused collection! Working on master set or just the hits?",
+                "Binder organization on point! Side loading pages protect those corners",
+                "Heavy hitters in there! What's the crown jewel of the collection?"
             ],
             pulls_reaction: [
-                "Those are some solid pulls!",
-                "Nice hits! Which pack had the best pulls?",
-                "Great pulls! That's a win for sure"
+                "Pull rates been rough on that set - you beat the odds!",
+                "That's above average for sure! Box or loose packs?",
+                "Solid hits! The alt arts from that set are money long-term"
             ],
             mailday_excitement: [
-                "Mail days are the best! Nice additions",
-                "Awesome mail day! Which one's your favorite?",
-                "Great pickups! The condition looks solid"
+                "Mail day hits different! TCGPlayer or private sale?",
+                "Condition looks minty from here! Raw or coming back from grading?",
+                "Smart pickups! Those have been trending up last 30 days"
             ],
             favorite_question: [
-                "Nice cards! Which one's your favorite?",
-                "Great spread! What's the chase card there?",
-                "Awesome variety! Any of these for the PC?"
+                "What's the chase from that haul? Market's been moving on some of those",
+                "Any going to grading? PSA prices dropped to $15 recently",
+                "PC or flipping? Some solid ROI potential in that spread"
             ],
             
             // Video responses
             video_reaction: [
-                "Love watching pack openings! Any big hits?",
-                "Hope you pulled something good!",
-                "Pack opening videos never get old"
+                "Box break or singles? Pull rates vary wildly on that set",
+                "Live rips hit different! What's the chase you're after?",
+                "Opening videos never get old - especially when you hit!"
+            ],
+            
+            // Event and artist responses
+            event_interest: [
+                "Tournament meta looking spicy! Who's your pick to top 8?",
+                "Regionals always bring heat! Standard or Expanded format?",
+                "Competitive scene is heating up! Prize support looking good too",
+                "Events are back! Hope everyone pulls their chase from prize packs"
+            ],
+            artist_appreciation: [
+                "Artist signatures add serious value! Getting any cards signed?",
+                "Meeting the artists is elite! Their original sketches are grails",
+                "Artist events are underrated! Commission prices reasonable?",
+                "In-person signatures hit different than the printed autos!"
             ]
         };
         
@@ -272,15 +439,18 @@ class VisualAnalyzer {
         if (textLower.includes('miscut') || textLower.includes('error')) {
             return "That's a unique error! Collectors love those";
         }
-        if (textLower.includes('vintage') || textLower.includes('base set')) {
+        if (textLower.includes('base set') || textLower.includes('jungle') || textLower.includes('fossil')) {
             return "Vintage cards hit different! Great piece of history";
+        }
+        if (textLower.includes('vintage') && (textLower.includes('1999') || textLower.includes('base set'))) {
+            return "True vintage! Those early sets are special";
         }
         if (textLower.includes('rainbow') || textLower.includes('gold')) {
             return "The rainbow/gold cards are stunning! Great pull";
         }
         
-        // Return random response from appropriate category
-        return responseOptions[Math.floor(Math.random() * responseOptions.length)];
+        // Return deterministic response from appropriate category
+        return this.pickDeterministic(responseOptions);
     }
     
     // Analyze if image likely shows good or bad pulls
@@ -325,7 +495,18 @@ class VisualAnalyzer {
         };
         
         const options = responses[quality] || responses.neutral;
-        return options[Math.floor(Math.random() * options.length)];
+        return this.pickDeterministic(options);
+    }
+    
+    // Extract event details from text
+    extractEventBits(text = '') {
+        const t = text.toLowerCase();
+        const time = (t.match(/\b\d{1,2}(:\d{2})?\s*(am|pm)\b/i) || [])[0];
+        const entry = (t.match(/\$\s?(\d{1,3})/) || [])[1];
+        const day = (t.match(/\b(mon|tue|wed|thu|fri|sat|sun)[a-z]*\b/i) || [])[0];
+        const venue = (t.match(/\b(mall|plaza|game|shop|center|store)\b/i) || [])[0];
+        const format = (t.match(/\b(standard|expanded|glc)\b/i) || [])[0];
+        return { time, entry, day, venue, format };
     }
 }
 

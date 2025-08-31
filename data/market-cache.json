@@ -1,0 +1,111 @@
+{
+  "charizard ex_nm": {
+    "timestamp": 1756151739663,
+    "data": {
+      "cardName": "Charizard Ex",
+      "condition": "NM",
+      "marketPrice": 28,
+      "gradedPrices": {
+        "psa9": 48,
+        "psa10": 90
+      },
+      "trending": "➡️ Cached",
+      "lastUpdated": "Offline data",
+      "source": "Cache"
+    }
+  },
+  "moonbreon_nm": {
+    "timestamp": 1756151739663,
+    "data": {
+      "cardName": "Moonbreon",
+      "condition": "NM",
+      "marketPrice": 480,
+      "gradedPrices": {
+        "psa9": 850,
+        "psa10": 1500
+      },
+      "trending": "➡️ Cached",
+      "lastUpdated": "Offline data",
+      "source": "Cache"
+    }
+  },
+  "charizard base set_nm": {
+    "timestamp": 1756151739663,
+    "data": {
+      "cardName": "Charizard Base Set",
+      "condition": "NM",
+      "marketPrice": 320,
+      "gradedPrices": {
+        "psa9": 1300,
+        "psa10": 5200
+      },
+      "trending": "➡️ Cached",
+      "lastUpdated": "Offline data",
+      "source": "Cache"
+    }
+  },
+  "lugia v alt art_nm": {
+    "timestamp": 1756151739663,
+    "data": {
+      "cardName": "Lugia V Alt Art",
+      "condition": "NM",
+      "marketPrice": 88,
+      "gradedPrices": {
+        "psa9": 155,
+        "psa10": 290
+      },
+      "trending": "➡️ Cached",
+      "lastUpdated": "Offline data",
+      "source": "Cache"
+    }
+  },
+  "pikachu vmax rainbow_nm": {
+    "timestamp": 1756151739663,
+    "data": {
+      "cardName": "Pikachu Vmax Rainbow",
+      "condition": "NM",
+      "marketPrice": 68,
+      "gradedPrices": {
+        "psa9": 125,
+        "psa10": 230
+      },
+      "trending": "➡️ Cached",
+      "lastUpdated": "Offline data",
+      "source": "Cache"
+    }
+  },
+  "umbreon vmax_nm": {
+    "timestamp": 1755820096240,
+    "data": {
+      "cardName": "Umbreon Vmax",
+      "condition": "NM",
+      "marketPrice": 475,
+      "lowPrice": 380,
+      "highPrice": 570,
+      "gradedPrices": {
+        "psa9": 885,
+        "psa10": 1562
+      },
+      "trending": "📈 Up 2%",
+      "lastUpdated": "2025-08-21T23:48:16.239Z",
+      "source": "TCGPlayer + eBay Avg"
+    }
+  },
+  "charizard_nm": {
+    "timestamp": 1756151739766,
+    "data": {
+      "cardName": "Charizard",
+      "condition": "NM",
+      "marketPrice": 29,
+      "lowPrice": 23,
+      "highPrice": 35,
+      "gradedPrices": {
+        "psa9": 52,
+        "psa10": 98
+      },
+      "trending": "📈 Up 3%",
+      "lastUpdated": "2025-08-25T19:55:39.764Z",
+      "source": "TCGPlayer + eBay Avg"
+    }
+  }
+}

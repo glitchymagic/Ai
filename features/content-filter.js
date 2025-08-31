@@ -166,6 +166,10 @@ class ContentFilter {
         // Check for excessive punctuation (!!!!! or ?????)
         if (text.match(/[!?]{4,}/)) return true;
         
+        // Check for excessive emojis (spam indicator)
+        const emojiCount = (text.match(/🔥|💰|💎|⚡|🚀|💯/g) || []).length;
+        if (emojiCount > 3) return true;
+        
         // Check for @mentions in arguments
         const mentionCount = (text.match(/@\w+/g) || []).length;
         if (mentionCount > 3) return true;

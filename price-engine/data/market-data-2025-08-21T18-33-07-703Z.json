@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "scrapedAt": "2025-08-21T18:33:07.703Z",
+    "totalCards": 3,
+    "successful": 3,
+    "failed": 0,
+    "source": "PriceCharting.com"
+  },
+  "cards": [
+    {
+      "cardId": "test-1",
+      "cardName": "Mewtwo",
+      "cardSet": "Base",
+      "cardNumber": "10",
+      "url": "https://www.pricecharting.com/game/pokemon-base-set/mewtwo-10",
+      "scrapedAt": "2025-08-21T18:32:54.107Z",
+      "currentPrices": {
+        "ungraded": "$16.62"
+      },
+      "recentSales": [],
+      "scrapeTime": 10002
+    },
+    {
+      "cardId": "test-2",
+      "cardName": "Charizard",
+      "cardSet": "Base",
+      "cardNumber": "4",
+      "url": "https://www.pricecharting.com/game/pokemon-base-set/charizard-4",
+      "scrapedAt": "2025-08-21T18:32:59.507Z",
+      "currentPrices": {
+        "ungraded": "$241.68"
+      },
+      "recentSales": [],
+      "scrapeTime": 2180
+    },
+    {
+      "cardId": "test-3",
+      "cardName": "Pikachu",
+      "cardSet": "Base",
+      "cardNumber": "58",
+      "url": "https://www.pricecharting.com/game/pokemon-base-set/pikachu-58",
+      "scrapedAt": "2025-08-21T18:33:04.748Z",
+      "currentPrices": {
+        "ungraded": "$2.99"
+      },
+      "recentSales": [],
+      "scrapeTime": 2461
+    }
+  ],
+  "failedCards": []
+}

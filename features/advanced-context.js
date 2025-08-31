@@ -153,6 +153,152 @@ class AdvancedContextExtractor {
             'pull rate': this.generatePullRateResponse.bind(this),
             'centering': this.generateCenteringResponse.bind(this)
         };
+
+        // Event/Tournament patterns
+        this.eventPatterns = [
+            // Major Championships
+            /world\s*championship/i,
+            /worlds\s*\d{4}/i,
+            /regional\s*championship/i,
+            /regionals/i,
+            /international\s*championship/i,
+            /\bIC\b/i,
+            /nationals/i,
+            
+            // Local Events
+            /league\s*cup/i,
+            /league\s*challenge/i,
+            /pre\s*release/i,
+            /premier\s*challenge/i,
+            /city\s*championship/i,
+            
+            // Special Events
+            /pokemon\s*center\s*event/i,
+            /special\s*event/i,
+            /tournament/i,
+            /championship\s*series/i,
+            /\bVGC\b/i,
+            /\bTCG\b.*tournament/i,
+            
+            // Specific tournament names
+            /NAIC/i,  // North America International Championship
+            /EUIC/i,  // Europe International Championship
+            /LAIC/i,  // Latin America International Championship
+            /OCIC/i   // Oceania International Championship
+        ];
+
+        // Tournament locations and dates
+        this.knownEvents = {
+            'worlds 2024': {
+                location: 'Honolulu, Hawaii',
+                date: 'August 16-18, 2024',
+                format: 'Standard',
+                champion: 'TBD'
+            },
+            'NAIC 2024': {
+                location: 'New Orleans, LA',
+                date: 'June 7-9, 2024',
+                format: 'Standard',
+                prizing: '$250,000 prize pool'
+            },
+            'EUIC 2024': {
+                location: 'London, UK',
+                date: 'April 26-28, 2024',
+                format: 'Standard'
+            }
+        };
+    }
+
+    // Extract event/tournament details from text
+    extractEventDetails(text) {
+        const eventDetails = {
+            isEvent: false,
+            eventType: null,
+            eventName: null,
+            location: null,
+            date: null,
+            format: null,
+            matchedPatterns: []
+        };
+
+        const textLower = text.toLowerCase();
+
+        // Check for event patterns
+        for (const pattern of this.eventPatterns) {
+            if (pattern.test(text)) {
+                eventDetails.isEvent = true;
+                eventDetails.matchedPatterns.push(pattern.source);
+            }
+        }
+
+        // Check for known specific events
+        for (const [eventKey, eventInfo] of Object.entries(this.knownEvents)) {
+            if (textLower.includes(eventKey)) {
+                eventDetails.isEvent = true;
+                eventDetails.eventName = eventKey;
+                eventDetails.location = eventInfo.location;
+                eventDetails.date = eventInfo.date;
+                eventDetails.format = eventInfo.format;
+                break;
+            }
+        }
+
+        // Extract event type
+        if (textLower.includes('worlds') || textLower.includes('world championship')) {
+            eventDetails.eventType = 'World Championship';
+        } else if (textLower.includes('regional')) {
+            eventDetails.eventType = 'Regional Championship';
+        } else if (textLower.includes('international')) {
+            eventDetails.eventType = 'International Championship';
+        } else if (textLower.includes('league cup')) {
+            eventDetails.eventType = 'League Cup';
+        } else if (textLower.includes('league challenge')) {
+            eventDetails.eventType = 'League Challenge';
+        } else if (textLower.includes('pre') && textLower.includes('release')) {
+            eventDetails.eventType = 'Pre-release Event';
+        } else if (textLower.includes('tournament')) {
+            eventDetails.eventType = 'Tournament';
+        }
+
+        // Look for location mentions (common tournament locations)
+        const locationPatterns = [
+            /in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/,
+            /at\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/,
+            /(\w+,\s*\w{2})\b/  // City, State pattern
+        ];
+
+        for (const pattern of locationPatterns) {
+            const match = text.match(pattern);
+            if (match) {
+                eventDetails.location = match[1];
+                break;
+            }
+        }
+
+        // Look for date mentions
+        const datePatterns = [
+            /(\w+\s+\d{1,2}(?:-\d{1,2})?(?:,?\s+\d{4})?)/,
+            /(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/
+        ];
+
+        for (const pattern of datePatterns) {
+            const match = text.match(pattern);
+            if (match) {
+                eventDetails.date = match[1];
+                break;
+            }
+        }
+
+        // Look for format mentions
+        if (textLower.includes('standard')) {
+            eventDetails.format = 'Standard';
+        } else if (textLower.includes('expanded')) {
+            eventDetails.format = 'Expanded';
+        } else if (textLower.includes('limited')) {
+            eventDetails.format = 'Limited';
+        }
+
+        return eventDetails;
     }
 
     // Extract all context from a tweet
@@ -168,6 +314,8 @@ class AdvancedContextExtractor {
             isShowing: false,
             isSelling: false,
             isTrading: false,
+            isEvent: false,
+            eventDetails: null,
             sentiment: 'neutral',
             specificDetails: []
         };
@@ -274,6 +422,13 @@ class AdvancedContextExtractor {
             });
         }
 
+        // Extract event/tournament information
+        const eventDetails = this.extractEventDetails(text);
+        if (eventDetails.isEvent) {
+            context.isEvent = true;
+            context.eventDetails = eventDetails;
+        }
+
         return context;
     }
 
@@ -282,6 +437,11 @@ class AdvancedContextExtractor {
         // If asking a question, provide specific answer
         if (context.isAsking && context.questions.length > 0) {
             return context.questions[0].handler(context, text);
+        }
+
+        // If talking about events/tournaments
+        if (context.isEvent && context.eventDetails) {
+            return this.generateEventResponse(context.eventDetails, text);
         }
 
         // If showing pulls with specific cards
@@ -387,6 +547,49 @@ class AdvancedContextExtractor {
 
     generateCenteringResponse(context, text) {
         return 'Measure borders with ruler. 50/50 perfect, 55/45 excellent, 60/40 PSA 10 limit';
+    }
+
+    generateEventResponse(eventDetails, text) {
+        const textLower = text.toLowerCase();
+        
+        // If asking about specific event details
+        if (textLower.includes('when') && eventDetails.date) {
+            return `${eventDetails.eventType || 'Event'} ${eventDetails.date}${eventDetails.location ? ' in ' + eventDetails.location : ''}`;
+        }
+        
+        if (textLower.includes('where') && eventDetails.location) {
+            return `${eventDetails.eventType || 'Tournament'} location: ${eventDetails.location}${eventDetails.date ? ' on ' + eventDetails.date : ''}`;
+        }
+        
+        // General event responses based on type
+        if (eventDetails.eventType === 'World Championship') {
+            return 'Worlds is the pinnacle of competitive Pokemon! Best players from each region compete for the title';
+        }
+        
+        if (eventDetails.eventType === 'Regional Championship') {
+            return 'Regionals are major tournaments with CP on the line. Usually 500+ players, 9 rounds Day 1';
+        }
+        
+        if (eventDetails.eventType === 'International Championship') {
+            return 'ICs are massive events with players from multiple countries. Great prizing and championship points!';
+        }
+        
+        if (eventDetails.eventType === 'League Cup') {
+            return 'League Cups are local tournaments, usually 15-50 players. Great for earning CP and practice';
+        }
+        
+        if (eventDetails.eventType === 'Pre-release Event') {
+            return 'Pre-release events let you play with new cards early! Build a deck from 6 packs, casual and fun';
+        }
+        
+        // If known specific event
+        if (eventDetails.eventName && this.knownEvents[eventDetails.eventName]) {
+            const event = this.knownEvents[eventDetails.eventName];
+            return `${eventDetails.eventName.toUpperCase()}: ${event.location}, ${event.date}. ${event.prizing || event.format + ' format'}`;
+        }
+        
+        // Generic tournament response
+        return 'Tournament play is where the best trainers prove themselves! Check Pokemon.com for event locator';
     }
 
     // Check if response would be valuable

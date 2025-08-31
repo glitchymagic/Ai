@@ -1,8 +1,18 @@
 // Ultra Human-Like Response Generator
 // Makes responses indistinguishable from real collectors
 
+const ResponseMemory = require('./response-memory');
+const ConversationMemory = require('./conversation-memory');
+const CardRecognition = require('./card-recognition');
+
 class HumanLikeResponses {
     constructor() {
+        // Response memory to avoid repetition
+        this.memory = new ResponseMemory();
+        // Conversation memory for user context
+        this.conversations = new ConversationMemory();
+        // Card recognition for image analysis
+        this.cardRecognition = new CardRecognition();
         // Real human response patterns with imperfections
         this.responses = {
             // Seeing amazing pulls - genuine excitement
@@ -47,18 +57,18 @@ class HumanLikeResponses {
                 "surface looks good from here.. send it"
             ],
             
-            // Value questions - rough estimates
+            // Value questions - redirect to actual checking
             valueResponse: [
-                "last i checked like $80-100ish",
-                "seen em go for around 150 recently",
-                "depends but prob 200+ raw",
-                "tcgplayer has it at like $75",
-                "fluctuates but 100-120 range",
-                "raw? maybe 50.. graded way more",
-                "market been weird but id say 80ish",
-                "checked yesterday was like $90",
-                "trending up.. saw one sell for 140",
-                "60-80 depending on condition"
+                "depends on condition, check tcgplayer",
+                "market's been moving, worth checking current prices",
+                "varies by set and condition tbh",
+                "need to check recent sales for accurate price",
+                "changes daily, tcgplayer has live pricing",
+                "depends which set/version you mean",
+                "price varies a lot, what condition is it?",
+                "hard to say without seeing condition",
+                "market fluctuates, check ebay sold listings",
+                "need more details - which set?"
             ],
             
             // Store questions - helpful tips
@@ -173,6 +183,20 @@ class HumanLikeResponses {
                 "oof thats tough"
             ],
             
+            // Collection/display posts
+            collectionResponse: [
+                "collection looking sick",
+                "setup is clean",
+                "solid display tbh",
+                "jealous of that collection",
+                "organized af respect",
+                "that binder hits different",
+                "display game strong",
+                "collection goals fr",
+                "thats some heat right there",
+                "love the organization"
+            ],
+            
             // Set comparisons
             setComparison: [
                 "surging sparks for the pikachu",
@@ -207,9 +231,48 @@ class HumanLikeResponses {
         this.emojiPersonality = Math.random() < 0.3; // 30% chance to be emoji user
     }
     
-    generateHumanResponse(text, context = {}) {
+    async generateHumanResponse(text, context = {}) {
         const textLower = text.toLowerCase();
         let response = null;
+        
+        // Check for card recognition first if image is present
+        if (context.hasImage && (this.detectActualPull(textLower) || this.detectCollection(textLower))) {
+            try {
+                const recognition = await this.cardRecognition.identifyCard(context.imageUrl, text);
+                if (recognition.identified || recognition.confidence > 0.5) {
+                    const cardResponse = await this.cardRecognition.generateCardResponse(recognition, {
+                        mentionsGrading: text.includes('grade') || text.includes('psa')
+                    });
+                    if (cardResponse && cardResponse !== "nice card") {
+                        console.log(`   🎯 [Card ID] Recognized card in image`);
+                        response = cardResponse;
+                        // Apply human touch and continue with memory
+                        response = this.addHumanTouch(response, text.includes('!'));
+                        this.memory.rememberResponse(response);
+                        if (context.username) {
+                            this.conversations.rememberInteraction(context.username, text, response, context);
+                        }
+                        return response;
+                    }
+                }
+            } catch (error) {
+                // Fall through to normal response generation
+            }
+        }
+        
+        // Check for conversation context if username provided
+        if (context.username) {
+            const contextualResponse = this.conversations.getContextualResponse(context.username, text);
+            if (contextualResponse) {
+                console.log(`   🧠 [Context] Using conversation memory for @${context.username}`);
+                response = contextualResponse;
+                // Still apply human touch and memory
+                response = this.addHumanTouch(response, text.includes('!'));
+                this.memory.rememberResponse(response);
+                this.conversations.rememberInteraction(context.username, text, response, context);
+                return response;
+            }
+        }
         
         // Match the energy level
         const hasExcitement = text.includes('!') || text.includes('🔥') || text.includes('😭');
@@ -233,33 +296,42 @@ class HumanLikeResponses {
             else if (this.detectAuthenticity(textLower)) {
                 response = this.pickRandom(this.responses.fakeCheck);
             }
+            else if (textLower.includes('pull rate') || 
+                     (textLower.includes('rate') && textLower.includes('alt')) ||
+                     (textLower.includes("what's the") && textLower.includes('rate'))) {
+                response = "crown zenith is like 1:150ish for alt arts";
+            }
             else if (this.detectSetComparison(textLower)) {
                 response = this.pickRandom(this.responses.setComparison);
             }
-            else if (textLower.includes('pull rate')) {
-                response = "crown zenith is like 1:150ish for alt arts";
+            else if (this.detectCollectionQuestion(textLower)) {
+                response = this.pickRandom(this.responses.collectionResponse);
             }
-            else if (textLower.includes('what set') && textLower.includes('first')) {
+            else if ((textLower.includes('what set') && textLower.includes('first')) || 
+                     (textLower.includes('starting') && textLower.includes('what set'))) {
                 response = "151 or crown zenith good starter sets";
             }
             else if (textLower.includes('good deal')) {
                 response = "thats actually decent yeah";
             }
             else {
-                // Generic question - sometimes answer, sometimes ask back
-                if (Math.random() < 0.5) {
+                // Generic question - ask back or give agreement
+                if (Math.random() < 0.6) {
                     response = this.pickRandom(this.responses.questions);
                 } else {
                     response = this.pickRandom(this.responses.agreement);
                 }
             }
         }
-        // Then check for statements/exclamations
+        // Then check for statements/exclamations - BE MORE SPECIFIC
         else if (this.detectAmazingPull(textLower)) {
             response = this.pickRandom(this.responses.amazingPull);
         }
-        else if (this.detectPull(textLower)) {
+        else if (this.detectActualPull(textLower)) {
             response = this.pickRandom(this.responses.goodPull);
+        }
+        else if (this.detectCollection(textLower)) {
+            response = this.pickRandom(this.responses.collectionResponse);
         }
         else if (this.detectMailDay(textLower)) {
             response = this.pickRandom(this.responses.mailDay);
@@ -271,22 +343,35 @@ class HumanLikeResponses {
             response = this.pickRandom(this.responses.badLuck);
         }
         else {
-            // Default reactions
-            if (hasExcitement) {
-                response = this.pickRandom([...this.responses.amazingPull, ...this.responses.goodPull]);
+            // Default reactions - be more conservative
+            if (hasExcitement && this.detectActualPull(textLower)) {
+                response = this.pickRandom(this.responses.goodPull);
+            } else if (hasExcitement) {
+                response = this.pickRandom(this.responses.agreement);
             } else {
-                // Mix of reactions and questions
-                if (Math.random() < 0.3) {
-                    response = this.pickRandom(this.responses.questions);
-                } else {
-                    response = this.pickRandom([...this.responses.goodPull, ...this.responses.agreement]);
-                }
+                // Safe default responses
+                const safeResponses = [...this.responses.agreement, ...this.responses.questions];
+                response = this.pickRandom(safeResponses);
             }
         }
         
         // Apply human imperfections
         if (response) {
             response = this.addHumanTouch(response, hasExcitement);
+            
+            // Check for repetition and get alternative if needed
+            if (this.memory.isResponseTooSimilar(response)) {
+                const categoryResponses = this.getCategoryResponses(textLower, isQuestion);
+                response = this.memory.getAlternativeResponse(response, categoryResponses);
+            }
+            
+            // Remember this response
+            this.memory.rememberResponse(response);
+            
+            // Remember the conversation if username provided
+            if (context.username) {
+                this.conversations.rememberInteraction(context.username, text, response, context);
+            }
         }
         
         return response || "nice";
@@ -301,9 +386,27 @@ class HumanLikeResponses {
                amazingWords.some(word => text.includes(word));
     }
     
-    detectPull(text) {
-        return text.includes('pull') || text.includes('got') || text.includes('hit') || 
-               text.includes('opened') || text.includes('pack');
+    detectActualPull(text) {
+        // Only true pulls, not general statements
+        const pullWords = ['pulled', 'pull this', 'pack pulled', 'hit this', 'opened and got'];
+        const packWords = ['pack', 'booster', 'box'];
+        
+        const hasPullWord = pullWords.some(word => text.includes(word));
+        const hasPackContext = packWords.some(word => text.includes(word)) && 
+                              (text.includes('from') || text.includes('got'));
+        
+        return hasPullWord || hasPackContext;
+    }
+    
+    detectCollection(text) {
+        const collectionWords = ['my collection', 'my setup', 'my display', 'my binder', 'completed', 
+                               'look at my', 'check out my', 'rate my'];
+        return collectionWords.some(word => text.includes(word)) && 
+               !this.detectMailDay(text) && !this.detectActualPull(text);
+    }
+    
+    detectCollectionQuestion(text) {
+        return this.detectCollection(text) && text.includes('?');
     }
     
     detectGradingQuestion(text) {
@@ -328,7 +431,8 @@ class HumanLikeResponses {
     
     detectMailDay(text) {
         return text.includes('mail day') || text.includes('mailday') || 
-               text.includes('arrived') || text.includes('came in');
+               (text.includes('arrived') && !text.includes('?')) || 
+               text.includes('came in') || text.includes('package');
     }
     
     detectSale(text) {
@@ -401,6 +505,80 @@ class HumanLikeResponses {
     
     pickRandom(array) {
         return array[Math.floor(Math.random() * array.length)];
+    }
+    
+    // Get responses from the appropriate category for alternatives
+    getCategoryResponses(textLower, isQuestion) {
+        if (isQuestion) {
+            if (this.detectGradingQuestion(textLower)) {
+                return this.responses.gradingAdvice;
+            }
+            if (this.detectValueQuestion(textLower)) {
+                return this.responses.valueResponse;
+            }
+            if (this.detectStoreQuestion(textLower)) {
+                return this.responses.storeHelp;
+            }
+            if (this.detectInvestmentQuestion(textLower)) {
+                return this.responses.investmentTalk;
+            }
+            if (this.detectAuthenticity(textLower)) {
+                return this.responses.fakeCheck;
+            }
+            if (this.detectSetComparison(textLower)) {
+                return this.responses.setComparison;
+            }
+            if (this.detectCollectionQuestion(textLower)) {
+                return this.responses.collectionResponse;
+            }
+            return [...this.responses.questions, ...this.responses.agreement];
+        } else {
+            if (this.detectAmazingPull(textLower)) {
+                return this.responses.amazingPull;
+            }
+            if (this.detectActualPull(textLower)) {
+                return this.responses.goodPull;
+            }
+            if (this.detectCollection(textLower)) {
+                return this.responses.collectionResponse;
+            }
+            if (this.detectMailDay(textLower)) {
+                return this.responses.mailDay;
+            }
+            if (this.detectSale(textLower)) {
+                return this.responses.saleResponse;
+            }
+            if (this.detectBadLuck(textLower)) {
+                return this.responses.badLuck;
+            }
+            return [...this.responses.agreement, ...this.responses.questions];
+        }
+    }
+    
+    // Get memory stats for debugging
+    getMemoryStats() {
+        return this.memory.getStats();
+    }
+    
+    // Get conversation stats
+    getConversationStats() {
+        return this.conversations.getStats();
+    }
+    
+    // Check if we've met a user before
+    hasMetUser(username) {
+        return this.conversations.hasMetUser(username);
+    }
+    
+    // Get card recognition stats
+    getCardStats() {
+        return this.cardRecognition.getStats();
+    }
+    
+    // Synchronous wrapper for compatibility
+    generateHumanResponseSync(text, context = {}) {
+        // For backward compatibility when async is not needed
+        return this.generateHumanResponse(text, context);
     }
 }
 

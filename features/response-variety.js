@@ -79,6 +79,15 @@ class ResponseVariety {
     // Get a varied response based on context
     getVariedResponse(text, hasImage = false) {
         const textLower = text.toLowerCase();
+        
+        // First check if this is actually Pokemon-related
+        const pokemonTerms = ['pokemon', 'pokémon', 'tcg', 'card', 'pull', 'pack', 'charizard', 'pikachu', 'grade', 'psa', 'collection', 'binder', 'mail day', 'booster', 'etb', 'holo', 'rare', 'shiny'];
+        const isPokemonRelated = pokemonTerms.some(term => textLower.includes(term));
+        
+        if (!isPokemonRelated) {
+            return null; // Don't generate Pokemon responses for non-Pokemon content
+        }
+        
         let responseType = 'appreciation'; // default
         let response = '';
         

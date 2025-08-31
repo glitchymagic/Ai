@@ -303,6 +303,171 @@ class PokemonCulture {
         
         return null;
     }
+    
+    // Get contextual response for any tweet
+    getContextualResponse(tweetContentOrUsername, categoryOrTweetContent) {
+        // Handle both old and new calling conventions
+        let textLower, category;
+        
+        if (categoryOrTweetContent && typeof categoryOrTweetContent === 'string' && 
+            (categoryOrTweetContent === 'selling' || categoryOrTweetContent === 'scam' || 
+             categoryOrTweetContent === 'investment' || categoryOrTweetContent === 'goodPull')) {
+            // New format: (tweetContent, category)
+            textLower = tweetContentOrUsername.toLowerCase();
+            category = categoryOrTweetContent;
+        } else {
+            // Old format: (username, tweetContent)
+            textLower = (categoryOrTweetContent || tweetContentOrUsername).toLowerCase();
+            category = null;
+        }
+        
+        // Context-specific responses grouped by topic
+        const responses = {
+            // Scam/fraud related
+            scam: [
+                "yeah marketplace can be sketchy for cards",
+                "def gotta be careful out there",
+                "too many fakes floating around",
+                "always check seller reviews first",
+                "stick to trusted sellers imo"
+            ],
+            
+            // Price questions without specific card
+            priceGeneral: [
+                "depends on the set and condition",
+                "prices vary a lot rn",
+                "market's been moving lately",
+                "hard to say without seeing it",
+                "check recent solds on tcgplayer"
+            ],
+            
+            // Pull reactions
+            goodPull: [
+                "sick pull! 🔥",
+                "huge W congrats",
+                "that's a banger",
+                "love to see it",
+                "straight heat",
+                "paid for the box right there"
+            ],
+            
+            // Investment/holding questions
+            investment: [
+                "sealed products hold value well imo",
+                "graded cards are the safest bet",
+                "depends on your timeline",
+                "i'd hold personally",
+                "tough to predict tbh"
+            ],
+            
+            // Sales/listings (avoid expressing purchase interest)
+            selling: [
+                "nice card! glws",
+                "that's a beauty",
+                "solid condition from what i can see",
+                "should move quick at that price",
+                "great card for someone's collection"
+            ],
+            
+            // Grading questions
+            grading: [
+                "looks clean from here",
+                "centering might hurt the grade",
+                "psa wait times are rough rn",
+                "worth grading if nm+",
+                "cgc is faster lately"
+            ],
+            
+            // General excitement
+            excitement: [
+                "nice! love that card",
+                "beautiful art on that one",
+                "jealous ngl",
+                "W pull for sure",
+                "adding to the collection?"
+            ],
+            
+            // Market complaints
+            marketComplaint: [
+                "prices definitely got crazy",
+                "miss the old days too",
+                "hopefully it cools down soon",
+                "tough time for collectors",
+                "priced out of so many cards"
+            ],
+            
+            // Default responses
+            general: [
+                "nice pickup",
+                "solid card",
+                "love the artwork",
+                "good choice",
+                "can't go wrong with that"
+            ],
+            
+            // Pokemon GO specific
+            pokemonGO: [
+                "nice shiny!",
+                "lucky catch congrats",
+                "love the costume ones",
+                "perfect for the collection",
+                "that's a rare find",
+                "shiny luck is real"
+            ]
+        };
+        
+        // If no category specified, detect from content
+        if (!category) {
+            if (textLower.match(/pokemon ?go|pokémon ?go|shiny|costumed|caught|buddy|pvp|raid|pokestop/i)) {
+                category = 'pokemonGO';  // Pokemon GO content
+            } else if (textLower.match(/scam|fake|fraud|counterfeit|sketchy/)) {
+                category = 'scam';
+            } else if (textLower.match(/for sale|selling|fs|wts|available|dm to buy|purchase|buy it|€|£|\$|¥/) || textLower.match(/price/) && textLower.match(/dm|available|selling/)) {
+                category = 'selling';  // Detect sales listings
+            } else if (textLower.match(/worth|value|price|cost|sell/)) {
+                category = 'priceGeneral';
+            } else if (textLower.match(/pulled|got|hit|pack|box/) && textLower.match(/charizard|moonbreon|alt art|secret|gold/)) {
+                category = 'goodPull';
+            } else if (textLower.match(/invest|hold|sell|flip|profit/)) {
+                category = 'investment';
+            } else if (textLower.match(/grade|grading|psa|cgc|bgs|submit/)) {
+                category = 'grading';
+            } else if (textLower.match(/excited|happy|finally|grail|chase/)) {
+                category = 'excitement';
+            } else if (textLower.match(/expensive|overpriced|cost too much|can't afford/)) {
+                category = 'marketComplaint';
+            } else {
+                category = 'general';
+            }
+        }
+        // If specific category requested, return those responses
+        if (category && responses[category]) {
+            return responses[category];
+        }
+        
+        // Otherwise detect category from content
+        if (textLower.includes('scam') || textLower.includes('fake') || textLower.includes('fraud')) {
+            return responses.scam;
+        }
+        if (textLower.includes('pull') || textLower.includes('pulled') || textLower.includes('got')) {
+            return responses.goodPull;
+        }
+        if (textLower.includes('invest') || textLower.includes('hold') || textLower.includes('worth keeping')) {
+            return responses.investment;
+        }
+        if (textLower.includes('selling') || textLower.includes('for sale') || textLower.includes('fs')) {
+            return responses.selling;
+        }
+        if (textLower.includes('grade') || textLower.includes('psa') || textLower.includes('cgc')) {
+            return responses.grading;
+        }
+        if (textLower.includes('pokemon go') || textLower.includes('pokémon go')) {
+            return responses.pokemonGO;
+        }
+        
+        // Default to general responses
+        return responses.general;
+    }
 }
 
 module.exports = PokemonCulture;

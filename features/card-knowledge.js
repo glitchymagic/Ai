@@ -1,6 +1,42 @@
 // Pokemon Card Knowledge Base
 class CardKnowledge {
     constructor() {
+        // Card eras for proper knowledge
+        this.cardEras = {
+            vintage: {
+                years: [1998, 1999, 2000, 2001, 2002, 2003],
+                sets: ['base set', 'jungle', 'fossil', 'team rocket', 'gym heroes', 'gym challenge', 'neo genesis', 'neo discovery', 'neo destiny', 'neo revelation', 'legendary collection', 'expedition']
+            },
+            ex: {
+                years: [2003, 2004, 2005, 2006, 2007],
+                sets: ['ruby sapphire', 'sandstorm', 'dragon', 'team magma vs aqua', 'hidden legends', 'firered leafgreen', 'team rocket returns', 'deoxys', 'emerald', 'unseen forces', 'delta species', 'legend maker']
+            },
+            diamond_pearl: {
+                years: [2007, 2008, 2009, 2010],
+                sets: ['diamond pearl', 'mysterious treasures', 'secret wonders', 'great encounters', 'majestic dawn', 'legends awakened', 'stormfront', 'platinum', 'rising rivals', 'supreme victors', 'arceus']
+            },
+            bw: {
+                years: [2011, 2012, 2013],
+                sets: ['black white', 'emerging powers', 'noble victories', 'next destinies', 'dark explorers', 'dragons exalted', 'boundaries crossed', 'plasma storm', 'plasma freeze', 'plasma blast', 'legendary treasures']
+            },
+            xy: {
+                years: [2014, 2015, 2016, 2017],
+                sets: ['xy', 'flashfire', 'furious fists', 'phantom forces', 'primal clash', 'roaring skies', 'ancient origins', 'breakthrough', 'breakpoint', 'fates collide', 'steam siege', 'evolutions']
+            },
+            sun_moon: {
+                years: [2017, 2018, 2019],
+                sets: ['sun moon', 'guardians rising', 'burning shadows', 'shining legends', 'crimson invasion', 'ultra prism', 'forbidden light', 'celestial storm', 'dragon majesty', 'lost thunder', 'team up', 'detective pikachu', 'unbroken bonds', 'unified minds', 'hidden fates', 'cosmic eclipse']
+            },
+            sword_shield: {
+                years: [2020, 2021, 2022],
+                sets: ['sword shield', 'rebel clash', 'darkness ablaze', 'champions path', 'vivid voltage', 'shining fates', 'battle styles', 'chilling reign', 'evolving skies', 'celebrations', 'fusion strike', 'brilliant stars', 'astral radiance', 'pokemon go', 'lost origin', 'silver tempest']
+            },
+            scarlet_violet: {
+                years: [2023, 2024, 2025],
+                sets: ['scarlet violet', 'paldea evolved', 'obsidian flames', '151', 'paradox rift', 'paldean fates', 'temporal forces', 'twilight masquerade', 'shrouded fable', 'stellar crown', 'surging sparks']
+            }
+        };
+        
         // Popular chase cards and their approximate values
         this.chaseCards = {
             'moonbreon': { name: 'Umbreon VMAX Alt Art', value: '$400-600', set: 'Evolving Skies' },
@@ -133,8 +169,100 @@ class CardKnowledge {
         return null;
     }
     
+    // Determine card era based on year or set name
+    determineEra(text) {
+        const textLower = text.toLowerCase();
+        
+        // Check for explicit years
+        const yearMatch = textLower.match(/(19|20)\d{2}/);
+        if (yearMatch) {
+            const year = parseInt(yearMatch[0]);
+            for (const [era, data] of Object.entries(this.cardEras)) {
+                if (data.years.includes(year)) {
+                    return { era, year, ...data };
+                }
+            }
+        }
+        
+        // Check for set names
+        for (const [era, data] of Object.entries(this.cardEras)) {
+            for (const set of data.sets) {
+                if (textLower.includes(set)) {
+                    return { era, set, ...data };
+                }
+            }
+        }
+        
+        // Special checks for specific cards
+        if (textLower.includes('tag team')) {
+            return { era: 'sun_moon', note: 'TAG TEAM cards are from 2019 (Sun & Moon era), not vintage' };
+        }
+        
+        if (textLower.includes('vmax') || textLower.includes('v max')) {
+            return { era: 'sword_shield', note: 'VMAX cards are from 2020+ (Sword & Shield era)' };
+        }
+        
+        if (textLower.includes('ex') && !textLower.includes('vmax')) {
+            // Could be vintage EX or modern ex - need context
+            if (textLower.includes('2003') || textLower.includes('2004') || textLower.includes('ruby') || textLower.includes('sapphire')) {
+                return { era: 'ex', note: 'Original EX cards from 2003-2007 era' };
+            } else {
+                return { era: 'modern', note: 'Modern ex cards (lowercase) are recent' };
+            }
+        }
+        
+        return null;
+    }
+    
+    // Generate era-appropriate response
+    generateEraResponse(text, eraInfo) {
+        if (!eraInfo) return null;
+        
+        const responses = {
+            vintage: [
+                "That's a classic! Vintage cards from the late 90s/early 2000s",
+                "Beautiful vintage piece from the original sets",
+                "True vintage - these cards have serious history",
+                "Love the vintage era artwork and design"
+            ],
+            sun_moon: [
+                "Nice modern card! Sun & Moon era had great artwork",
+                "2017-2019 was a solid era for Pokemon cards",
+                "Modern card but already becoming collectible",
+                "Sun & Moon series had some beautiful designs"
+            ],
+            sword_shield: [
+                "Love the modern VMAX era cards",
+                "Sword & Shield series has incredible alt arts",
+                "The texture on these modern cards is amazing",
+                "2020+ era brought some of the best artwork yet"
+            ],
+            scarlet_violet: [
+                "The newest era! These just came out",
+                "Current generation cards with amazing quality",
+                "Fresh from the newest sets",
+                "The art evolution in recent sets is incredible"
+            ]
+        };
+        
+        // Return era-specific response
+        const eraResponses = responses[eraInfo.era] || responses.modern || [
+            "Nice card from that era",
+            "Solid piece from the collection"
+        ];
+        
+        return eraResponses[Math.floor(Math.random() * eraResponses.length)];
+    }
+    
     // Generate helpful response based on context
     generateHelpfulResponse(text, hasImage = false) {
+        // First check for era-specific context to avoid wrong vintage calls
+        const eraInfo = this.determineEra(text);
+        if (eraInfo) {
+            const eraResponse = this.generateEraResponse(text, eraInfo);
+            if (eraResponse) return eraResponse;
+        }
+        
         const cards = this.detectCards(text);
         const set = this.detectSet(text);
         const store = this.detectStore(text);

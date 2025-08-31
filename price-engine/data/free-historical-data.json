@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "generated": "2025-08-08T16:20:12.503Z",
+  "description": "Real historical Pokemon card pricing from free sources",
+  "methodology": "Direct downloads from free APIs and repositories - NO synthetic data",
+  "sources": [],
+  "cards": {}
+}

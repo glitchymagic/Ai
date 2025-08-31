@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "exportedAt": "2025-08-22T16:25:37.860Z",
+    "totalCards": 3,
+    "sources": [
+      "tcgplayer",
+      "ebay",
+      "pricecharting",
+      "local"
+    ]
+  },
+  "prices": [
+    {
+      "key": "mewtwo_base",
+      "name": "Mewtwo",
+      "set": "Base",
+      "number": "10",
+      "currentPrice": 16.62,
+      "lastUpdated": "2025-08-21T18:32:54.107Z",
+      "source": "pricecharting"
+    },
+    {
+      "key": "charizard_base",
+      "price": 241.68,
+      "confidence": 0.9999999999999999,
+      "sources": [
+        "tcgplayer",
+        "ebay",
+        "pricecharting",
+        "local"
+      ],
+      "timestamp": "2025-08-22T16:25:37.858Z",
+      "lastUpdated": "2025-08-22T16:25:37.860Z"
+    },
+    {
+      "key": "pikachu_base",
+      "name": "Pikachu",
+      "set": "Base",
+      "number": "58",
+      "currentPrice": 2.99,
+      "lastUpdated": "2025-08-21T18:33:04.748Z",
+      "source": "pricecharting"
+    }
+  ],
+  "trends": []
+}

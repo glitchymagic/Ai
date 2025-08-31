@@ -1,0 +1,18 @@
+{
+  "highActivity": [
+    "#PokemonTCG",
+    "#Pokemon", 
+    "#PokemonCards",
+    "pokemon target",
+    "pokemon walmart",
+    "surging sparks"
+  ],
+  "mediumActivity": [
+    "pokemon pulls",
+    "pokemon restock",
+    "pokemon pack opening",
+    "stellar crown"
+  ],
+  "description": "Searches with consistent recent activity",
+  "lastUpdated": "2025-08-26"
+}

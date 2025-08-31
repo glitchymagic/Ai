@@ -1,19 +1,53 @@
 class SearchEngine {
     constructor() {
+        this.searchCounter = 0; // For deterministic selection
         this.searchHistory = [];
         this.lastSearchIndex = -1;
         this.searchPerformance = new Map();
         
+        // Advanced search operators for better recent post discovery
+        this.advancedOperators = {
+            // Time-based filters for recent posts (will be computed dynamically)
+            recent: [
+                'filter:follows',    // From people we follow (more likely recent)
+                'filter:replies',    // Include replies for conversation
+                '-filter:retweets'   // Exclude retweets (more original content)
+            ],
+            
+            // Engagement filters for quality
+            quality: [
+                'min_replies:1',     // Has at least 1 reply
+                'min_faves:2',       // Has at least 2 likes
+                'filter:images',     // Has images (more engaging)
+                'filter:videos',     // Has videos
+                'filter:verified'    // From verified accounts
+            ],
+            
+            // Language filters only
+            locale: [
+                'lang:en'           // English posts
+            ]
+        };
+        
+        // Recent-focused search strategies
+        this.recentSearchStrategies = [
+            'time_focused',      // Prioritize recency
+            'engagement_focused', // Prioritize engagement
+            'mixed_strategy'     // Balance both
+        ];
+        
         // Comprehensive search library
         this.searchQueries = {
-            // Time-based searches
+            // Time-based searches (simple queries that actually work)
             morning: [
                 'pokemon mail day',
-                'pokemon pulls morning',
+                'pokemon pulls',
                 'pokemon tcg opening',
-                'pokemon cards arrived',
-                'pokemon delivery today',
-                '#MailDayMonday pokemon'
+                'pokemon cards arrived', 
+                'pokemon delivery',
+                '#MailDayMonday',
+                'pokemon grail',
+                'pokemon mailday'
             ],
             
             afternoon: [
@@ -22,7 +56,9 @@ class SearchEngine {
                 'pokemon target find',
                 'pokemon walmart stock',
                 'pokemon costco',
-                'pokemon gamestop'
+                'pokemon gamestop',
+                'pokemon cards found',
+                'pokemon restock'
             ],
             
             evening: [
@@ -31,7 +67,9 @@ class SearchEngine {
                 'pokemon display',
                 'pokemon showcase',
                 'pokemon graded cards',
-                'pokemon slab collection'
+                'pokemon slab collection',
+                'pokemon collection goals',
+                'pokemon binder page'
             ],
             
             night: [
@@ -129,7 +167,7 @@ class SearchEngine {
                 'pokemon deal alert'
             ],
             
-            // Community searches
+            // Community searches (simplified)
             community: [
                 '#PokemonTCG',
                 '#PokemonCards',
@@ -195,6 +233,57 @@ class SearchEngine {
         
         // Track which searches work best
         this.successfulSearches = [];
+        
+        // Simple fallback searches that always find results
+        this.fallbackSearches = [
+            'pokemon',
+            'pokemon cards',
+            'pokemon tcg',
+            '#pokemon',
+            'charizard',
+            'pokemon collection',
+            'pokemon pull',
+            'pokemon pack'
+        ];
+    }
+    
+    // Build advanced search query with operators (simplified for better results)
+    buildAdvancedSearch(baseQuery, strategy = 'mixed_strategy') {
+        let searchQuery = baseQuery;
+        
+        // Only add filters occasionally to avoid over-filtering
+        // Deterministic: use advanced filters every 3rd search
+        const useAdvancedFilters = (this.searchCounter % 3) === 0;
+        
+        if (!useAdvancedFilters) {
+            // Most of the time, just use the base query for better results
+            return searchQuery;
+        }
+        
+        // When using advanced filters, be very conservative
+        if (strategy === 'time_focused') {
+            // Dynamically compute date for recent posts
+            if (!searchQuery.includes('since:')) {
+                const sinceDate = new Date();
+                sinceDate.setDate(sinceDate.getDate() - 3); // Last 3 days (more lenient)
+                const dateStr = sinceDate.toISOString().slice(0,10);
+                searchQuery += ` since:${dateStr}`;
+            }
+        } else if (strategy === 'engagement_focused') {
+            // Only add image filter occasionally
+            // Deterministic: add image filter on even searches
+            if ((this.searchCounter % 2) === 0 && !searchQuery.includes('filter:images')) {
+                searchQuery += ' filter:images';
+            }
+        } else {
+            // Mixed strategy - very light filtering
+            // Deterministic: exclude retweets every 4th search
+            if ((this.searchCounter % 4) === 0 && !searchQuery.includes('filter:retweets')) {
+                searchQuery += ' -filter:retweets'; // Exclude retweets only sometimes
+            }
+        }
+        
+        return searchQuery;
     }
     
     getNextSearch() {
@@ -225,9 +314,23 @@ class SearchEngine {
         const recentSearches = this.searchHistory.slice(-10);
         searchPool = searchPool.filter(s => !recentSearches.includes(s));
         
-        // Pick random from pool
-        const selected = searchPool[Math.floor(Math.random() * searchPool.length)] || 
-                        this.allSearches[Math.floor(Math.random() * this.allSearches.length)];
+        // Pick deterministically from pool
+        let baseQuery = searchPool[this.searchCounter % searchPool.length] || 
+                       this.allSearches[this.searchCounter % this.allSearches.length];
+        
+        // Choose search strategy deterministically
+        const strategies = this.recentSearchStrategies;
+        const strategy = strategies[this.searchCounter % strategies.length];
+        
+        // Increment counter for next search
+        this.searchCounter++;
+        
+        // Build advanced search with operators
+        const selected = this.buildAdvancedSearch(baseQuery, strategy);
+        
+        console.log(`   🔍 Search strategy: ${strategy}`);
+        console.log(`   📝 Base query: ${baseQuery}`);
+        console.log(`   🎯 Final query: ${selected}`);
         
         // Track history
         this.searchHistory.push(selected);
@@ -239,8 +342,13 @@ class SearchEngine {
     }
     
     getRandomFrom(array, count) {
-        const shuffled = [...array].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, count);
+        // Deterministic selection based on counter
+        const selected = [];
+        for (let i = 0; i < count && i < array.length; i++) {
+            const index = (this.searchCounter + i) % array.length;
+            selected.push(array[index]);
+        }
+        return selected;
     }
     
     trackSearchSuccess(query, postsFound, engagementsMade) {
@@ -269,15 +377,45 @@ class SearchEngine {
     }
     
     getTrendingSearch() {
-        // Priority to successful searches
-        if (this.successfulSearches.length > 0 && Math.random() < 0.3) {
+        // High priority searches that consistently have fresh content
+        const highActivitySearches = [
+            '#PokemonTCG',
+            '#Pokemon', 
+            '#PokemonCards',
+            'pokemon target',
+            'pokemon walmart',
+            'surging sparks',
+            'pokemon pulls',
+            'pokemon restock',
+            'pokemon pack opening'
+        ];
+        
+        // Deterministic: use high activity searches every 2.5 searches (40%)
+        if ((this.searchCounter % 5) < 2) {
+            const selected = highActivitySearches[
+                this.searchCounter % highActivitySearches.length
+            ];
+            console.log(`   🔥 Using high-activity search: ${selected}`);
+            return selected;
+        }
+        
+        // Deterministic: use successful searches every 5th search (20%)
+        if (this.successfulSearches.length > 0 && (this.searchCounter % 5) === 4) {
             return this.successfulSearches[
-                Math.floor(Math.random() * this.successfulSearches.length)
+                this.searchCounter % this.successfulSearches.length
             ];
         }
         
         // Otherwise normal selection
         return this.getNextSearch();
+    }
+    
+    // Get a simple fallback search when advanced searches fail
+    getFallbackSearch() {
+        const selected = this.fallbackSearches[this.searchCounter % this.fallbackSearches.length];
+        console.log(`   🔄 Using fallback search: ${selected}`);
+        this.searchCounter++;
+        return selected;
     }
     
     getSearchStats() {
