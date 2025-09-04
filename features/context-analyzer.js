@@ -288,6 +288,54 @@ class ContextAnalyzer {
         return response;
     }
     
+    // Extract main topics from text for learning system
+    extractTopics(text) {
+        const topics = [];
+        const textLower = text.toLowerCase();
+        
+        // Extract specific card names mentioned
+        for (const cardName of Object.keys(this.specificCards)) {
+            if (textLower.includes(cardName)) {
+                topics.push(`card:${cardName}`);
+            }
+        }
+        
+        // Extract set names mentioned
+        for (const setName of Object.keys(this.sets)) {
+            if (textLower.includes(setName)) {
+                topics.push(`set:${setName}`);
+            }
+        }
+        
+        // Extract context-based topics
+        for (const [contextName, contextData] of Object.entries(this.contexts)) {
+            const score = this.calculateContextScore(textLower, contextData.keywords);
+            if (score > 0) {
+                topics.push(`context:${contextName}`);
+            }
+        }
+        
+        // Extract grading companies
+        if (textLower.includes('psa')) topics.push('grading:psa');
+        if (textLower.includes('bgs')) topics.push('grading:bgs');
+        if (textLower.includes('cgc')) topics.push('grading:cgc');
+        
+        // Extract rarity types
+        if (textLower.includes('alt art') || textLower.includes('alternate')) topics.push('rarity:alt_art');
+        if (textLower.includes('vmax')) topics.push('rarity:vmax');
+        if (textLower.includes('gold')) topics.push('rarity:gold');
+        if (textLower.includes('rainbow')) topics.push('rarity:rainbow');
+        if (textLower.includes('shiny')) topics.push('rarity:shiny');
+        
+        // Extract market terms
+        if (textLower.includes('price') || textLower.includes('value')) topics.push('market:price_discussion');
+        if (textLower.includes('invest')) topics.push('market:investment');
+        if (textLower.includes('sell') || textLower.includes('selling')) topics.push('market:selling');
+        if (textLower.includes('buy') || textLower.includes('buying')) topics.push('market:buying');
+        
+        return topics;
+    }
+    
     // Generate specific response types
     generateAnswer(analysis, text) {
         const textLower = text.toLowerCase();

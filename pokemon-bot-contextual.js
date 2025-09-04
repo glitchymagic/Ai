@@ -18,6 +18,7 @@ const AdvancedContextExtractor = require('./features/advanced-context');
 const HumanLikeResponses = require('./features/human-like-responses');
 const EngagementSelector = require('./features/engagement-selector');
 const AuthorityResponses = require('./features/authority-responses');
+const { getAuthorityIntegration } = require('./features/authority-integration');
 const SentimentAnalyzer = require('./features/sentiment-analyzer');
 const TimestampFilter = require('./features/timestamp-filter');
 const HumanSearch = require('./features/human-search');
@@ -29,20 +30,34 @@ const DecisionTrace = require('./features/decision-trace');
 const { buildThreadSnippet } = require('./features/thread-snippet');
 const { composeResponse } = require('./features/response-composer');
 const { detectEventFromText } = require('./features/event-detector');
+const VisionMonitor = require('./vision-monitor');
+const ResponseValidator = require('./features/response-validator');
+const LearningEngine = require('./features/learning-engine');
+const ConversationAnalyzer = require('./features/conversation-analyzer');
+const AdaptiveResponseGenerator = require('./features/adaptive-response-generator');
+const FollowingMonitor = require('./features/following-monitor');
+const BetterContextAnalyzer = require('./features/better-context-analyzer');
+const AdaptiveToneGenerator = require('./features/adaptive-tone-generator');
 
 puppeteer.use(StealthPlugin());
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY environment variable is required');
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+// Use environment variable if set, otherwise use first key from rotation
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyD9Hl53GRtWyZyQCgrfPDuYljIHEulIKcw';
+if (!GEMINI_API_KEY) throw new Error('No Gemini API keys available');
 
-const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    generationConfig: {
-        maxOutputTokens: 100,
-        temperature: 0.7,
-    }
-});
+// Multiple Gemini API keys for rotation
+const GEMINI_API_KEYS = [
+    'AIzaSyD9Hl53GRtWyZyQCgrfPDuYljIHEulIKcw',  // Key 1 (original)
+    'AIzaSyClg--pgWqpAny17vRbiWokCC7L_YjEFkQ',  // Key 2 
+    'AIzaSyDnlBhkg5GO2O85O-bfVcyCnGa29boEUh8'   // Key 3 (newest)
+].filter(key => key && key.length > 0);
+
+// Create key manager for rotation
+const GeminiKeyManager = require('./features/gemini-key-manager');
+const keyManager = new GeminiKeyManager(GEMINI_API_KEYS);
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY); // Keep for backward compatibility
+
+// Model will be created with key rotation in generateThreadAwareResponse
 
 // Helper function to clamp tweets to 280 chars consistently
 function clampTweet(s, max = 280) {
@@ -136,6 +151,26 @@ class ContextualPokemonBot {
         this.strategyPicker = new StrategyPicker();
         this.antiScam = new AntiScam();
         this.decisionTrace = new DecisionTrace();
+        this.visionMonitor = new VisionMonitor();
+        this.responseValidator = new ResponseValidator();
+        
+        // Initialize learning systems
+        this.learningEngine = new LearningEngine();
+        this.conversationAnalyzer = new ConversationAnalyzer(this.learningEngine);
+        this.adaptiveGenerator = new AdaptiveResponseGenerator(this.learningEngine);
+        
+        // Initialize following monitor (will set page later)
+        this.followingMonitor = null;
+        
+        // Initialize better context analyzer
+        this.betterContextAnalyzer = new BetterContextAnalyzer();
+        this.adaptiveToneGenerator = new AdaptiveToneGenerator();
+        
+        // Initialize new authority integration
+        this.authorityIntegration = getAuthorityIntegration();
+        this.authorityIntegration.initialize().catch(err => {
+            console.log('   ⚠️ Authority integration init failed:', err.message);
+        });
         
         // Initialize price engine
         this.priceEngineReady = false;
@@ -161,12 +196,12 @@ class ContextualPokemonBot {
         };
     }
 
-    async generateThreadAwareResponse(username, latestMessage, threadContext) {
+    async generateThreadAwareResponse(username, latestMessage, threadContext, visualData = null) {
         // Build comprehensive context from thread
         let contextSummary = `Thread has ${threadContext.threadLength} messages about ${threadContext.mainTopic}.\n`;
         
         // Include key conversation points
-        if (threadContext.fullConversation.length > 1) {
+        if (threadContext.fullConversation && threadContext.fullConversation.length > 1) {
             contextSummary += "Previous discussion:\n";
             // Get last 3 messages before the current one
             const previousMsgs = threadContext.fullConversation.slice(-4, -1);
@@ -184,20 +219,150 @@ class ContextualPokemonBot {
                 // Check if there's price intent in the message
                 const isPriceRelated = /\b(worth|price|value|how much|going for|\$|cost|sell|buy|market)\b/i.test(latestMessage);
                 
+                // Build visual context if available
+                let visualContext = '';
+                let visionInstructions = '';
+                
+                // Check for both image and video analysis
+                const visionResult = visualData?.visionAnalysis || visualData?.videoAnalysis;
+                
+                if (visionResult?.analyzed) {
+                    // We have actual vision API results (either image or video)
+                    const isVideo = visualData?.videoAnalysis !== undefined;
+                    
+                    if (visionResult.cards && visionResult.cards.length > 0) {
+                        // High-confidence cards were found
+                        const cardNames = visionResult.cards.map(c => c.name).join(', ');
+                        if (isVideo) {
+                            visualContext = `\nVisual: Video analyzed - ${visionResult.cards.length} Pokemon card(s) identified: ${cardNames}`;
+                            if (visionResult.isPackOpening) {
+                                visualContext += ' (pack opening video)';
+                            }
+                        } else {
+                            visualContext = `\nVisual: ${visionResult.cards.length} Pokemon card(s) identified: ${cardNames}`;
+                        }
+                        visionInstructions = `\nIMPORTANT: You MUST mention these specific cards: ${cardNames}. Do NOT mention any other cards.`;
+                    } else if (visionResult.isEventPoster) {
+                        // Event poster detected
+                        visualContext = '\nVisual: Event poster detected (no cards shown)';
+                        visionInstructions = '\nIMPORTANT: This is an EVENT POSTER. Do NOT mention any cards. Focus on the event.';
+                    } else if (visionResult.lowConfidenceCards && visionResult.lowConfidenceCards.length > 0) {
+                        // Cards were detected but with low confidence
+                        // Check if this is actually about pulls/showcasing based on text
+                        const isPullsContext = /\b(pull|pulled|got|hit|found|mail\s*day|pickup|haul|collection|binder)\b/i.test(latestMessage);
+                        const isGameplayContext = /\b(deck|play|game|match|tournament|energy|trainer|attack|damage|bench|prize)\b/i.test(latestMessage);
+                        
+                        if (isVideo) {
+                            visualContext = '\nVisual: Video analyzed - cards visible but unclear';
+                            if (isPullsContext) {
+                                visionInstructions = '\nIMPORTANT: Cards detected but unclear. Respond about their pulls/collection without naming specific cards.';
+                            } else if (isGameplayContext) {
+                                visionInstructions = '\nIMPORTANT: This seems to be about gameplay/strategy. Focus on the game mechanics discussed, not card identification.';
+                            } else {
+                                visionInstructions = '\nIMPORTANT: Respond to the actual topic discussed. Do not assume this is about pulls or showcasing.';
+                            }
+                            // Add hint about pack opening if detected
+                            if (visionResult.isPackOpening) {
+                                visualContext += ' (pack opening video)';
+                                visionInstructions = '\nIMPORTANT: Pack opening detected - react to the opening without naming specific cards.';
+                            }
+                        } else {
+                            visualContext = '\nVisual: Image analyzed - cards visible but unclear';
+                            if (isPullsContext) {
+                                visionInstructions = '\nIMPORTANT: Cards visible but unclear. Respond about their collection/pulls without naming specific cards.';
+                            } else if (isGameplayContext) {
+                                visionInstructions = '\nIMPORTANT: This appears to be about gameplay/strategy. Focus on the game aspects discussed, not card identification.';
+                            } else {
+                                visionInstructions = '\nIMPORTANT: Respond to the actual content of their message. Do not assume this is about showing off cards.';
+                            }
+                        }
+                    } else {
+                        // Media analyzed but no cards found at all
+                        if (isVideo) {
+                            visualContext = '\nVisual: Video analyzed - no specific cards identified';
+                            // Check what type of content this might be based on text
+                            const textLower = latestMessage.toLowerCase();
+                            if (textLower.includes('collection') || textLower.includes('binder')) {
+                                visionInstructions = '\nIMPORTANT: Video appears to show collection but specific cards unclear. Be supportive but acknowledge you cannot see details. Example: "Love seeing collections! What are your favorite pieces in there?"';
+                            } else if (textLower.includes('open') || textLower.includes('pack')) {
+                                visionInstructions = '\nIMPORTANT: Pack opening video but cards not clear. React to the excitement without claiming to see specific cards. Example: "Pack openings are always exciting! Hope you got some good pulls!"';
+                            } else {
+                                visionInstructions = '\nIMPORTANT: Cannot identify specific content in video. Respond based on their text only. Be honest if asked about specifics.';
+                            }
+                        } else {
+                            visualContext = '\nVisual: Image analyzed - no specific cards identified';
+                            const textLower = latestMessage.toLowerCase();
+                            if (textLower.includes('look at') || textLower.includes('check out') || textLower.includes('got')) {
+                                visionInstructions = '\nIMPORTANT: They want to show something but image is unclear. Acknowledge enthusiasm without pretending to see details. Example: "Nice! Tell me more about what you got!"';
+                            } else {
+                                visionInstructions = '\nIMPORTANT: Image content unclear. Focus on their message text. If they ask about the image, be honest that you cannot see details clearly.';
+                            }
+                        }
+                    }
+                } else if (visualData?.analysis) {
+                    // Fallback to old analysis if vision wasn't used
+                    const analysis = visualData.analysis;
+                    const isPullsContext = /\b(pull|pulled|got|hit|found|mail\s*day|pickup|haul)\b/i.test(latestMessage);
+                    const isGameplayContext = /\b(deck|play|game|match|tournament|energy|trainer|attack|damage|bench|prize|rule|effect)\b/i.test(latestMessage);
+                    
+                    if (analysis.contentType === 'showcase' || analysis.contentType === 'multiple_showcase') {
+                        visualContext = '\nVisual: User showing cards (vision unavailable)';
+                        if (isPullsContext) {
+                            visionInstructions = '\nIMPORTANT: Cards shown but not identifiable. Comment on their pulls/collection generally without naming cards.';
+                        } else if (isGameplayContext) {
+                            visionInstructions = '\nIMPORTANT: This is about game mechanics/strategy. Focus on gameplay discussion, not card showcasing.';
+                        } else {
+                            visionInstructions = '\nIMPORTANT: Respond appropriately to their actual message topic. Cards are visible but may not be the main point.';
+                        }
+                    } else if (analysis.contentType === 'event_poster') {
+                        visualContext = '\nVisual: Tournament/event poster';
+                        visionInstructions = '\nIMPORTANT: This is an event poster. Focus on the event, not cards.';
+                    }
+                }
+                
+                // First check what type of content this is
+                const contentType = visualData?.visionAnalysis?.contentType || 
+                                  visualData?.analysis?.contentType || 
+                                  'general';
+                
+                // Adjust prompt based on content type
+                let contextPrompt;
+                if (contentType === 'FAN_ART' || contentType === 'fanart') {
+                    contextPrompt = `You're replying to Pokemon fan art. Be supportive and specific about what they created. One tweet only, <=280 chars.`;
+                } else if (isPriceRelated || contentType === 'showcase') {
+                    contextPrompt = `You're replying in a Pokémon TCG thread. Use the context + numbers below. One tweet only, <=280 chars.`;
+                } else {
+                    contextPrompt = `You're replying to Pokemon content. Stay on their topic. One tweet only, <=280 chars.`;
+                }
+                
                 const prompt = `
-You're replying in a Pokémon TCG thread. Use the context + numbers below. One tweet only, <=280 chars.
-Rules: ${isPriceRelated ? 'add 1 stat (price/Δ%/n sales) if available;' : 'focus on the topic without price stats;'} reference the convo; no hashtags; light Gen-Z tone; end crisp.
+${contextPrompt}
+Rules: ${isPriceRelated ? 'add 1 stat (price/Δ%/n sales) if available;' : 'focus on their actual topic;'} NO hashtags; light Gen-Z tone; end crisp. NEVER add context that wasn't mentioned. Be specific to what they shared.
+${visualContext ? 'IMPORTANT: Only comment on what they explicitly mentioned. Do NOT add imaginary details.' : ''}${visionInstructions}
 
-Context: Thread=${threadContext.threadLength}, Topic=${threadContext.mainTopic}
+Context: Thread=${threadContext.threadLength}${visualContext}
 Recent:
-${threadContext.fullConversation.slice(-3).map(m => `• @${m.username}: ${m.text.slice(0,80)}`).join('\n')}
+${threadContext.fullConversation && threadContext.fullConversation.length > 0 
+    ? threadContext.fullConversation.slice(-3).map(m => `• @${m.username}: ${m.text.slice(0,80)}`).join('\n')
+    : '• No previous messages'}
 
 Latest from @${username}: "${latestMessage}"
 
 Reply:
 `.trim();
 
-                const result = await model.generateContent(prompt);
+                // Create model with key rotation
+                let threadModel;
+                try {
+                    threadModel = await keyManager.createModel("gemini-1.5-flash");
+                } catch (keyError) {
+                    // If no keys available, throw immediately to avoid retry loop
+                    if (keyError.message === 'No available Gemini API keys') {
+                        throw keyError;
+                    }
+                    throw keyError;
+                }
+                const result = await threadModel.generateContent(prompt);
                 let response = result.response.text().trim()
                     .replace(/^[\"']|[\"']$/g, '')
                     .replace(/#\w+/g, '')
@@ -207,11 +372,50 @@ Reply:
                 // Use clampTweet for consistent handling
                 response = clampTweet(response, 280);
                 
+                // Validate response against vision results
+                if (visualData && this.responseValidator) {
+                    const validation = this.responseValidator.validateResponse(response, visualData);
+                    if (!validation.valid) {
+                        console.log(`   ⚠️ Response validation issues:`, validation.issues);
+                        // Attempt to fix the response
+                        const fixedResponse = this.responseValidator.fixResponse(
+                            response, 
+                            validation.issues, 
+                            visualData.visionAnalysis
+                        );
+                        if (fixedResponse !== response) {
+                            console.log(`   🔧 Fixed response: "${fixedResponse}"`);
+                            response = fixedResponse;
+                        }
+                    }
+                }
+                
                 console.log(`   🧵 [Thread-aware] "${response}"`);
                 return response;
                 
             } catch (error) {
-                console.log(`   ⚠️ Thread response failed, using regular response`);
+                console.log(`   ⚠️ Thread response failed:`, error.message);
+                
+                // If quota exceeded, try LM Studio
+                if (error.message && error.message.includes('429') && this.lmstudio?.available) {
+                    console.log(`   🔄 Trying LM Studio for thread response...`);
+                    try {
+                        const lmResponse = await this.lmstudio.generateThreadResponse(
+                            username, 
+                            latestMessage, 
+                            threadContext,
+                            visualData
+                        );
+                        if (lmResponse) {
+                            console.log(`   🤖 [LM Studio Thread] "${lmResponse}"`);
+                            return lmResponse;
+                        }
+                    } catch (lmError) {
+                        console.log(`   ⚠️ LM Studio also failed:`, lmError.message);
+                    }
+                }
+                
+                console.log(`   ⚠️ Using regular response`);
             }
         }
         
@@ -235,6 +439,19 @@ Reply:
         if (scam.skip) { 
             console.log(`   🚫 Anti-scam skip: ${scam.reason}`); 
             return null; 
+        }
+        
+        // NEW: Better context analysis
+        const contextAnalysis = this.betterContextAnalyzer.analyzeContext(tweetContent, visualData);
+        const responseStrategy = this.betterContextAnalyzer.getResponseStrategy(contextAnalysis, tweetContent);
+        console.log(`   📑 Context: ${contextAnalysis.primary} (${responseStrategy.approach})`);
+        
+        // If this is clearly not TCG content and we're forcing TCG responses, skip
+        if (contextAnalysis.primary !== 'tcgContent' && 
+            contextAnalysis.primary !== 'salesTrading' && 
+            !contextAnalysis.contexts.some(c => c.type === 'tcgContent')) {
+            // Handle non-TCG content appropriately
+            return this.generateNonTCGResponse(username, tweetContent, contextAnalysis, responseStrategy, visualData);
         }
 
         // Check for raffles
@@ -316,15 +533,6 @@ Reply:
         const isShowcase = visualData?.analysis?.contentType === 'multiple_showcase' || 
                           visualData?.analysis?.contentType === 'showcase';
         
-        if (isShowcase && !numbersOk) {
-            // Visual-first for showcases without price intent
-            console.log('   🖼️ Showcase detected without price intent - visual response only');
-            const visualResponse = this.visualAnalyzer?.generateVisualResponse(tweetContent, visualData);
-            if (visualResponse) {
-                return clampTweet(visualResponse, 280);
-            }
-        }
-        
         // Build thread context with snippet
         const threadContext = visualData?.threadContext || null;
         const snippet = buildThreadSnippet(threadContext);
@@ -335,8 +543,18 @@ Reply:
             || visualData?.analysis?.contentType === 'event_poster'
             || visualData?.isEventPoster === true;
         
+        // Learn from market discussions
+        if (isPriceQ || tweetContent.toLowerCase().includes('market')) {
+            await this.learningEngine.learnFromMarketDiscussion(tweetContent, username);
+        }
+        
         // Handle explicit price questions separately (keep existing price logic)
-        if (isPriceQ && numbersOk && this.priceEngineReady && cardEntities.length > 0) {
+        // But ONLY if we actually identified cards or no visual content
+        const visionFailed = visualData?.visionAnalysis?.analyzed === true && 
+                           (!visualData.visionAnalysis.cards || visualData.visionAnalysis.cards.length === 0);
+        const hasVisualWithoutCards = hasImages && visionFailed;
+        
+        if (isPriceQ && numbersOk && this.priceEngineReady && cardEntities.length > 0 && !hasVisualWithoutCards) {
             const priceResponse = await this.generatePriceAwareResponse(tweetContent, username, hasImages);
             if (priceResponse) {
                 console.log(`   💰 [Price] "${priceResponse}"`);
@@ -344,39 +562,252 @@ Reply:
             }
         }
 
-        // Use the new composer for all other responses
-        const composedResponse = composeResponse({
+        // Determine if this is a social/community post that benefits from thread-aware personality
+        // But exclude fan art and non-TCG content from thread-aware responses
+        const isSocialPost = this.isSocialCommunityPost(tweetContent, visualData, sentiment) && 
+                           contextAnalysis.primary === 'tcgContent';
+        
+        // Check if vision failed on an image post
+        const visionFailedOnImage = hasImages && (!visualData?.visionAnalysis?.analyzed || 
+                                                  (visualData?.visionAnalysis?.analyzed && !visualData?.visionAnalysis?.cards?.length));
+        
+        // Determine content type from vision analysis
+        const contentType = visualData?.visionAnalysis?.contentType || 
+                          visualData?.analysis?.contentType || 
+                          'general';
+        
+        // Check if vision identified this as non-card content (OTHER)
+        const isNonCardContent = visualData?.visionAnalysis?.analyzed && 
+                                visualData?.visionAnalysis?.cards?.length === 0 &&
+                                !visualData?.visionAnalysis?.isEventPoster;
+        
+        // Check if this is fan art
+        const isFanArt = visualData?.visionAnalysis?.isFanArt === true || 
+                        contentType === 'FAN_ART' || 
+                        contentType === 'fanart';
+        
+        // If vision failed and it's primarily an image showcase, skip or use very generic response
+        if (visionFailedOnImage && tweetContent.length < 50) {
+            console.log('   ⚠️ Vision failed on image post, using safe generic response');
+            const genericResponses = [
+                "love the energy! what set is this from?",
+                "always exciting to see new pulls! what's your chase card?",
+                "nice! how's the collection coming along?",
+                "solid! been hunting anything specific lately?",
+                "sweet! what other cards you pulling from this set?"
+            ];
+            const response = genericResponses[Math.floor(Math.random() * genericResponses.length)];
+            return response;
+        }
+        
+        // Handle fan art specifically with adaptive tone
+        if ((isFanArt || contentType === 'FAN_ART') && hasImages) {
+            console.log('   🎨 Fan art detected, using adaptive art response');
+            
+            // Analyze the context more deeply
+            const artContext = this.betterContextAnalyzer.analyzeContext(tweetContent, visualData);
+            
+            // If we have specific details, use adaptive generator
+            if (artContext.details && this.adaptiveToneGenerator) {
+                try {
+                    const adaptiveResponse = this.adaptiveToneGenerator.generateResponse(
+                        artContext,
+                        artContext.details,
+                        { approach: 'artistic', isQuestion: tweetContent.includes('?') }
+                    );
+                    
+                    console.log(`   🎨 Adaptive art response: ${adaptiveResponse.tone} tone`);
+                    return adaptiveResponse.response;
+                } catch (error) {
+                    console.log('   ⚠️ Adaptive art generation failed, using fallback');
+                }
+            }
+            
+            // Fallback responses
+            const fanArtResponses = [
+                "yo the art style goes hard! love the colors",
+                "this design is clean! the details are insane",
+                "fire artwork! loving the vibe",
+                "sick art! the style is on point",
+                "this goes hard! great work on the design"
+            ];
+            const response = fanArtResponses[Math.floor(Math.random() * fanArtResponses.length)];
+            return response;
+        }
+        
+        // If vision identified this as non-Pokemon content, skip mentioning cards entirely
+        if (isNonCardContent && hasImages) {
+            console.log('   🎨 Non-card content detected, skipping card references');
+            // Don't mention cards at all - just engage with the actual content/text
+            // Let the normal flow handle it without card-specific responses
+        }
+        
+        // Extract card context for authority integration
+        const cardContext = this.authorityIntegration?.initialized ? 
+            this.authorityIntegration.extractCardContext(tweetContent, visualData) : null;
+        
+        // Track this interaction for learning
+        const interactionContext = {
+            username,
+            message: tweetContent,
+            hasImages,
+            sentiment: sentiment.sentiment,
+            topics: cardEntities,
+            isPriceQuestion: isPriceQ,
+            cardContext,
+            visualData,
+            timestamp: Date.now()
+        };
+        
+        // Check if we should use adaptive responses based on user history
+        const userProfile = this.learningEngine.userProfiles.get(username);
+        const shouldUseAdaptive = userProfile && userProfile.interactions > 2;
+        
+        // Check if we should use adaptive response for known users
+        if (shouldUseAdaptive && !visionFailedOnImage) {
+            console.log('   🤖 Using adaptive response for known user');
+            const adaptiveResponse = await this.adaptiveGenerator.generateResponse(username, {
+                type: isPriceQ ? 'priceQuestion' : isShowcase ? 'showcase' : 'discussion',
+                isPriceQuestion: isPriceQ,
+                hasImages,
+                cardName: cardContext?.cardName,
+                priceData: cardContext?.isPriceQuestion && this.priceEngineReady ? 
+                    await this.authorityIntegration?.hotCards?.getPriceByName(cardContext.cardName) : null,
+                sentiment: sentiment.sentiment,
+                tweetContent
+            });
+            
+            if (adaptiveResponse && adaptiveResponse.response) {
+                // Track the response
+                await this.learningEngine.trackResponseEffectiveness(
+                    username, 
+                    adaptiveResponse.response,
+                    interactionContext
+                );
+                
+                return clampTweet(adaptiveResponse.response, 280);
+            }
+        }
+        
+        // HYBRID APPROACH: Use thread-aware for social posts, composer for educational
+        if (isSocialPost && !visionFailedOnImage && keyManager.getNextAvailableKey()) {
+            // Let thread-aware handle community/social posts with its personality
+            console.log('   💬 [Social Post] Using thread-aware for community engagement');
+            // Use minimal thread context if none exists
+            const socialThreadContext = threadContext || {
+                threadLength: 1,
+                mainTopic: 'Pokemon TCG',
+                fullConversation: []
+            };
+            let threadResponse;
+            try {
+                threadResponse = await this.generateThreadAwareResponse(username, tweetContent, socialThreadContext, visualData);
+            } catch (error) {
+                console.log(`   ⚠️ Thread response failed: ${error.message}`);
+                // If no Gemini keys available, use fallback immediately
+                if (error.message === 'No available Gemini API keys') {
+                    console.log('   ⚠️ Using regular response');
+                    // Fall through to composer
+                    threadResponse = null;
+                }
+            }
+            
+            // Enhance with authority data if available
+            if (threadResponse && this.authorityIntegration?.initialized && cardContext) {
+                threadResponse = await this.authorityIntegration.enhanceResponse(threadResponse, cardContext);
+            }
+            
+            if (threadResponse) {
+                return clampTweet(threadResponse, 280);
+            }
+        }
+
+        // Handle showcase posts without price intent (but not social)
+        if (isShowcase && !numbersOk && !isSocialPost) {
+            // Visual-first for non-social showcases without price intent
+            console.log('   🖼️ Showcase detected without price intent - visual response only');
+            const visualResponse = this.visualAnalyzer?.generateVisualResponse(tweetContent, visualData);
+            if (visualResponse) {
+                return clampTweet(visualResponse, 280);
+            }
+        }
+
+        // Use the new composer for educational/authority responses
+        const composedResponse = await composeResponse({
             text: tweetContent,
             hasImages,
             threadContext: enhancedThreadContext,
             isEvent,
-            authorityFn: ({ text, hasImages, intents }) => {
-                // Wrap existing authority to ensure non-null and respect numbersOk
+            authorityFn: async ({ text, hasImages, intents }) => {
+                // Use authority integration if available
+                if (this.authorityIntegration?.initialized && cardContext && numbersOk && !isEvent) {
+                    const authorityResponse = await this.authorityIntegration.authorityEngine.generateAuthorityResponse(cardContext);
+                    if (authorityResponse) {
+                        return {
+                            primary: authorityResponse,
+                            secondary: '',
+                            confidence: 0.9
+                        };
+                    }
+                }
+                
+                // Fallback to existing authority
                 const auth = this.authorityResponses.generateAuthorityResponse(text, hasImages);
+                
+                // If no authority response and we have images, provide a generic collection response
+                if (!auth && hasImages) {
+                    const genericResponses = [
+                        "Nice cards! The condition looks solid from here.",
+                        "Those are some great pulls! The set has been popular.",
+                        "Sweet collection! Love seeing what people are collecting.",
+                        "Those look clean! Great additions to any collection."
+                    ];
+                    const randomIndex = Math.floor(Math.random() * genericResponses.length);
+                    return {
+                        primary: genericResponses[randomIndex],
+                        secondary: '',
+                        confidence: 0.5
+                    };
+                }
                 
                 if (!numbersOk || isEvent) {
                     // Strip any prices/numbers from authority response when not allowed
                     const cleanAuth = auth ? tidyPunctuation(stripMarketNumbers(auth)) : null;
                     return {
-                        primary: cleanAuth || 'Focus on centering/surfaces; solds > listings.',
+                        primary: cleanAuth || 'Those look great! Nice additions to the collection.',
                         secondary: '',
                         confidence: 0.65
                     };
                 }
                 
                 return {
-                    primary: auth || 'Check recent solds, not just listings.',
+                    primary: auth || 'Nice pulls! Always good to see what people are getting.',
                     secondary: '',
                     confidence: auth ? 0.8 : 0.6
                 };
             }
         });
 
-        let response = composedResponse.text;
+        // Debug composedResponse
+        let response;
+        if (!composedResponse || !composedResponse.text) {
+            console.log('   ⚠️ composedResponse issue:', JSON.stringify(composedResponse));
+            // Provide a fallback response
+            response = hasImages ? "Nice cards! Those look great." : "Nice pull! Keep collecting!";
+        } else {
+            response = composedResponse.text;
+        }
+        
+        // Enhance response with authority data if not already done
+        if (response && this.authorityIntegration?.initialized && cardContext && !isSocialPost) {
+            response = await this.authorityIntegration.enhanceResponse(response, cardContext);
+        }
         const strategy = { 
-            strategy: composedResponse.meta.mode === 'event' ? 'event' : 'composed',
+            strategy: isSocialPost && threadContext ? 'thread_aware' : 
+                     (composedResponse.meta.mode === 'event' ? 'event' : 'composed'),
             confidence: 'high',
-            reason: composedResponse.meta.mode === 'event' ? 'event detected' : 'authority + context'
+            reason: isSocialPost && threadContext ? 'social/community post' :
+                   (composedResponse.meta.mode === 'event' ? 'event detected' : 'authority + context')
         };
         
         console.log(`   🎛️ Strategy: ${strategy.strategy} (${strategy.confidence}) - ${strategy.reason}`);
@@ -448,6 +879,133 @@ Reply:
         return response ? clampTweet(response, 280) : null;
     }
     
+    // Generate appropriate responses for non-TCG content
+    async generateNonTCGResponse(username, tweetContent, contextAnalysis, strategy, visualData) {
+        // Use adaptive tone generator if we have detailed context
+        if (contextAnalysis.details && this.adaptiveToneGenerator) {
+            try {
+                const adaptiveResponse = this.adaptiveToneGenerator.generateResponse(
+                    contextAnalysis,
+                    contextAnalysis.details,
+                    strategy
+                );
+                
+                console.log(`   🎨 Adaptive response: ${adaptiveResponse.tone} tone, energy ${adaptiveResponse.energy}`);
+                return adaptiveResponse.response;
+            } catch (error) {
+                console.log('   ⚠️ Adaptive generation failed, using fallback');
+            }
+        }
+        
+        // Fallback to static responses
+        const responses = {
+            videoGame: [
+                "yo that's sick! what route you hunting on?",
+                "shiny hunting hits different fr. how many encounters?",
+                "that gameplay though! what's your team looking like?",
+                "nice progress! scarlet/violet has been fire for shiny hunting",
+                "the grind is real! what method you using?"
+            ],
+            fanArt: [
+                "this art style goes crazy! love the details",
+                "yo the colors on this are fire! great work",
+                "clean design! the shading is on point",
+                "this is heat! love your take on it",
+                "the vibes are immaculate! keep creating"
+            ],
+            anime: [
+                "this episode was wild! horizons keeps getting better",
+                "that scene hit different! what's been your fav episode?",
+                "the animation this season has been insane",
+                "facts! this arc is going crazy",
+                "no cap this series has been delivering"
+            ],
+            merchandise: [
+                "that's a solid pickup! where'd you snag it?",
+                "the quality on these is always fire",
+                "nice haul! pokemon center always delivers",
+                "that collection is growing! display setup clean",
+                "bet that looks fire on display!"
+            ],
+            personal: [
+                "good vibes! hope your day is going well",
+                "appreciate you! pokemon community stays positive",
+                "right back at you! let's get it",
+                "facts! always good energy here",
+                "love to see it! keep spreading the positivity"
+            ]
+        };
+        
+        // Get appropriate response set
+        const responseSet = responses[contextAnalysis.primary] || [
+            "yo that's dope! love seeing all types of pokemon content",
+            "fire content! the community stays creative",
+            "this goes hard! appreciate you sharing",
+            "nice share! always here for pokemon vibes",
+            "love the energy! pokemon hits different"
+        ];
+        
+        // Pick random response
+        const baseResponse = responseSet[Math.floor(Math.random() * responseSet.length)];
+        
+        // If it's a question, make sure we're being helpful
+        if (strategy.isQuestion) {
+            console.log('   ❓ Detected question, ensuring helpful response');
+        }
+        
+        return baseResponse;
+    }
+    
+    // Determine if this is a social/community post that benefits from personality
+    isSocialCommunityPost(text, visualData, sentiment) {
+        const textLower = text.toLowerCase();
+        
+        // Social indicators that benefit from enthusiastic responses
+        const socialPatterns = [
+            // Personal achievements
+            /\b(finally|got|pulled|hit|found|completed|finished)\b/i,
+            // Showing off
+            /\b(collection|binder|display|showcase|mail\s*day|haul|pickup)\b/i,
+            // Streaming/content creation
+            /\b(stream|streaming|video|youtube|twitch|content|channel|live)\b/i,
+            // Community celebration
+            /\b(congrat|thanks|appreciate|love|excited|happy|blessed)\b/i,
+            // Personal stories
+            /\b(story|journey|started|remember|nostalgic|childhood|years?\s+ago)\b/i,
+            // Social engagement
+            /\b(anyone|who else|what do you|thoughts|opinion|favorite)\b/i
+        ];
+        
+        // Check if it matches social patterns
+        const matchesSocial = socialPatterns.some(pattern => pattern.test(textLower));
+        
+        // Additional checks
+        const isPersonalStory = textLower.includes('my') && (
+            textLower.includes('collection') || 
+            textLower.includes('binder') || 
+            textLower.includes('first') ||
+            textLower.includes('favorite')
+        );
+        
+        const isShowingOff = visualData?.analysis?.contentType === 'showcase' || 
+                            visualData?.analysis?.contentType === 'multiple_showcase';
+        
+        const isPositiveSentiment = sentiment?.sentiment === 'positive' || 
+                                   sentiment?.sentiment === 'very_positive';
+        
+        // Don't use social mode for:
+        // - Price questions (handled separately)
+        // - Technical questions
+        // - Negative sentiment
+        // - Scam/suspicious content
+        const technicalIndicators = /\b(rule|ruling|judge|legal|ban|errata|reprint|authentic|fake)\b/i;
+        const isTechnical = technicalIndicators.test(textLower);
+        
+        return (matchesSocial || isPersonalStory || isShowingOff) && 
+               !isTechnical && 
+               (isPositiveSentiment || sentiment?.sentiment === 'neutral');
+    }
+    
     // Thread Truth Gate - prevent hallucinated context
     sanitizeAgainstThread(response, threadContext) {
         if (!response) return response;
@@ -483,7 +1041,18 @@ Reply:
 ${hasImages ? 'With image.' : ''}
 Be specific and knowledgeable. Concise. No hashtags.`;
                 
-                const result = await model.generateContent(prompt);
+                // Create model with key rotation
+                let threadModel;
+                try {
+                    threadModel = await keyManager.createModel("gemini-1.5-flash");
+                } catch (keyError) {
+                    // If no keys available, throw immediately to avoid retry loop
+                    if (keyError.message === 'No available Gemini API keys') {
+                        throw keyError;
+                    }
+                    throw keyError;
+                }
+                const result = await threadModel.generateContent(prompt);
                 let response = result.response.text().trim()
                     .replace(/^[\"']|[\"']$/g, '')
                     .replace(/#\w+/g, '')
@@ -705,6 +1274,19 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 
                 console.log(`   🎯 Found NEW reply from @${data.username}: "${data.tweetText.substring(0, 50)}..."`);
                 
+                // Analyze this response for learning
+                if (data.tweetId && this.conversationAnalyzer.activeConversations.has(data.tweetId)) {
+                    const analysis = await this.conversationAnalyzer.analyzeUserResponse(
+                        data.tweetId,
+                        data.tweetText,
+                        data.username
+                    );
+                    
+                    if (analysis) {
+                        console.log(`   📈 Response sentiment: ${analysis.sentiment}, outcome: ${analysis.outcome}`);
+                    }
+                }
+                
                 // Navigate to the reply (this now includes thread context)
                 const tweetElement = await this.conversationChecker.navigateToReply(data);
                 if (!tweetElement) continue;
@@ -713,11 +1295,22 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 let response;
                 if (data.threadContext) {
                     // Use full thread context for better response
-                    response = await this.generateThreadAwareResponse(
-                        data.username,
-                        data.tweetText,
-                        data.threadContext
-                    );
+                    try {
+                        response = await this.generateThreadAwareResponse(
+                            data.username,
+                            data.tweetText,
+                            data.threadContext,
+                            data.visualData
+                        );
+                    } catch (error) {
+                        console.log(`   ⚠️ Thread response failed: ${error.message}`);
+                        // Fallback to regular response
+                        response = await this.generateContextualResponse(
+                            data.username,
+                            data.tweetText,
+                            false
+                        );
+                    }
                 } else {
                     // Fallback to regular response
                     response = await this.generateContextualResponse(
@@ -861,8 +1454,15 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             // Initialize conversation checker now that page is ready
             if (this.page) {
                 this.conversationChecker = new ConversationChecker(this.page);
-                this.visualAnalyzer = new VisualAnalyzer(this.page);
+                this.visualAnalyzer = new VisualAnalyzer(this.page, { 
+                    lmstudio: this.lmstudio,
+                    geminiKeys: GEMINI_API_KEYS 
+                });
                 console.log('💬 Conversation checker initialized');
+                
+                // Initialize following monitor
+                this.followingMonitor = new FollowingMonitor(this.page);
+                console.log('👥 Following monitor initialized');
             }
             
             return !!this.page;
@@ -926,6 +1526,52 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 // Check for conversation replies every 7 searches
                 if (searchCounter > 0 && searchCounter % 7 === 0 && this.conversationChecker) {
                     await this.checkAndReplyToConversations();
+                }
+                
+                // Check if it's time for an original market post every 10 searches
+                if (searchCounter > 0 && searchCounter % 10 === 0 && this.authorityIntegration?.initialized) {
+                    if (this.authorityIntegration.shouldPostOriginal()) {
+                        console.log('📊 Checking for scheduled market report...');
+                        const originalPost = await this.authorityIntegration.generateOriginalPost();
+                        if (originalPost) {
+                            console.log('📢 Posting market report...');
+                            await this.postOriginalTweet(originalPost);
+                        }
+                    }
+                }
+                
+                // Check Following timeline every 5 searches (more frequent for testing)
+                if (searchCounter > 0 && searchCounter % 5 === 0 && this.followingMonitor) {
+                    if (this.followingMonitor.shouldCheckFollowing()) {
+                        console.log('\n👀 Time to check what influencers are saying...');
+                        try {
+                            const signals = await this.followingMonitor.checkFollowingTimeline();
+                            
+                            // If we found strong signals, maybe reference them later
+                            if (signals.length > 0) {
+                                const topSignal = signals[0];
+                                console.log(`   📊 Top signal: ${topSignal.cards[0]} - ${topSignal.patterns[0].type}`);
+                            }
+                            
+                            // Add a natural delay after checking following
+                            await this.sleep(5000 + Math.random() * 5000);
+                        } catch (error) {
+                            console.log('   ⚠️ Following check failed:', error.message);
+                        }
+                    }
+                }
+                
+                // Save learning data and cleanup every 20 searches
+                if (searchCounter > 0 && searchCounter % 20 === 0) {
+                    console.log('🤖 Saving learning insights...');
+                    await this.learningEngine.saveLearningData();
+                    this.conversationAnalyzer.cleanup();
+                    
+                    // Show quick learning stats
+                    const hotTopics = this.learningEngine.getHotTopics(3);
+                    if (hotTopics.length > 0) {
+                        console.log(`   🔥 Trending: ${hotTopics.map(t => t.topic).join(', ')}`);
+                    }
                 }
                 
                 const query = this.searchEngine.getTrendingSearch();
@@ -1168,12 +1814,12 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             data.engagementType = engagementDecision.action; // 'like' or 'reply'
             
             // Skip our own bot
-            if (data.username.toLowerCase() === 'glitchygradeai') {
+            if (data.username.toLowerCase() === 'glitchygrade') {
                 return false;
             }
             
             // Check if this is a reply to our bot (allow conversations)
-            const isReplyToUs = data.text.toLowerCase().includes('@glitchygradeai');
+            const isReplyToUs = data.text.toLowerCase().includes('@glitchygrade');
             
             if (isReplyToUs) {
                 // This is a conversation - check with lenient filter
@@ -1220,23 +1866,52 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 return false;
             }
             
-            // ADDITIONAL CHECK: Ensure the tweet is ACTUALLY about Pokemon TCG
-            // Not just matching our search terms coincidentally
+            // IMPROVED CHECK: Accept ALL Pokemon content, not just TCG
             const textLower = data.text.toLowerCase();
-            const definitelyPokemon = 
-                textLower.includes('pokemon') || textLower.includes('pokémon') ||
-                textLower.includes('tcg') || textLower.includes('psa') ||
-                textLower.includes('charizard') || textLower.includes('pikachu') ||
-                textLower.includes('card') && (textLower.includes('pull') || textLower.includes('collection')) ||
-                textLower.includes('booster') || textLower.includes('etb') ||
-                data.hasImages && (textLower.includes('mail') || textLower.includes('got'));
             
-            if (!definitelyPokemon) {
-                // If no clear Pokemon indicators, skip unless it has images
-                if (!data.hasImages) {
-                    console.log(`   ⏭️ Not clearly Pokemon TCG related`);
+            // Broader Pokemon indicators (not just TCG)
+            const pokemonIndicators = [
+                // General Pokemon terms
+                'pokemon', 'pokémon', '#pokemon', 'pkmn',
+                
+                // TCG specific
+                'tcg', 'psa', 'bgs', 'cgc', 'pull', 'pulls', 'pulled', 
+                'pack', 'booster', 'etb', 'collection', 'binder', 'slab', 
+                'grade', 'graded', 'vmax', 'vstar', 'gx', 'ex', 'alt art',
+                
+                // Video game terms
+                'shiny', 'hunt', 'hunting', 'caught', 'catch', 'battle',
+                'trainer', 'gym', 'elite four', 'pokemon go', 'legends',
+                'scarlet', 'violet', 'switch', 'nintendo',
+                
+                // Anime/Show terms
+                'anime', 'episode', 'horizons', 'ash', 'team rocket',
+                
+                // Fan content
+                'fanart', 'art', 'drawing', 'commission', 'oc',
+                
+                // Pokemon names (expanded list)
+                'charizard', 'pikachu', 'umbreon', 'gengar', 'lugia', 
+                'rayquaza', 'mewtwo', 'mew', 'eevee', 'sylveon', 'garchomp',
+                'greninja', 'lucario', 'blaziken', 'sceptile', 'dragonite',
+                'gyarados', 'alakazam', 'machamp', 'blastoise', 'venusaur',
+                
+                // Set names
+                'evolving skies', 'crown zenith', 'lost origin', 'silver tempest',
+                'surging sparks', 'paradox rift', 'paldea', 'obsidian flames',
+                'stellar crown', 'base set'
+            ];
+            
+            const hasPokemonIndicator = pokemonIndicators.some(indicator => textLower.includes(indicator));
+            
+            if (!hasPokemonIndicator) {
+                // Only skip if no Pokemon indicators AND no images
+                if (!data.hasImages && !data.hasVideos) {
+                    console.log(`   ⏭️ Not Pokemon related: "${data.text.substring(0, 50)}..."`);
                     return false;
                 }
+                // With media, continue - might be Pokemon visual content
+                console.log(`   📸 No Pokemon text but has media, analyzing context...`);
             }
             
             this.stats.postsAnalyzed++;
@@ -1251,14 +1926,15 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 let s = 0;
                 if (isPriceQ && cards.length) s += 3;
                 if (timestampDecision.reason === 'recent_post') s += 2;            // fresh
-                if (data.hasImages) s += 1;                                        // we can comment condition
-                if (filterResult.quality >= 2) s += 1;                             // your own quality gate
+                if (data.hasImages || data.hasVideos) s += 1;                      // visual content
+                if (filterResult.quality >= 2) s += 1;                             // quality gate
+                if (hasPokemonIndicator) s += 1;                                   // clearly Pokemon related
                 return s;
             }
             const score = computeValueScore();
             
-            // Decide engagement deterministically
-            if (score < 3) return false; // skip
+            // Lower threshold to be more inclusive
+            if (score < 2) return false; // skip only very low quality
             
             // Respect engagementSelector's action (like vs reply)
             return { 
@@ -1291,6 +1967,86 @@ Be specific and knowledgeable. Concise. No hashtags.`;
         const topic = /(charizard|umbreon|pikachu|tcg|grade|psa|binder|pull|evolving skies|lost origin)/i
                         .exec(msgs.map(x=>x.text).join(' '))?.[0] || 'Pokemon TCG';
         return { threadLength: msgs.length, mainTopic: topic, fullConversation: msgs };
+    }
+    
+    async postOriginalTweet(text) {
+        try {
+            console.log('📢 Posting original tweet...');
+            
+            // Navigate to home if not already there
+            const currentUrl = this.page.url();
+            if (!currentUrl.includes('/home')) {
+                await this.page.goto('https://x.com/home', {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 20000
+                });
+                await this.sleep(3000);
+            }
+            
+            // Click the compose tweet button
+            const composeButton = await this.page.$('a[href="/compose/post"], a[href="/compose/tweet"]');
+            if (composeButton) {
+                await composeButton.click();
+            } else {
+                // Alternative: Click the "What's happening?" input
+                const whatsHappening = await this.page.$('[data-testid="tweetTextarea_0"]');
+                if (whatsHappening) {
+                    await whatsHappening.click();
+                }
+            }
+            
+            await this.sleep(2000);
+            
+            // Find the tweet text area
+            const tweetBox = await this.page.waitForSelector(
+                'div[data-testid="tweetTextarea_0"]',
+                { timeout: 10000 }
+            ).catch(() => null);
+            
+            if (!tweetBox) {
+                console.log('   ⚠️ Could not find tweet box');
+                return false;
+            }
+            
+            // Type the tweet
+            await this.humanType(tweetBox, text);
+            await this.sleep(2000);
+            
+            // Send the tweet
+            const sent = await this.page.evaluate(() => {
+                const btn = document.querySelector('button[data-testid="tweetButton"]');
+                if (btn && !btn.disabled) {
+                    btn.click();
+                    return true;
+                }
+                return false;
+            });
+            
+            if (!sent) {
+                await this.page.keyboard.down('Meta');
+                await this.page.keyboard.press('Enter');
+                await this.page.keyboard.up('Meta');
+            }
+            
+            await this.sleep(3000);
+            
+            // Check if tweet was posted successfully
+            const success = await this.page.$('div[data-testid="tweetTextarea_0"]')
+                .then(el => el === null);
+            
+            if (success) {
+                console.log('   ✅ Original market report posted!');
+                return true;
+            }
+            
+            console.log('   ⚠️ Failed to post original tweet');
+            await this.page.keyboard.press('Escape');
+            return false;
+            
+        } catch (error) {
+            console.error('❌ Error posting original tweet:', error);
+            return false;
+        }
     }
     
     async engageWithTweet(tweet, action = 'reply') {
@@ -1350,25 +2106,79 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             }
             
             // Generate contextual response with thread context if available
-            const response = threadContext
-                ? await this.generateThreadAwareResponse(data.username, data.text, threadContext)
-                : await this.generateContextualResponse(
+            let response;
+            if (threadContext) {
+                try {
+                    response = await this.generateThreadAwareResponse(data.username, data.text, threadContext, visualData);
+                } catch (error) {
+                    console.log(`   ⚠️ Thread response failed: ${error.message}`);
+                    response = await this.generateContextualResponse(
+                        data.username, 
+                        data.text, 
+                        data.hasImages,
+                        visualData
+                    );
+                }
+            } else {
+                response = await this.generateContextualResponse(
                     data.username, 
                     data.text, 
                     data.hasImages,
                     visualData
                 );
+            }
+            
+            // Log vision performance after response generation
+            if (this.visionMonitor && process.env.ENABLE_VISION_API === 'true' && visualData && visualData.analysis) {
+                await this.visionMonitor.logVisionResult({
+                    username: data.username,
+                    text: data.text,
+                    hasImage: data.hasImages,
+                    visionEnabled: this.visualAnalyzer.enableVisionAPI,
+                    analysisResult: visualData.visionAnalysis,
+                    botResponse: response // Now we have the actual response
+                });
+            }
+            
+            // Track this interaction for learning
+            const interaction = {
+                username: data.username,
+                message: data.text,
+                botResponse: response,
+                hasImages: data.hasImages,
+                sentiment: this.sentimentAnalyzer.analyzeSentiment(data.text),
+                topics: this.contextAnalyzer.extractTopics(data.text),
+                timestamp: Date.now()
+            };
+            
+            // Learn from this interaction
+            await this.learningEngine.learnFromInteraction(interaction);
+            
+            // Extract tweet ID for conversation tracking
+            const tweetId = await tweet.evaluate(el => {
+                const link = el.querySelector('a[href*="/status/"]');
+                return link ? link.href.split('/status/')[1] : null;
+            });
             
             // Scroll to tweet
             await tweet.evaluate(el => el.scrollIntoView({ behavior: 'smooth', block: 'center' }));
             await this.sleep(2000);
             
             // Reply
-            const replyButton = await tweet.$('button[data-testid="reply"]');
-            if (!replyButton) return false;
-            
-            await replyButton.click();
-            console.log(`   💭 Replying...`);
+            let replyButton;
+            try {
+                replyButton = await tweet.$('button[data-testid="reply"]');
+                if (!replyButton) return false;
+                
+                await replyButton.click();
+                console.log(`   💭 Replying...`);
+            } catch (error) {
+                if (error.message.includes('Node is detached')) {
+                    console.log(`   ⚠️ Tweet element detached, skipping...`);
+                    return false;
+                }
+                throw error;
+            }
             await this.sleep(3000);
             
             const replyBox = await this.page.waitForSelector(
@@ -1413,6 +2223,23 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 
                 // Update engagement selector AFTER successful reply
                 this.engagementSelector.updateAfterReply(data.username);
+                
+                // Start tracking this conversation for outcomes
+                if (tweetId) {
+                    this.conversationAnalyzer.startConversation(tweetId, {
+                        ...interaction,
+                        responseId: `resp_${Date.now()}`
+                    });
+                }
+                
+                // Update community trends
+                const topics = interaction.topics || [];
+                for (const topic of topics) {
+                    await this.learningEngine.updateCommunityTrends(
+                        topic, 
+                        interaction.sentiment.sentiment || 'neutral'
+                    );
+                }
                 
                 // Check if we need a break
                 await this.checkForBreak();
@@ -1472,6 +2299,35 @@ Be specific and knowledgeable. Concise. No hashtags.`;
         const memStats = this.memory.getMemoryStats();
         console.log(`   Users: ${memStats.totalUsers}`);
         console.log(`   Prices learned: ${memStats.totalKnowledge.prices}`);
+        
+        // Show learning insights
+        if (this.learningEngine) {
+            console.log('\n🤖 === LEARNING INSIGHTS ===');
+            const insights = this.learningEngine.generateInsights();
+            
+            console.log(`   User Profiles: ${insights.userInsights.totalUsers}`);
+            console.log(`   Avg Formality: ${(insights.userInsights.avgFormality * 100).toFixed(0)}%`);
+            console.log(`   High Value Users: ${insights.userInsights.highValueUsers.length}`);
+            console.log(`   Prediction Accuracy: ${insights.marketInsights.predictionAccuracy}`);
+            console.log(`   Hot Topics: ${this.learningEngine.getHotTopics(3).map(t => t.topic).join(', ')}`);
+            
+            // Conversation outcomes
+            if (this.conversationAnalyzer) {
+                const convStats = this.conversationAnalyzer.getConversationStats();
+                console.log(`\n   Conversation Outcomes:`);
+                console.log(`   • Successful: ${convStats.successful}`);
+                console.log(`   • Engaged: ${convStats.engaged}`);
+                console.log(`   • Success Rate: ${convStats.successRate}`);
+                console.log(`   • Avg Exchanges: ${convStats.avgExchanges.toFixed(1)}`);
+            }
+            
+            // Show recommendations
+            if (insights.recommendations.length > 0) {
+                console.log(`\n   💡 Recommendations:`);
+                insights.recommendations.forEach(rec => console.log(`   • ${rec}`));
+            }
+        }
+        
         console.log('========================\n');
     }
 
@@ -1733,6 +2589,12 @@ Be specific and knowledgeable. Concise. No hashtags.`;
         } catch (error) {
             console.error('❌ Fatal:', error);
         } finally {
+            // Save all learning data before shutdown
+            if (this.learningEngine) {
+                console.log('💾 Saving final learning data...');
+                await this.learningEngine.saveLearningData();
+            }
+            
             this.showStats();
             console.log('✅ Session complete');
         }

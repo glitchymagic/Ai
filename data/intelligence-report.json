@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-09-04T21:18:55.396Z",
+  "summary": {
+    "topNarratives": [],
+    "strongestSignals": [
+      {
+        "type": "reddit",
+        "card": "Crown Zenith",
+        "strength": 0.9430919631919203,
+        "source": "reddit"
+      }
+    ],
+    "crossPlatformAlerts": [],
+    "marketSentiment": {
+      "dominant": "bullish",
+      "breakdown": {
+        "bullish": "0.0",
+        "bearish": "0.0",
+        "neutral": "0.0",
+        "urgent": "0.0"
+      }
+    }
+  },
+  "recommendations": [],
+  "predictions": [
+    {
+      "id": "XPLAT-1757020735396-76t1jp",
+      "card": "Crown Zenith",
+      "confidence": 0.9430919631919203,
+      "timeframe": "24-72h",
+      "source": "reddit",
+      "expectation": "significant_movement",
+      "direction": "up",
+      "range": "10-20%"
+    }
+  ],
+  "responseStrategies": []
+}

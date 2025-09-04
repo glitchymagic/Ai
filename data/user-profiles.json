@@ -1,0 +1,183 @@
+{
+  "casualcollector": {
+    "username": "casualcollector",
+    "firstSeen": 1756924688673,
+    "lastSeen": 1756924688673,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.55,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "moonbreon": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "investorpro": {
+    "username": "investorpro",
+    "firstSeen": 1756924688675,
+    "lastSeen": 1756924688675,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.55,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "prov": 1,
+      "market v": 1,
+      "umbreon vmax alt art": 1,
+      "umbreon vmax": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "pokemonexpert": {
+    "username": "pokemonexpert",
+    "firstSeen": 1756924688675,
+    "lastSeen": 1756924568675,
+    "interactions": 3,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.36450000000000005,
+      "expertise": 0.6500000000000001,
+      "priceAwareness": 0.7999999999999999,
+      "humor": 0.5
+    },
+    "interests": {
+      "mov": 3,
+      "moonbreon": 3
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "jonnyrubberman": {
+    "username": "jonnyrubberman",
+    "firstSeen": 1757020797612,
+    "lastSeen": 1757020797612,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "DemiMonComics": {
+    "username": "DemiMonComics",
+    "firstSeen": 1757020812239,
+    "lastSeen": 1757020812239,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "nex": 1,
+      "hav": 1,
+      "wendigo v": 1,
+      "ev": 1,
+      "adv": 1,
+      "canv": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "metr0missingno_": {
+    "username": "metr0missingno_",
+    "firstSeen": 1757020897469,
+    "lastSeen": 1757020897469,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.4775229357798165,
+      "expertise": 0.55,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "mtgworth": {
+    "username": "mtgworth",
+    "firstSeen": 1757021027929,
+    "lastSeen": 1757021027929,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.454,
+      "expertise": 0.55,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "in ex": 1,
+      "galleryv": 1,
+      "modern": 1,
+      "investing": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "Cristian19_Rodr": {
+    "username": "Cristian19_Rodr",
+    "firstSeen": 1757021075688,
+    "lastSeen": 1757021075688,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.4553763440860215,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "improv": 1,
+      "ev": 1,
+      "playing": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "sundowners0": {
+    "username": "sundowners0",
+    "firstSeen": 1757021211912,
+    "lastSeen": 1757021211912,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  }
+}

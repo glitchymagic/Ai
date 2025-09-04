@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-09-04T21:18:55.386Z",
+  "narratives": [
+    {
+      "card": "Crown Zenith",
+      "narratives": [
+        {
+          "id": "1n85gm0_Crown Zenith_priceDiscovery",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Crown Zenith",
+          "cardWeight": 0.9,
+          "pattern": "priceDiscovery",
+          "patternStrength": 1,
+          "post": {
+            "id": "1n85gm0",
+            "title": "Crown Zenith seems under rated",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1n85gm0/crown_zenith_seems_under_rated/",
+            "author": "Flipnation1991",
+            "created": 1756977993000,
+            "score": 114,
+            "comments": 68,
+            "upvoteRatio": 0.81
+          },
+          "engagement": 4.228733402651576,
+          "detectedAt": 1757020716171,
+          "strength": 0.9430919631919203
+        }
+      ],
+      "totalStrength": 0.9430919631919203,
+      "patterns": {},
+      "posts": [
+        {
+          "id": "1n85gm0",
+          "title": "Crown Zenith seems under rated",
+          "url": "https://reddit.com/r/PokeInvesting/comments/1n85gm0/crown_zenith_seems_under_rated/",
+          "author": "Flipnation1991",
+          "created": 1756977993000,
+          "score": 114,
+          "comments": 68,
+          "upvoteRatio": 0.81
+        }
+      ],
+      "firstSeen": 1757020716171,
+      "lastSeen": 1757020716171,
+      "avgStrength": 0.9430919631919203,
+      "dominantPattern": {
+        "type": "priceDiscovery",
+        "strength": 0.9430919631919203,
+        "sentiment": "neutral"
+      },
+      "momentum": 0
+    }
+  ],
+  "stats": {
+    "totalAnalyzed": 127,
+    "topCard": "Crown Zenith",
+    "dominantSentiment": "neutral"
+  }
+}

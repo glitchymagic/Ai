@@ -3,7 +3,7 @@ const { classifyIntents } = require('./intent-engine.js');
 const { formatPersona } = require('./persona-style.js');
 const { detectEventFromText } = require('./event-detector.js');
 
-function composeResponse({ text, hasImages, threadContext, authorityFn, isEvent=false }) {
+async function composeResponse({ text, hasImages, threadContext, authorityFn, isEvent=false }) {
   const intents = classifyIntents(text);
 
   // Event mode: never inject prices; keep it social and specific
@@ -16,7 +16,7 @@ function composeResponse({ text, hasImages, threadContext, authorityFn, isEvent=
   }
 
   // Authority section (always attempt; must never return null)
-  const authority = authorityFn ? authorityFn({ text, hasImages, intents }) : 
+  const authority = authorityFn ? await authorityFn({ text, hasImages, intents }) : 
                    { primary: '', secondary: '', confidence: 0.6 };
   const threadBit = (threadContext && threadContext.snippet) ? threadContext.snippet : '';
 

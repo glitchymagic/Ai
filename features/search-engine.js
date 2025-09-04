@@ -1,6 +1,7 @@
 class SearchEngine {
     constructor() {
-        this.searchCounter = 0; // For deterministic selection
+        // Start with random counter to vary searches
+        this.searchCounter = Math.floor(Math.random() * 10); // For deterministic selection
         this.searchHistory = [];
         this.lastSearchIndex = -1;
         this.searchPerformance = new Map();
@@ -390,12 +391,15 @@ class SearchEngine {
             'pokemon pack opening'
         ];
         
+        console.log(`   📊 Search counter: ${this.searchCounter}`);
+        
         // Deterministic: use high activity searches every 2.5 searches (40%)
         if ((this.searchCounter % 5) < 2) {
             const selected = highActivitySearches[
                 this.searchCounter % highActivitySearches.length
             ];
             console.log(`   🔥 Using high-activity search: ${selected}`);
+            this.searchCounter++; // Increment here too
             return selected;
         }
         
@@ -406,7 +410,7 @@ class SearchEngine {
             ];
         }
         
-        // Otherwise normal selection
+        // Otherwise normal selection (getNextSearch increments counter)
         return this.getNextSearch();
     }
     

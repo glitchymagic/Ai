@@ -1,0 +1,76 @@
+{
+  "narratives": [],
+  "history": [
+    {
+      "id": "NARR-1756928858455-jck656orr",
+      "card": "Lost Origin",
+      "timestamp": 1756928858455,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1756928858455-vctpnn",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1756928858455,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1756929148728-rva3n6dja",
+      "card": "Lost Origin",
+      "timestamp": 1756929148728,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1756929148728-6d6fw4",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1756929148728,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1756929365915-6r18gjmz3",
+      "card": "Lost Origin",
+      "timestamp": 1756929365915,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1756929365916-178nub",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1756929365916,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1756929552568-jdk6n8xvp",
+      "card": "Lost Origin",
+      "timestamp": 1756929552568,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1756929552568-q7rmxn",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1756929552568,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1756929773404-9lhbdg9ij",
+      "card": "Lost Origin",
+      "timestamp": 1756929773404,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1756929773404-bbrxkn",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1756929773404,
+        "timeframe": "72h"
+      }
+    }
+  ],
+  "lastUpdate": "2025-09-04T21:18:25.716Z"
+}

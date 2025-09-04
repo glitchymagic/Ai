@@ -3,11 +3,22 @@
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const MarketData = require('./market-data');
+const GeminiKeyManager = require('./gemini-key-manager');
 
 class CardRecognition {
-    constructor() {
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+    constructor(lmstudio = null, geminiKeys = null) {
+        // Use key manager if multiple keys provided
+        if (geminiKeys && geminiKeys.length > 0) {
+            this.keyManager = new GeminiKeyManager(geminiKeys);
+            this.useKeyManager = true;
+        } else {
+            // Fallback to single key
+            this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+            this.useKeyManager = false;
+        }
+        
         this.marketData = new MarketData();
+        this.lmstudio = lmstudio;
         
         // Card database with market values and specific info
         this.cardDatabase = {
@@ -103,19 +114,43 @@ class CardRecognition {
     }
     
     // Analyze image and identify card
-    async identifyCard(imageUrl, userMessage = '') {
+    async identifyCard(imageBase64, userMessage = '') {
         try {
-            const model = this.genAI.getGenerativeModel({ 
-                model: "gemini-1.5-flash",
-                generationConfig: {
-                    maxOutputTokens: 200,
-                    temperature: 0.3,
-                }
-            });
+            // If no image provided, fall back to text analysis
+            if (!imageBase64) {
+                return this.simulateCardRecognition(userMessage);
+            }
             
-            const prompt = `You are a Pokemon TCG expert. Analyze this image and identify the Pokemon card(s) shown.
+            // Try up to 3 times with exponential backoff for 503 errors
+            let lastError;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    // Use key manager or regular model
+                    const model = this.useKeyManager 
+                        ? await this.keyManager.createModel("gemini-1.5-flash")
+                        : this.genAI.getGenerativeModel({ 
+                            model: "gemini-1.5-flash",
+                            generationConfig: {
+                                maxOutputTokens: 200,
+                                temperature: 0.3,
+                            }
+                        });
+                
+                    const prompt = `Analyze this Pokemon-related image carefully.
 
-Provide ONLY this information in this exact format:
+FIRST, determine what type of image this is:
+- EVENT POSTER: Has event details (date, time, location, entry fee), Pokemon are decorative mascots
+- POKEMON CARD: Actual TCG card with HP, attacks, energy costs, card number
+- CARD COLLECTION: Multiple cards in binder/display
+- FAN ART: Drawings, digital art, custom Pokemon designs, artistic renderings
+- OTHER: Memes, products, screenshots, non-art content
+
+If this is an EVENT POSTER, FAN ART, or OTHER, respond with:
+TYPE: EVENT_POSTER (or FAN_ART or OTHER)
+DESCRIPTION: [what the poster/image shows]
+
+If this is a POKEMON CARD, provide:
+TYPE: CARD
 CARD: [Pokemon name] [type if special like ex, V, VMAX, etc]
 SET: [Set name if visible]
 NUMBER: [Card number if visible like 051/185]
@@ -123,22 +158,203 @@ RARITY: [Rarity like Rare, Ultra Rare, etc]
 CONDITION: [Mint, Near Mint, etc based on visible condition]
 SPECIAL: [Alt Art, Rainbow Rare, Full Art, etc if applicable]
 
-If multiple cards, separate each with "---"
-If unsure about any field, write "Unknown"
-Focus on the main card in center if multiple shown.`;
-            
-            const imageParts = [{
-                inlineData: {
-                    data: imageUrl, // This would need to be base64 in real implementation
-                    mimeType: "image/jpeg"
+Important: Pokemon characters on event posters are NOT cards!`;
+                
+                    const imageParts = [{
+                        inlineData: {
+                            data: imageBase64,
+                            mimeType: "image/jpeg"
+                        }
+                    }];
+                    
+                    // Call Gemini Vision API
+                    const result = await model.generateContent([prompt, ...imageParts]);
+                    const response = result.response.text();
+                    
+                    // Parse the response
+                    return this.parseCardRecognition(response, userMessage);
+                    
+                } catch (error) {
+                    lastError = error;
+                    
+                    // If it's a 503 error and we have attempts left, retry
+                    if (error.message && error.message.includes('503') && attempt < 3) {
+                        const waitTime = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
+                        console.log(`   🔄 Gemini overloaded, retrying in ${waitTime/1000}s (attempt ${attempt}/3)...`);
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        continue;
+                    }
+                    
+                    // For other errors or final attempt, throw
+                    throw error;
                 }
-            }];
+            }
             
-            // For now, simulate recognition based on user message
-            return this.simulateCardRecognition(userMessage);
+            // If we get here, all retries failed
+            throw lastError;
             
         } catch (error) {
             console.log('⚠️ Card recognition failed:', error.message);
+            
+            // Check if it's a quota error
+            if (error.message && error.message.includes('429')) {
+                console.log('   🔄 Quota exceeded, trying local LLM fallback...');
+                return await this.analyzeWithLocalLLM(imageBase64, userMessage);
+            }
+            
+            // Check if it's a service overload error (503)
+            if (error.message && error.message.includes('503')) {
+                console.log('   ⚠️ Gemini service overloaded (503), using fallback...');
+                // Try local LLM first
+                if (this.lmstudio && this.lmstudio.available) {
+                    return await this.analyzeWithLocalLLM(imageBase64, userMessage);
+                }
+                // Otherwise use text-based fallback
+                return this.simulateCardRecognition(userMessage);
+            }
+            
+            // For other errors, use text-based fallback
+            return this.simulateCardRecognition(userMessage);
+        }
+    }
+    
+    // Parse Gemini's card recognition response
+    parseCardRecognition(apiResponse, userMessage) {
+        const lines = apiResponse.split('\n');
+        const responseData = {};
+        
+        lines.forEach(line => {
+            if (line.startsWith('TYPE:')) {
+                responseData.type = line.replace('TYPE:', '').trim();
+            } else if (line.startsWith('DESCRIPTION:')) {
+                responseData.description = line.replace('DESCRIPTION:', '').trim();
+            } else if (line.startsWith('CARD:')) {
+                responseData.name = line.replace('CARD:', '').trim();
+            } else if (line.startsWith('SET:')) {
+                responseData.set = line.replace('SET:', '').trim();
+            } else if (line.startsWith('NUMBER:')) {
+                responseData.number = line.replace('NUMBER:', '').trim();
+            } else if (line.startsWith('RARITY:')) {
+                responseData.rarity = line.replace('RARITY:', '').trim();
+            } else if (line.startsWith('SPECIAL:')) {
+                responseData.special = line.replace('SPECIAL:', '').trim();
+            }
+        });
+        
+        // If it's not a card, return not identified
+        if (responseData.type === 'EVENT_POSTER' || responseData.type === 'FAN_ART' || responseData.type === 'OTHER') {
+            console.log(`   📋 Identified as ${responseData.type}, not a card`);
+            return {
+                identified: false,
+                isEventPoster: responseData.type === 'EVENT_POSTER',
+                isFanArt: responseData.type === 'FAN_ART',
+                description: responseData.description,
+                confidence: 0,
+                fallbackType: responseData.type === 'FAN_ART' ? 'fanart' : 'event'
+            };
+        }
+        
+        // Try to match with our database
+        let recognizedCard = null;
+        const searchKey = `${responseData.name} ${responseData.set}`.toLowerCase();
+        
+        // Look for exact match first
+        for (const [key, card] of Object.entries(this.cardDatabase)) {
+            if (key.includes(responseData.name?.toLowerCase() || '') || 
+                (responseData.name && card.name.toLowerCase().includes(responseData.name.toLowerCase()))) {
+                recognizedCard = card;
+                break;
+            }
+        }
+        
+        // If we have card info from vision API
+        if (responseData.name && responseData.name !== 'Unknown') {
+            return {
+                identified: true,
+                card: recognizedCard || {
+                    name: responseData.name,
+                    set: responseData.set || 'Unknown Set',
+                    rarity: responseData.rarity || 'Unknown Rarity',
+                    marketValue: { raw: 0, psa9: 0, psa10: 0 },
+                    notes: `${responseData.special || 'Nice card'}!`
+                },
+                confidence: recognizedCard ? 0.95 : 0.7,
+                visionData: responseData,
+                fallbackType: this.detectCardType(responseData.name + ' ' + userMessage)
+            };
+        }
+        
+        // Fall back to text analysis
+        return this.simulateCardRecognition(userMessage);
+    }
+    
+    // Analyze image with local LLM when Gemini quota is exceeded
+    async analyzeWithLocalLLM(imageBase64, userMessage) {
+        try {
+            // Check if LM Studio is available
+            if (!this.lmstudio || !this.lmstudio.available) {
+                console.log('   ⚠️ LM Studio not available, using text fallback');
+                return this.simulateCardRecognition(userMessage);
+            }
+            
+            // Note: Most local LLMs don't support vision yet
+            // We'll use a hybrid approach: describe what we expect and use context
+            console.log('   🤖 Using LM Studio for context-aware analysis...');
+            
+            const prompt = `Based on a Pokemon TCG image posted with the text: "${userMessage}"
+            
+Common cards mentioned in similar posts:
+- Charizard ex (Obsidian Flames) - popular pull
+- Umbreon VMAX Alt Art - high value
+- Base Set cards - vintage
+- Paradox Rift pulls - recent set
+
+What Pokemon card is most likely being shown? Consider:
+1. The tweet text context
+2. Recent popular pulls
+3. Set mentions
+
+Respond with: CARD_NAME|SET_NAME|RARITY or NONE if unclear`;
+
+            const response = await this.lmstudio.generateCustom(prompt);
+            
+            if (response && response !== 'NONE') {
+                const [cardName, setName, rarity] = response.split('|');
+                console.log(`   🎯 LM Studio identified: ${cardName} from ${setName}`);
+                
+                // Look up in database
+                const searchKey = cardName.toLowerCase();
+                for (const [key, card] of Object.entries(this.cardDatabase)) {
+                    if (key.includes(searchKey) || card.name.toLowerCase().includes(searchKey)) {
+                        return {
+                            identified: true,
+                            card: card,
+                            confidence: 0.65, // Lower confidence for context-based
+                            fallbackType: 'lmstudio_context'
+                        };
+                    }
+                }
+                
+                // Return generic card info if not in database
+                return {
+                    identified: true,
+                    card: {
+                        name: cardName,
+                        set: setName || 'Unknown Set',
+                        rarity: rarity || 'Unknown Rarity',
+                        marketValue: { raw: 0, psa9: 0, psa10: 0 },
+                        notes: 'Nice pull!'
+                    },
+                    confidence: 0.6,
+                    fallbackType: 'lmstudio_generic'
+                };
+            }
+            
+            // If LM Studio couldn't determine, use text fallback
+            return this.simulateCardRecognition(userMessage);
+            
+        } catch (error) {
+            console.log('   ⚠️ LM Studio fallback failed:', error.message);
             return this.simulateCardRecognition(userMessage);
         }
     }

@@ -1,8 +1,23 @@
 // Visual Content Analyzer for Images and Videos
+const ImageExtractor = require('./image-extractor');
+const VideoExtractor = require('./video-extractor');
+const CardRecognition = require('./card-recognition');
+const CardSetValidator = require('./card-set-validator');
+
 class VisualAnalyzer {
-    constructor(page) {
+    constructor(page, options = {}) {
         this.page = page;
         this.deterministicSeed = null;
+        this.imageExtractor = new ImageExtractor();
+        this.videoExtractor = new VideoExtractor();
+        this.cardRecognition = new CardRecognition(options.lmstudio, options.geminiKeys);
+        this.cardSetValidator = new CardSetValidator();
+        // Enable vision API with env variable or options
+        this.enableVisionAPI = options.enableVisionAPI || process.env.ENABLE_VISION_API === 'true';
+        
+        // Confidence thresholds
+        this.imageConfidenceThreshold = 0.75;
+        this.videoConfidenceThreshold = 0.85; // Higher for videos due to frame quality
         
         // Visual cues to look for in images
         this.visualPatterns = {
@@ -235,6 +250,37 @@ class VisualAnalyzer {
             } else if (eventType === 'artist_meet') {
                 visualData.isArtistMeet = true;
                 visualData.displayType = 'artist_meet';
+            }
+            
+            // Process actual images if present (only if vision API is enabled)
+            if (visualData.hasImage && tweetElement && this.enableVisionAPI) {
+                console.log('   🔍 Vision API enabled, analyzing images...');
+                const imageAnalysis = await this.analyzeImagesWithVision(tweetElement, tweetText);
+                visualData.visionAnalysis = imageAnalysis;
+                
+                // Update visual data based on actual image content
+                if (imageAnalysis.cards.length > 0) {
+                    visualData.cardCount = imageAnalysis.cards.length;
+                    visualData.recognizedCards = imageAnalysis.cards;
+                }
+            } else if (visualData.hasImage && !this.enableVisionAPI) {
+                console.log('   👁️ Vision API disabled, using text-based analysis');
+            }
+            
+            // Process videos if present (only if vision API is enabled)
+            if (visualData.hasVideo && tweetElement && this.enableVisionAPI) {
+                console.log('   🎥 Vision API enabled, analyzing video frames...');
+                const videoAnalysis = await this.analyzeVideoWithVision(tweetElement, tweetText);
+                visualData.videoAnalysis = videoAnalysis;
+                
+                // Update visual data based on video content
+                if (videoAnalysis.cards.length > 0) {
+                    visualData.cardCount = videoAnalysis.cards.length;
+                    visualData.recognizedCards = videoAnalysis.cards;
+                    visualData.visionAnalysis = videoAnalysis; // Use same field for compatibility
+                }
+            } else if (visualData.hasVideo && !this.enableVisionAPI) {
+                console.log('   🎥 Vision API disabled for video analysis');
             }
             
             // Enhance with additional analysis
@@ -507,6 +553,193 @@ class VisualAnalyzer {
         const venue = (t.match(/\b(mall|plaza|game|shop|center|store)\b/i) || [])[0];
         const format = (t.match(/\b(standard|expanded|glc)\b/i) || [])[0];
         return { time, entry, day, venue, format };
+    }
+    
+    // Analyze images using vision API
+    async analyzeImagesWithVision(tweetElement, tweetText) {
+        const result = {
+            analyzed: false,
+            cards: [],
+            error: null,
+            lowConfidenceCards: []
+        };
+        
+        try {
+            // Extract and process images
+            const imageData = await this.imageExtractor.processImagesFromTweet(tweetElement);
+            
+            if (imageData.processed.length === 0) {
+                return result;
+            }
+            
+            console.log(`   🔍 Analyzing ${imageData.processed.length} image(s) with vision API...`);
+            
+            const allIdentifiedCards = [];
+            
+            // Analyze each image
+            for (const image of imageData.processed) {
+                const recognition = await this.cardRecognition.identifyCard(image.base64, tweetText);
+                
+                if (recognition.isEventPoster) {
+                    console.log(`   📋 Image is an event poster, not cards`);
+                    result.isEventPoster = true;
+                    result.eventDescription = recognition.description;
+                } else if (recognition.identified) {
+                    allIdentifiedCards.push({
+                        ...recognition.card,
+                        confidence: recognition.confidence,
+                        visionData: recognition.visionData
+                    });
+                }
+            }
+            
+            // Filter by confidence and validate
+            console.log(`   🔍 Validating ${allIdentifiedCards.length} identified cards...`);
+            
+            for (const card of allIdentifiedCards) {
+                // Check confidence threshold for images
+                if (card.confidence < this.imageConfidenceThreshold) {
+                    console.log(`   ⚠️ Filtering out ${card.name} - low confidence (${card.confidence.toFixed(2)} < ${this.imageConfidenceThreshold})`);
+                    result.lowConfidenceCards.push(card);
+                    continue;
+                }
+                
+                // Validate against mentioned sets
+                const validatedCards = this.cardSetValidator.validateVisionResults(
+                    { cards: [card] }, 
+                    tweetText
+                );
+                
+                if (validatedCards.length > 0) {
+                    result.cards.push(validatedCards[0]);
+                } else {
+                    console.log(`   ⚠️ Filtering out ${card.name} - failed validation`);
+                    result.lowConfidenceCards.push(card);
+                }
+            }
+            
+            result.analyzed = true;
+            console.log(`   ✅ Vision analysis complete: ${result.cards.length} high-confidence cards identified`);
+            
+            if (result.lowConfidenceCards.length > 0) {
+                console.log(`   ℹ️ Filtered out ${result.lowConfidenceCards.length} low-confidence identifications`);
+            }
+            
+        } catch (error) {
+            console.log(`   ⚠️ Vision analysis error: ${error.message}`);
+            result.error = error.message;
+        }
+        
+        return result;
+    }
+    
+    // Analyze video frames using vision API
+    async analyzeVideoWithVision(tweetElement, tweetText) {
+        const result = {
+            analyzed: false,
+            cards: [],
+            frames: [],
+            error: null,
+            isPackOpening: false,
+            lowConfidenceCards: [] // Track what was filtered out
+        };
+        
+        try {
+            // Extract video frames
+            const videoData = await this.videoExtractor.processVideoFromTweet(tweetElement);
+            
+            if (!videoData.hasVideo || videoData.frames.length === 0) {
+                console.log('   ⚠️ No video frames could be extracted');
+                return result;
+            }
+            
+            console.log(`   🎥 Analyzing ${videoData.frames.length} video frame(s) with vision API...`);
+            
+            // Track cards seen across frames to avoid duplicates
+            const seenCards = new Set();
+            const allIdentifiedCards = [];
+            
+            // Analyze each frame
+            for (const frame of videoData.frames) {
+                const recognition = await this.cardRecognition.identifyCard(frame.base64, tweetText);
+                
+                if (recognition.identified) {
+                    const cardKey = `${recognition.card.name}-${recognition.card.set}`;
+                    
+                    // Only add if we haven't seen this card yet
+                    if (!seenCards.has(cardKey)) {
+                        seenCards.add(cardKey);
+                        allIdentifiedCards.push({
+                            ...recognition.card,
+                            confidence: recognition.confidence,
+                            visionData: recognition.visionData,
+                            frameTimestamp: frame.timestamp
+                        });
+                    }
+                }
+                
+                // Track if this looks like a pack opening
+                if (recognition.visionData?.description?.toLowerCase().includes('pack') ||
+                    recognition.visionData?.description?.toLowerCase().includes('opening') ||
+                    recognition.visionData?.description?.toLowerCase().includes('wrapper')) {
+                    result.isPackOpening = true;
+                }
+                
+                result.frames.push({
+                    timestamp: frame.timestamp,
+                    analyzed: recognition.identified,
+                    cardFound: recognition.identified ? recognition.card.name : null,
+                    confidence: recognition.identified ? recognition.confidence : 0
+                });
+            }
+            
+            // Filter by confidence and validate against sets
+            console.log(`   🔍 Validating ${allIdentifiedCards.length} identified cards...`);
+            
+            for (const card of allIdentifiedCards) {
+                // Check confidence threshold for videos
+                if (card.confidence < this.videoConfidenceThreshold) {
+                    console.log(`   ⚠️ Filtering out ${card.name} - low confidence (${card.confidence.toFixed(2)} < ${this.videoConfidenceThreshold})`);
+                    result.lowConfidenceCards.push(card);
+                    continue;
+                }
+                
+                // Validate against mentioned sets
+                const validatedCards = this.cardSetValidator.validateVisionResults(
+                    { cards: [card] }, 
+                    tweetText
+                );
+                
+                if (validatedCards.length > 0) {
+                    result.cards.push(validatedCards[0]);
+                } else {
+                    console.log(`   ⚠️ Filtering out ${card.name} - failed validation`);
+                    result.lowConfidenceCards.push(card);
+                }
+            }
+            
+            result.analyzed = true;
+            console.log(`   ✅ Video analysis complete: ${result.cards.length} high-confidence cards identified`);
+            
+            if (result.lowConfidenceCards.length > 0) {
+                console.log(`   ℹ️ Filtered out ${result.lowConfidenceCards.length} low-confidence identifications`);
+            }
+            
+            // If it's a pack opening with cards found, it's probably a successful pull
+            if (result.isPackOpening && result.cards.length > 0) {
+                console.log('   📦 Pack opening detected with high-confidence pulls!');
+            } else if (result.isPackOpening && result.cards.length === 0 && result.lowConfidenceCards.length > 0) {
+                console.log('   📦 Pack opening detected but cards unclear in video');
+                // Don't mention specific cards if we're not confident
+                result.cards = [];
+            }
+            
+        } catch (error) {
+            console.log(`   ⚠️ Video analysis error: ${error.message}`);
+            result.error = error.message;
+        }
+        
+        return result;
     }
 }
 

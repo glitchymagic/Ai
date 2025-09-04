@@ -191,8 +191,8 @@ class ContentFilter {
     }
     
     isMeaningless(text) {
-        // Single word replies
-        if (!text.includes(' ')) return true;
+        // Skip only if very short
+        if (text.length < 10) return true;
         
         // Just emojis or symbols
         if (text.match(/^[\s\W]+$/)) return true;

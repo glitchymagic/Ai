@@ -31,6 +31,93 @@ class LMStudioAI {
         }
     }
     
+    async generateCustom(prompt) {
+        if (!this.available) {
+            return null;
+        }
+        
+        try {
+            const response = await axios.post(
+                `${this.baseURL}/chat/completions`,
+                {
+                    model: this.modelName,
+                    messages: [
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 100
+                },
+                { timeout: 10000 }
+            );
+            
+            return response.data.choices[0].message.content.trim();
+        } catch (error) {
+            console.log('LM Studio custom generation error:', error.message);
+            return null;
+        }
+    }
+    
+    async generateThreadResponse(username, latestMessage, threadContext, visualData = null) {
+        if (!this.available) {
+            return null;
+        }
+        
+        const isPriceRelated = latestMessage.toLowerCase().match(/worth|value|price|cost|\$|dollar/);
+        const visualContext = visualData?.visionAnalysis?.analyzed ? 
+            'User shared an image/video with Pokemon cards' : '';
+        
+        const prompt = `Generate a short Pokemon TCG reply (max 280 chars) for this thread:
+
+Thread Topic: ${threadContext.mainTopic || 'Pokemon TCG'}
+Recent messages:
+${threadContext.fullConversation?.slice(-3).map(m => `@${m.username}: ${m.text.slice(0,80)}`).join('\n') || 'No previous messages'}
+
+Latest from @${username}: "${latestMessage}"
+${visualContext}
+
+Rules:
+- One short conversational reply
+- Reference the conversation naturally
+- ${isPriceRelated ? 'Include a price/stat if relevant' : 'Focus on the topic'}
+- No hashtags
+- Casual Gen-Z tone
+- ${visualData ? 'DO NOT ask what they found - comment on what they showed' : ''}
+
+Reply:`;
+        
+        try {
+            const response = await axios.post(
+                `${this.baseURL}/chat/completions`,
+                {
+                    model: this.modelName,
+                    messages: [
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.8,
+                    max_tokens: 100
+                },
+                { timeout: 10000 }
+            );
+            
+            let reply = response.data.choices[0].message.content.trim();
+            // Clean up the response
+            reply = reply.replace(/^[\"']|[\"']$/g, '') // Remove quotes
+                        .replace(/#\w+/g, '') // Remove hashtags
+                        .split('\n')[0] // Take first line only
+                        .trim();
+            
+            // Ensure it's under 280 chars
+            if (reply.length > 280) {
+                reply = reply.substring(0, 277) + '...';
+            }
+            
+            return reply;
+        } catch (error) {
+            console.log('LM Studio thread generation error:', error.message);
+            return null;
+        }
+    }
+    
     async generateResponse(username, tweetContent, hasImages = false) {
         // Re-check availability periodically
         if (!this.available && Math.random() < 0.1) {

@@ -3,10 +3,10 @@
 
 class EngagementSelector {
     constructor() {
-        // Engagement strategy weights
+        // Engagement strategy weights (more aggressive)
         this.strategy = {
-            likeOnly: 0.7,        // 70% just like
-            likeAndReply: 0.25,   // 25% like and reply
+            likeOnly: 0.2,        // 20% just like (reduced from 70%)
+            likeAndReply: 0.75,   // 75% like and reply (increased from 25%)
             skipEntirely: 0.05    // 5% skip even good posts
         };
         
@@ -238,8 +238,8 @@ class EngagementSelector {
                     confidence: score,
                     reason: 'high_quality_question'
                 };
-            } else if (deterministicValue < 0.4) {
-                // 40% deterministic chance to reply
+            } else if (deterministicValue < 0.8) {
+                // 80% deterministic chance to reply (increased from 40%)
                 return { 
                     action: 'reply', 
                     confidence: score,
@@ -255,22 +255,22 @@ class EngagementSelector {
             }
         } else if (score > 0.5) {
             // Medium quality
-            if (deterministicValue < 0.2) {
-                // 20% deterministic chance to reply
+            if (deterministicValue < 0.6) {
+                // 60% deterministic chance to reply (increased from 20%)
                 return { 
                     action: 'reply', 
                     confidence: score,
                     reason: 'medium_quality_engagement'
                 };
-            } else if (deterministicValue < 0.7) {
-                // 50% chance to like
+            } else if (deterministicValue < 0.9) {
+                // 30% chance to like
                 return { 
                     action: 'like', 
                     confidence: score,
                     reason: 'like_decent_content'
                 };
             } else {
-                // 30% skip for natural behavior
+                // 10% skip for natural behavior
                 return { 
                     action: 'skip', 
                     confidence: score,
@@ -279,15 +279,22 @@ class EngagementSelector {
             }
         } else {
             // Low quality
-            if (deterministicValue < 0.3) {
-                // 30% deterministic chance to like
+            if (deterministicValue < 0.4) {
+                // 40% deterministic chance to reply even for lower quality
+                return { 
+                    action: 'reply', 
+                    confidence: score,
+                    reason: 'engagement_opportunity'
+                };
+            } else if (deterministicValue < 0.6) {
+                // 20% like
                 return { 
                     action: 'like', 
                     confidence: score,
                     reason: 'courtesy_like'
                 };
             } else {
-                // 70% skip
+                // 40% skip
                 return { 
                     action: 'skip', 
                     confidence: score,

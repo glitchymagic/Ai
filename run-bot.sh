@@ -23,9 +23,13 @@ fi
 export TWITTER_USERNAME="GlitchyGrade"
 export TWITTER_PASSWORD="$3xyTank1997"
 
+# Enable Vision API for image recognition
+export ENABLE_VISION_API=true
+
 # Enable Chrome remote debugging
 echo "🔧 Enabling Chrome DevTools Protocol..."
 echo "Make sure Chrome is running with: --remote-debugging-port=9222"
+echo "✅ Vision API enabled for image recognition"
 echo ""
 
 # Run the bot

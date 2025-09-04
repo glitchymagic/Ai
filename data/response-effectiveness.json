@@ -1,0 +1,188 @@
+{
+  "generic": {
+    "pattern": "generic",
+    "uses": 8,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": "positive",
+        "hasImages": true,
+        "topics": [
+          "moonbreon",
+          "umbreon vmax"
+        ],
+        "timestamp": 1756924688674
+      },
+      {
+        "timestamp": 1756924688676
+      },
+      {
+        "timestamp": 1756924688676
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:seeking_advice",
+          "context:question"
+        ],
+        "timestamp": 1757020812240
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [],
+        "timestamp": 1757020897470
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"buddy\""
+        },
+        "hasImages": false,
+        "topics": [
+          "set:151",
+          "context:asking_value",
+          "context:seeking_advice",
+          "context:grading_discussion",
+          "context:trade_offer",
+          "context:question",
+          "context:disappointment",
+          "grading:psa",
+          "market:selling"
+        ],
+        "timestamp": 1757021027930
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:showing_pulls"
+        ],
+        "timestamp": 1757021075688
+      },
+      {
+        "sentiment": {
+          "sentiment": "positive",
+          "score": 1,
+          "confidence": "medium",
+          "negativeCount": 0,
+          "positiveCount": 1,
+          "reason": "0 negative, 1 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:showing_pulls",
+          "context:question"
+        ],
+        "timestamp": 1757021211913
+      }
+    ]
+  },
+  "price_mention": {
+    "pattern": "price_mention",
+    "uses": 4,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": "neutral",
+        "hasImages": false,
+        "topics": [
+          "moonbreon",
+          "price"
+        ],
+        "timestamp": 1756924688675
+      },
+      {
+        "sentiment": "neutral",
+        "hasImages": false,
+        "topics": [
+          "moonbreon",
+          "psa",
+          "grading",
+          "market"
+        ],
+        "timestamp": 1756924688675
+      },
+      {
+        "sentiment": "neutral",
+        "hasImages": false,
+        "topics": [
+          "moonbreon",
+          "psa",
+          "grading",
+          "market"
+        ],
+        "timestamp": 1756924688675
+      },
+      {
+        "sentiment": "neutral",
+        "hasImages": false,
+        "topics": [
+          "moonbreon",
+          "psa",
+          "grading",
+          "market"
+        ],
+        "timestamp": 1756924688675
+      }
+    ]
+  },
+  "price_mention_data_driven": {
+    "pattern": "price_mention_data_driven",
+    "uses": 1,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "timestamp": 1756924688676
+      }
+    ]
+  },
+  "question": {
+    "pattern": "question",
+    "uses": 1,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": {
+          "sentiment": "negative",
+          "score": -2,
+          "confidence": "high",
+          "reason": "complaint pattern: \"complaint\""
+        },
+        "hasImages": false,
+        "topics": [
+          "context:question"
+        ],
+        "timestamp": 1757020797613
+      }
+    ]
+  }
+}

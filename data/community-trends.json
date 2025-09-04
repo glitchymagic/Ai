@@ -1,0 +1,35 @@
+{
+  "context:seeking_advice": {
+    "topic": "context:seeking_advice",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 1,
+    "lastUpdated": 1757020830463
+  },
+  "context:question": {
+    "topic": "context:question",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 1,
+    "lastUpdated": 1757020830463
+  },
+  "context:showing_pulls": {
+    "topic": "context:showing_pulls",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 1,
+    "lastUpdated": 1757021097346
+  }
+}

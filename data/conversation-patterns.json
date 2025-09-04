@@ -1,0 +1,170 @@
+{
+  "{\"triggerType\":\"showcase\",\"sentiment\":\"positive\",\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"moonbreon\",\"umbreon vmax\"]}": {
+    "pattern": {
+      "triggerType": "showcase",
+      "sentiment": "positive",
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "moonbreon",
+        "umbreon vmax"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"market\",\"sentiment\":\"neutral\",\"hasQuestion\":true,\"hasPriceQuery\":true,\"topics\":[\"moonbreon\",\"price\"]}": {
+    "pattern": {
+      "triggerType": "market",
+      "sentiment": "neutral",
+      "hasQuestion": true,
+      "hasPriceQuery": true,
+      "topics": [
+        "moonbreon",
+        "price"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":\"neutral\",\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"moonbreon\",\"psa\",\"grading\",\"market\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": "neutral",
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "moonbreon",
+        "psa",
+        "grading",
+        "market"
+      ]
+    },
+    "occurrences": 3,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"negative\",\"score\":-2,\"confidence\":\"high\",\"reason\":\"complaint pattern: \\\"complaint\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "negative",
+        "score": -2,
+        "confidence": "high",
+        "reason": "complaint pattern: \"complaint\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:question"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"context:seeking_advice\",\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:seeking_advice",
+        "context:question"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": []
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"market\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"buddy\\\"\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"set:151\",\"context:asking_value\",\"context:seeking_advice\",\"context:grading_discussion\",\"context:trade_offer\",\"context:question\",\"context:disappointment\",\"grading:psa\",\"market:selling\"]}": {
+    "pattern": {
+      "triggerType": "market",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"buddy\""
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "set:151",
+        "context:asking_value",
+        "context:seeking_advice",
+        "context:grading_discussion",
+        "context:trade_offer",
+        "context:question",
+        "context:disappointment",
+        "grading:psa",
+        "market:selling"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"showcase\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\"]}": {
+    "pattern": {
+      "triggerType": "showcase",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"opinion\",\"sentiment\":{\"sentiment\":\"positive\",\"score\":1,\"confidence\":\"medium\",\"negativeCount\":0,\"positiveCount\":1,\"reason\":\"0 negative, 1 positive words\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\",\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "opinion",
+      "sentiment": {
+        "sentiment": "positive",
+        "score": 1,
+        "confidence": "medium",
+        "negativeCount": 0,
+        "positiveCount": 1,
+        "reason": "0 negative, 1 positive words"
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls",
+        "context:question"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  }
+}
