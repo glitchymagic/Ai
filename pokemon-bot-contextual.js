@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -17,6 +20,7 @@ const VisualAnalyzer = require('./features/visual-analyzer');
 const AdvancedContextExtractor = require('./features/advanced-context');
 const HumanLikeResponses = require('./features/human-like-responses');
 const EngagementSelector = require('./features/engagement-selector');
+const EngagementOutcomeTracker = require('./features/engagement-outcome-tracker');
 const AuthorityResponses = require('./features/authority-responses');
 const { getAuthorityIntegration } = require('./features/authority-integration');
 const SentimentAnalyzer = require('./features/sentiment-analyzer');
@@ -32,12 +36,27 @@ const { composeResponse } = require('./features/response-composer');
 const { detectEventFromText } = require('./features/event-detector');
 const VisionMonitor = require('./vision-monitor');
 const ResponseValidator = require('./features/response-validator');
+const ResponseQualityChecker = require('./features/response-quality-checker');
 const LearningEngine = require('./features/learning-engine');
 const ConversationAnalyzer = require('./features/conversation-analyzer');
+const SelfAnalysisEngine = require('./features/self-analysis-engine');
+const AdaptiveStrategyEngine = require('./features/adaptive-strategy-engine');
 const AdaptiveResponseGenerator = require('./features/adaptive-response-generator');
 const FollowingMonitor = require('./features/following-monitor');
 const BetterContextAnalyzer = require('./features/better-context-analyzer');
 const AdaptiveToneGenerator = require('./features/adaptive-tone-generator');
+const ContextIntelligence = require('./features/context-intelligence');
+const ResponseExamples = require('./features/response-examples');
+const APIRateLimiter = require('./features/api-rate-limiter');
+const ConversationFollowUp = require('./features/conversation-follow-up');
+const IntelligentResponseGenerator = require('./features/intelligent-response-generator');
+const UserInteractionHistory = require('./features/user-interaction-history');
+const RedditMonitor = require('./features/reddit-monitor');
+const AuthorityContent = require('./features/authority-content');
+const ContentVerifier = require('./features/content-verifier');
+const SetVarietyManager = require('./features/set-variety-manager');
+const PokemonTCGAPI = require('./features/pokemontcg-api');
+const APIEnhancedResponses = require('./features/api-enhanced-responses');
 
 puppeteer.use(StealthPlugin());
 
@@ -49,7 +68,8 @@ if (!GEMINI_API_KEY) throw new Error('No Gemini API keys available');
 const GEMINI_API_KEYS = [
     'AIzaSyD9Hl53GRtWyZyQCgrfPDuYljIHEulIKcw',  // Key 1 (original)
     'AIzaSyClg--pgWqpAny17vRbiWokCC7L_YjEFkQ',  // Key 2 
-    'AIzaSyDnlBhkg5GO2O85O-bfVcyCnGa29boEUh8'   // Key 3 (newest)
+    'AIzaSyDnlBhkg5GO2O85O-bfVcyCnGa29boEUh8',  // Key 3
+    'AIzaSyBQIdvgMyPt0br9D0oa5kEwR147UdejTb0'   // Key 4 (newest)
 ].filter(key => key && key.length > 0);
 
 // Create key manager for rotation
@@ -59,19 +79,100 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY); // Keep for backward compa
 
 // Model will be created with key rotation in generateThreadAwareResponse
 
+// Helper function to extract natural description from visual data
+function extractNaturalDescription(visualData) {
+    if (!visualData) return null;
+    
+    // Try different paths where naturalDescription might be
+    return visualData.visionAnalysis?.naturalDescription || 
+           visualData.naturalDescription ||
+           visualData.videoAnalysis?.naturalDescription ||
+           visualData.visionAnalysis?.context ||
+           null;
+}
+
 // Helper function to clamp tweets to 280 chars consistently
 function clampTweet(s, max = 280) {
+    if (!s) return '';
+    
+    // Remove any confidence markers first
     const conf = (s.match(/Confidence:\s*\d{1,3}%/i) || [])[0];
-    const body = conf ? s.replace(/Confidence:\s*\d{1,3}%/i, '').trim() : s.trim();
-    const pad = conf ? (' ' + conf) : '';
-    if ((body + pad).length <= max) return (body + pad);
-    const words = body.split(/\s+/);
-    let out = '';
-    for (const w of words) { 
-        if ((out + ' ' + w + pad).length > max) break; 
-        out += (out ? ' ' : '') + w; 
+    let body = conf ? s.replace(/Confidence:\s*\d{1,3}%/i, '').trim() : s.trim();
+    
+    // If already under limit, return as-is
+    if (body.length <= max) return body;
+    
+    // Try to cut at sentence boundary first
+    const sentences = body.match(/[^.!?]+[.!?]+/g) || [body];
+    let result = '';
+    
+    for (const sentence of sentences) {
+        const trimmedSentence = sentence.trim();
+        if ((result + (result ? ' ' : '') + trimmedSentence).length <= max) {
+            result += (result ? ' ' : '') + trimmedSentence;
+        } else if (result.length === 0) {
+            // First sentence is too long, try to cut at natural breakpoints
+            // Look for conjunctions or punctuation to break at
+            const breakPoints = [
+                ', but', ', and', ', while', ', though', ', however',
+                '. ', '! ', '? ', '; ', ' - ', ' — ', ', ',
+                ' (', ') '
+            ];
+            
+            let bestBreak = -1;
+            let bestBreakPoint = '';
+            
+            // Find the latest natural break point that fits
+            for (const breakPoint of breakPoints) {
+                const lastIndex = trimmedSentence.lastIndexOf(breakPoint);
+                if (lastIndex > bestBreak && lastIndex > 0 && lastIndex < max - 20) {
+                    bestBreak = lastIndex;
+                    bestBreakPoint = breakPoint;
+                }
+            }
+            
+            if (bestBreak > 0) {
+                // Cut at natural break point
+                result = trimmedSentence.substring(0, bestBreak).trim();
+                // Add appropriate ending
+                if (bestBreakPoint.includes(',')) {
+                    result += '.';
+                } else if (!result.match(/[.!?]$/)) {
+                    result += '.';
+                }
+            } else {
+                // No good break point, cut at word boundary
+                const words = trimmedSentence.split(/\s+/);
+                result = '';
+                for (const word of words) {
+                    if ((result + (result ? ' ' : '') + word).length <= max - 1) {
+                        result += (result ? ' ' : '') + word;
+                    } else {
+                        break;
+                    }
+                }
+                // Add period if it doesn't end with punctuation
+                if (!result.match(/[.!?]$/)) {
+                    result += '.';
+                }
+            }
+            break;
+        } else {
+            // We have content and can't fit next sentence
+            break;
+        }
     }
-    return (out + pad).trim();
+    
+    // Final cleanup - remove incomplete thoughts
+    result = result.replace(/\s+(Could|Would|Should|Might|Maybe|Perhaps|Also|Plus|And|But|Or)\s*\.?$/i, '.');
+    result = result.replace(/\s+\.\s*$/, '.');
+    
+    // Remove any trailing hashtags if still over limit
+    if (result.length > max) {
+        result = result.replace(/#\w+\s*$/, '').trim();
+    }
+    
+    return result.substring(0, max);
 }
 
 // Deterministic hash function for consistent randomness
@@ -128,6 +229,9 @@ class ContextualPokemonBot {
         this.repliedUsers = new Set();
         this.startTime = Date.now();
         
+        // Track tweet IDs we've seen to avoid analyzing same tweets repeatedly
+        this.seenTweetIds = new Map(); // Maps tweet ID to count of times seen
+        
         // Initialize features
         this.searchEngine = new SearchEngine();
         this.memory = new Memory();
@@ -140,6 +244,7 @@ class ContextualPokemonBot {
         this.advancedContext = new AdvancedContextExtractor();
         this.humanLike = new HumanLikeResponses();
         this.engagementSelector = new EngagementSelector();
+        this.engagementOutcomeTracker = new EngagementOutcomeTracker();
         this.authorityResponses = new AuthorityResponses();
         this.sentimentAnalyzer = new SentimentAnalyzer();
         this.timestampFilter = new TimestampFilter();
@@ -152,12 +257,20 @@ class ContextualPokemonBot {
         this.antiScam = new AntiScam();
         this.decisionTrace = new DecisionTrace();
         this.visionMonitor = new VisionMonitor();
+        this.setVarietyManager = new SetVarietyManager();
+        this.pokemonTCGAPI = new PokemonTCGAPI();
+        this.apiEnhancedResponses = new APIEnhancedResponses(this.pokemonTCGAPI, this.setVarietyManager);
         this.responseValidator = new ResponseValidator();
+        this.responseQualityChecker = new ResponseQualityChecker();
         
         // Initialize learning systems
         this.learningEngine = new LearningEngine();
         this.conversationAnalyzer = new ConversationAnalyzer(this.learningEngine);
         this.adaptiveGenerator = new AdaptiveResponseGenerator(this.learningEngine);
+        
+        // Initialize self-awareness systems
+        this.selfAnalysis = new SelfAnalysisEngine();
+        this.adaptiveStrategy = new AdaptiveStrategyEngine(this.selfAnalysis);
         
         // Initialize following monitor (will set page later)
         this.followingMonitor = null;
@@ -165,6 +278,27 @@ class ContextualPokemonBot {
         // Initialize better context analyzer
         this.betterContextAnalyzer = new BetterContextAnalyzer();
         this.adaptiveToneGenerator = new AdaptiveToneGenerator();
+        this.contextIntelligence = new ContextIntelligence();
+        this.responseExamples = new ResponseExamples();
+        this.apiRateLimiter = new APIRateLimiter();
+        
+        // Initialize intelligent response generator
+        this.intelligentResponseGenerator = new IntelligentResponseGenerator(this.setVarietyManager);
+        
+        // Initialize user interaction history
+        this.userInteractionHistory = new UserInteractionHistory();
+        
+        // Initialize conversation follow-up system
+        this.conversationFollowUp = null; // Will initialize after page is ready
+        
+        // Initialize Reddit monitor for cross-platform intelligence
+        this.redditMonitor = new RedditMonitor();
+        
+        // Initialize Authority content generator (will pass reddit monitor later)
+        this.authorityContent = new AuthorityContent();
+        
+        // Initialize Content Verifier for fact-checking
+        this.contentVerifier = null; // Will initialize after other services are ready
         
         // Initialize new authority integration
         this.authorityIntegration = getAuthorityIntegration();
@@ -194,237 +328,142 @@ class ContextualPokemonBot {
             postsFiltered: 0,
             successfulEngagements: 0
         };
+        
+        // Start Reddit monitoring in background
+        this.startRedditMonitoring();
+    }
+
+    // Helper function to clean text for JSON/API calls
+    cleanTextForAPI(text) {
+        if (!text) return '';
+        return text
+            .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/g, '') // Remove unpaired high surrogates
+            .replace(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '') // Remove unpaired low surrogates
+            .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
+            .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Remove emoticons
+            .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Remove misc symbols
+            .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Remove transport/map symbols
+            .replace(/[\u{1F700}-\u{1F77F}]/gu, '') // Remove alchemical symbols
+            .replace(/[\u{1F780}-\u{1F7FF}]/gu, '') // Remove geometric shapes
+            .replace(/[\u{1F800}-\u{1F8FF}]/gu, '') // Remove supplemental arrows
+            .replace(/[\u{1F900}-\u{1F9FF}]/gu, '') // Remove supplemental symbols
+            .replace(/[\u{1FA00}-\u{1FA6F}]/gu, '') // Remove chess symbols
+            .replace(/[\u{1FA70}-\u{1FAFF}]/gu, '') // Remove symbols and pictographs
+            .replace(/[\u{2600}-\u{26FF}]/gu, '') // Remove misc symbols
+            .replace(/[\u{2700}-\u{27BF}]/gu, '') // Remove dingbats
+            .trim();
     }
 
     async generateThreadAwareResponse(username, latestMessage, threadContext, visualData = null) {
-        // Build comprehensive context from thread
-        let contextSummary = `Thread has ${threadContext.threadLength} messages about ${threadContext.mainTopic}.\n`;
-        
-        // Include key conversation points
-        if (threadContext.fullConversation && threadContext.fullConversation.length > 1) {
-            contextSummary += "Previous discussion:\n";
-            // Get last 3 messages before the current one
-            const previousMsgs = threadContext.fullConversation.slice(-4, -1);
-            previousMsgs.forEach(msg => {
-                const snippet = msg.text.length > 60 ? msg.text.substring(0, 57) + "..." : msg.text;
-                contextSummary += `- @${msg.username}: "${snippet}"\n`;
-            });
-        }
-        
-        // Try Gemini with thread context
-        if (this.geminiFailures < 5) {
-            try {
-                // Use top-level model instance
-                
-                // Check if there's price intent in the message
-                const isPriceRelated = /\b(worth|price|value|how much|going for|\$|cost|sell|buy|market)\b/i.test(latestMessage);
-                
-                // Build visual context if available
-                let visualContext = '';
-                let visionInstructions = '';
-                
-                // Check for both image and video analysis
-                const visionResult = visualData?.visionAnalysis || visualData?.videoAnalysis;
-                
-                if (visionResult?.analyzed) {
-                    // We have actual vision API results (either image or video)
-                    const isVideo = visualData?.videoAnalysis !== undefined;
-                    
-                    if (visionResult.cards && visionResult.cards.length > 0) {
-                        // High-confidence cards were found
-                        const cardNames = visionResult.cards.map(c => c.name).join(', ');
-                        if (isVideo) {
-                            visualContext = `\nVisual: Video analyzed - ${visionResult.cards.length} Pokemon card(s) identified: ${cardNames}`;
-                            if (visionResult.isPackOpening) {
-                                visualContext += ' (pack opening video)';
-                            }
-                        } else {
-                            visualContext = `\nVisual: ${visionResult.cards.length} Pokemon card(s) identified: ${cardNames}`;
-                        }
-                        visionInstructions = `\nIMPORTANT: You MUST mention these specific cards: ${cardNames}. Do NOT mention any other cards.`;
-                    } else if (visionResult.isEventPoster) {
-                        // Event poster detected
-                        visualContext = '\nVisual: Event poster detected (no cards shown)';
-                        visionInstructions = '\nIMPORTANT: This is an EVENT POSTER. Do NOT mention any cards. Focus on the event.';
-                    } else if (visionResult.lowConfidenceCards && visionResult.lowConfidenceCards.length > 0) {
-                        // Cards were detected but with low confidence
-                        // Check if this is actually about pulls/showcasing based on text
-                        const isPullsContext = /\b(pull|pulled|got|hit|found|mail\s*day|pickup|haul|collection|binder)\b/i.test(latestMessage);
-                        const isGameplayContext = /\b(deck|play|game|match|tournament|energy|trainer|attack|damage|bench|prize)\b/i.test(latestMessage);
-                        
-                        if (isVideo) {
-                            visualContext = '\nVisual: Video analyzed - cards visible but unclear';
-                            if (isPullsContext) {
-                                visionInstructions = '\nIMPORTANT: Cards detected but unclear. Respond about their pulls/collection without naming specific cards.';
-                            } else if (isGameplayContext) {
-                                visionInstructions = '\nIMPORTANT: This seems to be about gameplay/strategy. Focus on the game mechanics discussed, not card identification.';
-                            } else {
-                                visionInstructions = '\nIMPORTANT: Respond to the actual topic discussed. Do not assume this is about pulls or showcasing.';
-                            }
-                            // Add hint about pack opening if detected
-                            if (visionResult.isPackOpening) {
-                                visualContext += ' (pack opening video)';
-                                visionInstructions = '\nIMPORTANT: Pack opening detected - react to the opening without naming specific cards.';
-                            }
-                        } else {
-                            visualContext = '\nVisual: Image analyzed - cards visible but unclear';
-                            if (isPullsContext) {
-                                visionInstructions = '\nIMPORTANT: Cards visible but unclear. Respond about their collection/pulls without naming specific cards.';
-                            } else if (isGameplayContext) {
-                                visionInstructions = '\nIMPORTANT: This appears to be about gameplay/strategy. Focus on the game aspects discussed, not card identification.';
-                            } else {
-                                visionInstructions = '\nIMPORTANT: Respond to the actual content of their message. Do not assume this is about showing off cards.';
-                            }
-                        }
-                    } else {
-                        // Media analyzed but no cards found at all
-                        if (isVideo) {
-                            visualContext = '\nVisual: Video analyzed - no specific cards identified';
-                            // Check what type of content this might be based on text
-                            const textLower = latestMessage.toLowerCase();
-                            if (textLower.includes('collection') || textLower.includes('binder')) {
-                                visionInstructions = '\nIMPORTANT: Video appears to show collection but specific cards unclear. Be supportive but acknowledge you cannot see details. Example: "Love seeing collections! What are your favorite pieces in there?"';
-                            } else if (textLower.includes('open') || textLower.includes('pack')) {
-                                visionInstructions = '\nIMPORTANT: Pack opening video but cards not clear. React to the excitement without claiming to see specific cards. Example: "Pack openings are always exciting! Hope you got some good pulls!"';
-                            } else {
-                                visionInstructions = '\nIMPORTANT: Cannot identify specific content in video. Respond based on their text only. Be honest if asked about specifics.';
-                            }
-                        } else {
-                            visualContext = '\nVisual: Image analyzed - no specific cards identified';
-                            const textLower = latestMessage.toLowerCase();
-                            if (textLower.includes('look at') || textLower.includes('check out') || textLower.includes('got')) {
-                                visionInstructions = '\nIMPORTANT: They want to show something but image is unclear. Acknowledge enthusiasm without pretending to see details. Example: "Nice! Tell me more about what you got!"';
-                            } else {
-                                visionInstructions = '\nIMPORTANT: Image content unclear. Focus on their message text. If they ask about the image, be honest that you cannot see details clearly.';
-                            }
-                        }
-                    }
-                } else if (visualData?.analysis) {
-                    // Fallback to old analysis if vision wasn't used
-                    const analysis = visualData.analysis;
-                    const isPullsContext = /\b(pull|pulled|got|hit|found|mail\s*day|pickup|haul)\b/i.test(latestMessage);
-                    const isGameplayContext = /\b(deck|play|game|match|tournament|energy|trainer|attack|damage|bench|prize|rule|effect)\b/i.test(latestMessage);
-                    
-                    if (analysis.contentType === 'showcase' || analysis.contentType === 'multiple_showcase') {
-                        visualContext = '\nVisual: User showing cards (vision unavailable)';
-                        if (isPullsContext) {
-                            visionInstructions = '\nIMPORTANT: Cards shown but not identifiable. Comment on their pulls/collection generally without naming cards.';
-                        } else if (isGameplayContext) {
-                            visionInstructions = '\nIMPORTANT: This is about game mechanics/strategy. Focus on gameplay discussion, not card showcasing.';
-                        } else {
-                            visionInstructions = '\nIMPORTANT: Respond appropriately to their actual message topic. Cards are visible but may not be the main point.';
-                        }
-                    } else if (analysis.contentType === 'event_poster') {
-                        visualContext = '\nVisual: Tournament/event poster';
-                        visionInstructions = '\nIMPORTANT: This is an event poster. Focus on the event, not cards.';
-                    }
-                }
-                
-                // First check what type of content this is
-                const contentType = visualData?.visionAnalysis?.contentType || 
-                                  visualData?.analysis?.contentType || 
-                                  'general';
-                
-                // Adjust prompt based on content type
-                let contextPrompt;
-                if (contentType === 'FAN_ART' || contentType === 'fanart') {
-                    contextPrompt = `You're replying to Pokemon fan art. Be supportive and specific about what they created. One tweet only, <=280 chars.`;
-                } else if (isPriceRelated || contentType === 'showcase') {
-                    contextPrompt = `You're replying in a Pokémon TCG thread. Use the context + numbers below. One tweet only, <=280 chars.`;
-                } else {
-                    contextPrompt = `You're replying to Pokemon content. Stay on their topic. One tweet only, <=280 chars.`;
-                }
-                
-                const prompt = `
-${contextPrompt}
-Rules: ${isPriceRelated ? 'add 1 stat (price/Δ%/n sales) if available;' : 'focus on their actual topic;'} NO hashtags; light Gen-Z tone; end crisp. NEVER add context that wasn't mentioned. Be specific to what they shared.
-${visualContext ? 'IMPORTANT: Only comment on what they explicitly mentioned. Do NOT add imaginary details.' : ''}${visionInstructions}
-
-Context: Thread=${threadContext.threadLength}${visualContext}
-Recent:
-${threadContext.fullConversation && threadContext.fullConversation.length > 0 
-    ? threadContext.fullConversation.slice(-3).map(m => `• @${m.username}: ${m.text.slice(0,80)}`).join('\n')
-    : '• No previous messages'}
-
-Latest from @${username}: "${latestMessage}"
-
-Reply:
-`.trim();
-
-                // Create model with key rotation
-                let threadModel;
-                try {
-                    threadModel = await keyManager.createModel("gemini-1.5-flash");
-                } catch (keyError) {
-                    // If no keys available, throw immediately to avoid retry loop
-                    if (keyError.message === 'No available Gemini API keys') {
-                        throw keyError;
-                    }
-                    throw keyError;
-                }
-                const result = await threadModel.generateContent(prompt);
-                let response = result.response.text().trim()
-                    .replace(/^[\"']|[\"']$/g, '')
-                    .replace(/#\w+/g, '')
-                    .split('\n')[0]
-                    .trim();
-                
-                // Use clampTweet for consistent handling
-                response = clampTweet(response, 280);
-                
-                // Validate response against vision results
-                if (visualData && this.responseValidator) {
-                    const validation = this.responseValidator.validateResponse(response, visualData);
-                    if (!validation.valid) {
-                        console.log(`   ⚠️ Response validation issues:`, validation.issues);
-                        // Attempt to fix the response
-                        const fixedResponse = this.responseValidator.fixResponse(
-                            response, 
-                            validation.issues, 
-                            visualData.visionAnalysis
-                        );
-                        if (fixedResponse !== response) {
-                            console.log(`   🔧 Fixed response: "${fixedResponse}"`);
-                            response = fixedResponse;
-                        }
-                    }
-                }
-                
-                console.log(`   🧵 [Thread-aware] "${response}"`);
-                return response;
-                
-            } catch (error) {
-                console.log(`   ⚠️ Thread response failed:`, error.message);
-                
-                // If quota exceeded, try LM Studio
-                if (error.message && error.message.includes('429') && this.lmstudio?.available) {
-                    console.log(`   🔄 Trying LM Studio for thread response...`);
-                    try {
-                        const lmResponse = await this.lmstudio.generateThreadResponse(
-                            username, 
-                            latestMessage, 
-                            threadContext,
-                            visualData
-                        );
-                        if (lmResponse) {
-                            console.log(`   🤖 [LM Studio Thread] "${lmResponse}"`);
-                            return lmResponse;
-                        }
-                    } catch (lmError) {
-                        console.log(`   ⚠️ LM Studio also failed:`, lmError.message);
-                    }
-                }
-                
-                console.log(`   ⚠️ Using regular response`);
+        try {
+            // Clean text inputs
+            const cleanUsername = this.cleanTextForAPI(username);
+            const cleanLatestMessage = this.cleanTextForAPI(latestMessage);
+            
+            // Build simple context - just show Gemini the raw conversation
+            let context = `You're replying to @${cleanUsername} on Twitter about Pokemon.\n\n`;
+            
+            // Add thread history if available
+            if (threadContext?.fullConversation?.length > 0) {
+                context += `Here's the conversation so far:\n`;
+                // Show last few messages for context
+                const recentMessages = threadContext.fullConversation.slice(-5);
+                recentMessages.forEach(msg => {
+                    const cleanMsgUsername = this.cleanTextForAPI(msg.username);
+                    const cleanMsgText = this.cleanTextForAPI(msg.text);
+                    context += `@${cleanMsgUsername}: "${cleanMsgText}"\n`;
+                });
+            } else {
+                context += `They said: "${cleanLatestMessage}"\n`;
             }
+            
+            // Add vision context if available
+            const naturalDescription = extractNaturalDescription(visualData);
+            if (naturalDescription) {
+                context += `\nThey also shared an image showing: ${naturalDescription}\n`;
+            }
+            
+            // Ultra-minimal prompt - let Gemini be completely natural
+            const prompt = `${context}
+Reply naturally. Keep it under 280 characters. End your response with a specific question about their post to encourage conversation.
+${naturalDescription ? 'You can see their image.' : ''}`;
+
+            console.log('   🧠 Simplified prompt created');
+            console.log('   📋 Context being sent to Gemini:');
+            console.log('   ', context.split('\n').slice(0, 3).join('\n    '));
+            if (threadContext?.fullConversation?.length > 0) {
+                console.log(`   📊 Thread depth: ${threadContext.fullConversation.length} messages`);
+            }
+            if (naturalDescription) {
+                console.log(`   👁️ Vision: "${naturalDescription.substring(0, 100)}..."`);
+            }
+            
+            // Get response from Gemini
+            const model = await keyManager.createModel("gemini-1.5-flash-8b");
+            const result = await model.generateContent(prompt);
+            let response = result.response.text().trim().replace(/^[\"']|[\"']$/g, '');
+            
+            // Validate response mentions the correct user
+            if (response && cleanUsername && !response.toLowerCase().includes(`@${cleanUsername.toLowerCase()}`)) {
+                console.log(`   ⚠️ Response doesn't mention @${cleanUsername}, fixing...`);
+                // Prepend the username if it's missing
+                response = `@${cleanUsername} ${response}`;
+            }
+            
+            // Check for wrong mentions and remove them
+            const wrongMentionPattern = /@(\w+)/g;
+            const mentions = response.match(wrongMentionPattern) || [];
+            for (const mention of mentions) {
+                const mentionedUser = mention.substring(1).toLowerCase();
+                // If this mention wasn't in the thread context, remove it
+                if (mentionedUser !== cleanUsername.toLowerCase() && 
+                    (!threadContext?.fullConversation?.some(msg => msg.username.toLowerCase() === mentionedUser))) {
+                    console.log(`   ⚠️ Removing incorrect mention: ${mention}`);
+                    response = response.replace(mention, '').trim();
+                }
+            }
+            
+            // Ensure it fits Twitter
+            if (response.length > 280) {
+                const shortenPrompt = `Make this shorter for Twitter (under 280 chars): "${response}"`;
+                const shortenResult = await model.generateContent(shortenPrompt);
+                response = shortenResult.response.text().trim().replace(/^[\"']|[\"']$/g, '');
+            }
+            
+            console.log(`   🧵 [Thread-aware] "${response}"`);
+            return response;
+            
+        } catch (error) {
+            console.log(`   ⚠️ Thread response error: ${error.message}`);
+            // Fall back to simpler response if thread-aware fails
+            return null;
         }
-        
-        // Fallback to regular response
-        return this.generateContextualResponse(username, latestMessage, threadContext.hasImages);
     }
 
     // Deterministic Response Generator
     async generateContextualResponse(username, tweetContent, hasImages = false, visualData = null) {
+        // 🧠 SELF-AWARE: Get adaptive strategies based on current performance
+        const userProfile = this.learningEngine.userProfiles.get(username);
+        const responseStrategy = this.adaptiveStrategy.getResponseStrategy({ 
+            userProfile, 
+            topics: this.extractTopics(tweetContent) 
+        });
+        const engagementStrategy = this.adaptiveStrategy.getEngagementStrategy({ 
+            userProfile, 
+            topics: this.extractTopics(tweetContent) 
+        });
+        
+        console.log(`   🧠 Self-aware mode: confidence ${(responseStrategy.confidence * 100).toFixed(1)}%, tone: ${responseStrategy.tone}`);
+        
+        // Check if we should engage based on adaptive strategy
+        if (!engagementStrategy.shouldEngage) {
+            console.log(`   🎯 Adaptive strategy: skipping engagement - ${engagementStrategy.engagementReason}`);
+            return null;
+        }
+        
+        console.log(`   🎯 Adaptive strategy: engaging - ${engagementStrategy.engagementReason} (target: ${engagementStrategy.targetUsers})`);
+        
+        
         // 0) Sentiment + anti-scam hard gates
         const sentiment = this.sentimentAnalyzer.analyzeSentiment(tweetContent);
         console.log(`   📊 Sentiment: ${sentiment.sentiment} (${sentiment.confidence}) - ${sentiment.reason}`);
@@ -443,8 +482,28 @@ Reply:
         
         // NEW: Better context analysis
         const contextAnalysis = this.betterContextAnalyzer.analyzeContext(tweetContent, visualData);
-        const responseStrategy = this.betterContextAnalyzer.getResponseStrategy(contextAnalysis, tweetContent);
-        console.log(`   📑 Context: ${contextAnalysis.primary} (${responseStrategy.approach})`);
+        const contextStrategy = this.betterContextAnalyzer.getResponseStrategy(contextAnalysis, tweetContent);
+        console.log(`   📑 Context: ${contextAnalysis.primary} (${contextStrategy.approach})`);
+        
+        // Enhanced check: If no Pokemon content at all, return null
+        const enhancedContext = this.contextIntelligence.extractFullContext(tweetContent, visualData);
+        const hasAnyPokemonContent = enhancedContext.pokemon.length > 0 || 
+                                    enhancedContext.cards.sets.length > 0 || 
+                                    enhancedContext.cards.specific.length > 0 ||
+                                    /pokemon|pokémon/i.test(tweetContent);
+        
+        if (!hasAnyPokemonContent && contextAnalysis.primary === 'personal') {
+            console.log(`   ⚠️ No Pokemon content detected in personal post, skipping response`);
+            return null;
+        }
+        
+        // FORCE vision-aware response when we have vision data
+        const naturalDescription = extractNaturalDescription(visualData);
+        if (naturalDescription && hasImages) {
+            console.log(`   🎯 [VISION] Forcing vision-aware response path`);
+            // Skip all the complex logic and go straight to AI generation with vision context
+            return await this.tryAIModels(username, tweetContent, hasImages, {}, visualData);
+        }
         
         // If this is clearly not TCG content and we're forcing TCG responses, skip
         if (contextAnalysis.primary !== 'tcgContent' && 
@@ -646,6 +705,22 @@ Reply:
         const cardContext = this.authorityIntegration?.initialized ? 
             this.authorityIntegration.extractCardContext(tweetContent, visualData) : null;
         
+        // Check Reddit narratives if we have card context
+        let redditNarrative = null;
+        if (this.redditMonitor && cardContext?.cardName) {
+            try {
+                const topNarratives = await this.redditMonitor.getTopNarratives(5);
+                redditNarrative = topNarratives.find(n => 
+                    n.card.toLowerCase().includes(cardContext.cardName.toLowerCase())
+                );
+                if (redditNarrative) {
+                    console.log(`   📡 Reddit sentiment: ${redditNarrative.dominantPattern.type} for ${redditNarrative.card}`);
+                }
+            } catch (error) {
+                // Silent fail for Reddit check
+            }
+        }
+        
         // Track this interaction for learning
         const interactionContext = {
             username,
@@ -660,8 +735,8 @@ Reply:
         };
         
         // Check if we should use adaptive responses based on user history
-        const userProfile = this.learningEngine.userProfiles.get(username);
-        const shouldUseAdaptive = userProfile && userProfile.interactions > 2;
+        const existingUserProfile = this.learningEngine.userProfiles.get(username);
+        const shouldUseAdaptive = existingUserProfile && existingUserProfile.interactions > 2;
         
         // Check if we should use adaptive response for known users
         if (shouldUseAdaptive && !visionFailedOnImage) {
@@ -733,12 +808,63 @@ Reply:
         }
 
         // Use the new composer for educational/authority responses
+        // First try intelligent response generator for high-value responses
+        let intelligentResponse = null;
+        try {
+            intelligentResponse = await this.intelligentResponseGenerator.generateResponse({
+                text: tweetContent,
+                username,
+                hasImages,
+                threadContext: enhancedThreadContext,
+                sentiment
+            });
+            
+            if (intelligentResponse && this.intelligentResponseGenerator.validateResponse(intelligentResponse)) {
+                console.log(`   🧠 Generated intelligent response: "${intelligentResponse.substring(0, 60)}..."`);
+                this.intelligentResponseGenerator.rememberConversation(username, cardContext?.topic || 'general', intelligentResponse);
+            }
+        } catch (error) {
+            console.log(`   ⚠️ Intelligent response generation failed: ${error.message}`);
+        }
+
         const composedResponse = await composeResponse({
             text: tweetContent,
             hasImages,
             threadContext: enhancedThreadContext,
             isEvent,
             authorityFn: async ({ text, hasImages, intents }) => {
+                // Use intelligent response if available
+                if (intelligentResponse && numbersOk && !isEvent) {
+                    return {
+                        primary: intelligentResponse,
+                        secondary: '',
+                        confidence: 0.95
+                    };
+                }
+                
+                // Try API-enhanced response for real-time data
+                if (this.apiEnhancedResponses && cardEntities.length > 0 && numbersOk && !isEvent) {
+                    try {
+                        const apiResponse = await this.apiEnhancedResponses.generateEnhancedResponse({
+                            text: tweetContent,
+                            cardName: cardEntities[0].name,
+                            setName: cardEntities[0].set,
+                            hasImages
+                        });
+                        
+                        if (apiResponse) {
+                            console.log(`   🌐 API-enhanced response: "${apiResponse.substring(0, 60)}..."`);
+                            return {
+                                primary: apiResponse,
+                                secondary: '',
+                                confidence: 0.92
+                            };
+                        }
+                    } catch (error) {
+                        console.log(`   ⚠️ API response failed: ${error.message}`);
+                    }
+                }
+                
                 // Use authority integration if available
                 if (this.authorityIntegration?.initialized && cardContext && numbersOk && !isEvent) {
                     const authorityResponse = await this.authorityIntegration.authorityEngine.generateAuthorityResponse(cardContext);
@@ -804,10 +930,10 @@ Reply:
         }
         const strategy = { 
             strategy: isSocialPost && threadContext ? 'thread_aware' : 
-                     (composedResponse.meta.mode === 'event' ? 'event' : 'composed'),
+                     (composedResponse && composedResponse.meta && composedResponse.meta.mode === 'event' ? 'event' : 'composed'),
             confidence: 'high',
             reason: isSocialPost && threadContext ? 'social/community post' :
-                   (composedResponse.meta.mode === 'event' ? 'event detected' : 'authority + context')
+                   (composedResponse && composedResponse.meta && composedResponse.meta.mode === 'event' ? 'event detected' : 'authority + context')
         };
         
         console.log(`   🎛️ Strategy: ${strategy.strategy} (${strategy.confidence}) - ${strategy.reason}`);
@@ -851,7 +977,7 @@ Reply:
                     contentType: visualData?.analysis?.contentType || 'unknown',
                     eventDetails: eventDetails || null,
                     isEvent: isEvent,
-                    intents: composedResponse.meta.intents
+                    intents: composedResponse?.meta?.intents || []
                 },
                 strategy: strategy,
                 response,
@@ -865,95 +991,93 @@ Reply:
         }
 
         if (!response) {
-            console.log(`   ❌ No response from ${strategy.strategy} strategy`);
+            console.log(`   ❌ No response from ${strategy?.strategy || 'unknown'} strategy`);
             
             // Try AI models as last resort
-            response = await this.tryAIModels(username, tweetContent, hasImages, feats);
+            response = await this.tryAIModels(username, tweetContent, hasImages, feats, visualData);
         }
 
-        // Apply thread truth gate before returning
-        if (response) {
-            response = this.sanitizeAgainstThread(response, visualData?.threadContext);
-        }
+        // Let Gemini be natural - no sanitization
+        
+        // Skip quality checking - trust Gemini's natural responses
         
         return response ? clampTweet(response, 280) : null;
     }
     
     // Generate appropriate responses for non-TCG content
     async generateNonTCGResponse(username, tweetContent, contextAnalysis, strategy, visualData) {
-        // Use adaptive tone generator if we have detailed context
-        if (contextAnalysis.details && this.adaptiveToneGenerator) {
-            try {
-                const adaptiveResponse = this.adaptiveToneGenerator.generateResponse(
-                    contextAnalysis,
-                    contextAnalysis.details,
-                    strategy
-                );
-                
-                console.log(`   🎨 Adaptive response: ${adaptiveResponse.tone} tone, energy ${adaptiveResponse.energy}`);
-                return adaptiveResponse.response;
-            } catch (error) {
-                console.log('   ⚠️ Adaptive generation failed, using fallback');
+        try {
+            // Clean text to prevent encoding errors
+            const cleanUsername = this.cleanTextForAPI(username);
+            const cleanTweetContent = this.cleanTextForAPI(tweetContent);
+            
+            // Build context for Gemini
+            let contextInfo = '';
+            if (contextAnalysis.primary) {
+                const contextMap = {
+                    'videoGame': 'They\'re talking about Pokemon video games',
+                    'fanArt': 'They\'re sharing Pokemon fan art',
+                    'anime': 'They\'re discussing the Pokemon anime',
+                    'merchandise': 'They\'re showing Pokemon merchandise',
+                    'personal': 'They\'re making a personal/community post'
+                };
+                contextInfo = contextMap[contextAnalysis.primary] || 'They\'re posting about Pokemon';
             }
+            
+            // Ultra-simple prompt for maximum naturalness
+            const naturalDescription = extractNaturalDescription(visualData);
+            const prompt = `@${cleanUsername} tweeted: "${cleanTweetContent}"
+${naturalDescription ? `Image shows: ${naturalDescription}` : ''}
+
+Reply naturally (under 280 chars). End with a specific question about their post to encourage conversation.`;
+            
+            // Create model with key rotation
+            const model = await keyManager.createModel("gemini-1.5-flash-8b");
+            const result = await model.generateContent(prompt);
+            let response = result.response.text().trim()
+                .replace(/^[\"']|[\"']$/g, ''); // Remove quotes
+            
+            // Check if Gemini returned multiple options format
+            if (response.includes('Reply options') || response.match(/^\d+\.\s*\(/m)) {
+                console.log('   🔄 Gemini returned options, asking for single response...');
+                const singlePrompt = `Instead of options, just give me your single best natural response to: "${cleanTweetContent}"
+Keep it conversational and under 280 characters.`;
+                const singleResult = await model.generateContent(singlePrompt);
+                response = singleResult.response.text().trim().replace(/^[\"']|[\"']$/g, '');
+            }
+            
+            // Let Gemini handle character limit naturally
+            if (response.length > 280) {
+                const shortenPrompt = `That's too long for Twitter. Make it shorter and keep it natural: "${response}"`;
+                const shortenResult = await model.generateContent(shortenPrompt);
+                response = shortenResult.response.text().trim().replace(/^[\"']|[\"']$/g, '');
+            }
+            
+            console.log(`   🤖 [Gemini Non-TCG] "${response}"`);
+            return response;
+            
+        } catch (error) {
+            console.log(`   ⚠️ Gemini non-TCG generation failed: ${error.message}`);
+            
+            // Simple fallback for non-TCG content
+            const fallbacks = {
+                videoGame: "Nice gameplay! Love seeing Pokemon content from the games",
+                fanArt: "This art looks amazing! Love the style",
+                anime: "Great episode! The anime has been really good lately",
+                merchandise: "Awesome pickup! That's a great addition",
+                personal: "Love the Pokemon community vibes!"
+            };
+            
+            const fallbackResponse = fallbacks[contextAnalysis.primary] || "Cool Pokemon content! Thanks for sharing";
+            console.log(`   📌 [FALLBACK] Using generic response: "${fallbackResponse}" (context: ${contextAnalysis.primary || 'unknown'})`);
+            if (visualData && visualData.visionAnalysis) {
+                console.log(`   📌 [FALLBACK] Despite having vision data:`, {
+                    hasNaturalDescription: !!visualData.visionAnalysis.naturalDescription,
+                    cardCount: visualData.visionAnalysis.cards?.length || 0
+                });
+            }
+            return fallbackResponse;
         }
-        
-        // Fallback to static responses
-        const responses = {
-            videoGame: [
-                "yo that's sick! what route you hunting on?",
-                "shiny hunting hits different fr. how many encounters?",
-                "that gameplay though! what's your team looking like?",
-                "nice progress! scarlet/violet has been fire for shiny hunting",
-                "the grind is real! what method you using?"
-            ],
-            fanArt: [
-                "this art style goes crazy! love the details",
-                "yo the colors on this are fire! great work",
-                "clean design! the shading is on point",
-                "this is heat! love your take on it",
-                "the vibes are immaculate! keep creating"
-            ],
-            anime: [
-                "this episode was wild! horizons keeps getting better",
-                "that scene hit different! what's been your fav episode?",
-                "the animation this season has been insane",
-                "facts! this arc is going crazy",
-                "no cap this series has been delivering"
-            ],
-            merchandise: [
-                "that's a solid pickup! where'd you snag it?",
-                "the quality on these is always fire",
-                "nice haul! pokemon center always delivers",
-                "that collection is growing! display setup clean",
-                "bet that looks fire on display!"
-            ],
-            personal: [
-                "good vibes! hope your day is going well",
-                "appreciate you! pokemon community stays positive",
-                "right back at you! let's get it",
-                "facts! always good energy here",
-                "love to see it! keep spreading the positivity"
-            ]
-        };
-        
-        // Get appropriate response set
-        const responseSet = responses[contextAnalysis.primary] || [
-            "yo that's dope! love seeing all types of pokemon content",
-            "fire content! the community stays creative",
-            "this goes hard! appreciate you sharing",
-            "nice share! always here for pokemon vibes",
-            "love the energy! pokemon hits different"
-        ];
-        
-        // Pick random response
-        const baseResponse = responseSet[Math.floor(Math.random() * responseSet.length)];
-        
-        // If it's a question, make sure we're being helpful
-        if (strategy.isQuestion) {
-            console.log('   ❓ Detected question, ensuring helpful response');
-        }
-        
-        return baseResponse;
     }
     
     // Determine if this is a social/community post that benefits from personality
@@ -1034,17 +1158,26 @@ Reply:
         return response || null;
     }
     
-    async tryAIModels(username, tweetContent, hasImages, features) {
+    async tryAIModels(username, tweetContent, hasImages, features, visualData = null) {
         if (this.geminiFailures < 5) {
             try {
-                const prompt = `Pokemon TCG expert. @${username}: "${tweetContent}"
-${hasImages ? 'With image.' : ''}
-Be specific and knowledgeable. Concise. No hashtags.`;
+                // Clean text to prevent JSON encoding errors
+                const cleanUsername = this.cleanTextForAPI(username);
+                const cleanTweetContent = this.cleanTextForAPI(tweetContent);
+                
+                // Natural prompt for any Pokemon content
+                const visualDescription = visualData?.visionAnalysis?.naturalDescription;
+                const prompt = `You're chatting about Pokemon on Twitter.
+
+@${cleanUsername} said: "${cleanTweetContent}"
+${visualDescription ? `\nThey shared an image showing: ${visualDescription}` : (hasImages ? 'They shared an image too.' : '')}
+
+What's your natural response? Keep it casual and appropriate. No hashtags, no "DM me", just genuine conversation. End with a specific question about their post to encourage conversation. ${visualDescription ? 'CRITICAL: You can SEE their image! Do NOT ask "what does it look like" or request to see things already shown. Comment on what you observe!' : ''} If it's inappropriate, either deflect with humor or don't reply. (Max 280 characters)`;
                 
                 // Create model with key rotation
-                let threadModel;
+                let model;
                 try {
-                    threadModel = await keyManager.createModel("gemini-1.5-flash");
+                    model = await keyManager.createModel("gemini-1.5-flash-8b");
                 } catch (keyError) {
                     // If no keys available, throw immediately to avoid retry loop
                     if (keyError.message === 'No available Gemini API keys') {
@@ -1052,30 +1185,47 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                     }
                     throw keyError;
                 }
-                const result = await threadModel.generateContent(prompt);
+                const result = await model.generateContent(prompt);
                 let response = result.response.text().trim()
-                    .replace(/^[\"']|[\"']$/g, '')
-                    .replace(/#\w+/g, '')
-                    .split('\n')[0]
-                    .trim();
+                    .replace(/^[\"']|[\"']$/g, ''); // Only remove quotes
+                
+                // Check if Gemini returned multiple options format
+                if (response.includes('Reply options') || response.match(/^\d+\.\s*\(/m)) {
+                    console.log('   🔄 Gemini returned options, asking for single response...');
+                    const singlePrompt = `Instead of options, just give me your single best natural response to: "${cleanTweetContent}"
+Keep it conversational and under 280 characters.`;
+                    const singleResult = await model.generateContent(singlePrompt);
+                    response = singleResult.response.text().trim().replace(/^[\"']|[\"']$/g, '');
+                }
+                
+                // Let Gemini handle length naturally
+                if (response.length > 280) {
+                    const shortenPrompt = `That's too long for Twitter. Can you make it shorter? "${response}"`;
+                    const shortenResult = await model.generateContent(shortenPrompt);
+                    response = shortenResult.response.text().trim().replace(/^[\"']|[\"']$/g, '');
+                }
                 
                 console.log(`   🤖 [Gemini] "${response}"`);
                 this.geminiFailures = 0;
-                return clampTweet(response, 280);
+                return response;
             } catch (error) {
                 this.geminiFailures++;
-                console.log(`   ⚠️ Gemini failed`);
+                console.log(`   ⚠️ Gemini failed: ${error.message}`);
             }
         }
         
         if (this.lmStudioAI.available) {
             try {
+                // Clean text for API call
+                const cleanUsername = this.cleanTextForAPI(username);
+                const cleanTweetContent = this.cleanTextForAPI(tweetContent);
+                
                 const messages = [{
                     role: "system",
-                    content: "Pokemon TCG expert. Concise, specific. No hashtags."
+                    content: "You're chatting about Pokemon on Twitter. Be natural and friendly."
                 }, {
                     role: "user",
-                    content: `@${username}: "${tweetContent}". ${hasImages ? 'With image.' : ''} Reply:`
+                    content: `@${cleanUsername}: "${cleanTweetContent}". ${hasImages ? 'With image.' : ''} Reply:`
                 }];
                 
                 const response = await this.lmStudioAI.generateDirectResponse(messages);
@@ -1203,14 +1353,14 @@ Be specific and knowledgeable. Concise. No hashtags.`;
         const oneHourAgo = Date.now() - (60 * 60 * 1000);
         this.repliesThisHour = this.repliesThisHour.filter(time => time > oneHourAgo);
         
-        // Check if we've hit the rate limit (15 replies per hour)
-        if (this.repliesThisHour.length >= 15) {
+        // Check if we've hit the rate limit (25 replies per hour)
+        if (this.repliesThisHour.length >= 25) {
             const oldestReply = Math.min(...this.repliesThisHour);
             const timeSinceOldest = Date.now() - oldestReply;
             const waitTime = (60 * 60 * 1000) - timeSinceOldest;
             
             if (waitTime > 0) {
-                console.log(`\n⚠️ RATE LIMIT: ${this.repliesThisHour.length} replies in last hour`);
+                console.log(`\n⚠️ RATE LIMIT: ${this.repliesThisHour.length}/25 replies in last hour`);
                 console.log(`   ⏰ Waiting ${Math.ceil(waitTime / 60000)} minutes...`);
                 await this.sleep(waitTime);
                 this.repliesThisHour = []; // Reset after waiting
@@ -1234,17 +1384,1056 @@ Be specific and knowledgeable. Concise. No hashtags.`;
         }
     }
 
+    async simpleType(element, text) {
+        console.log(`   🚀 Using simplified typing for: "${text}"`);
+        
+        try {
+            // Click with retry
+            let clicked = false;
+            for (let i = 0; i < 3; i++) {
+                try {
+                    await element.click();
+                    clicked = true;
+                    break;
+                } catch (e) {
+                    console.log(`   ⚠️ Click attempt ${i+1} failed, retrying...`);
+                    await this.sleep(500);
+                }
+            }
+            
+            if (!clicked) {
+                throw new Error('Could not click element after 3 attempts');
+            }
+            
+            await this.sleep(500);
+            
+            // Clear any existing text first
+            await this.page.keyboard.down('Control');
+            await this.page.keyboard.press('a');
+            await this.page.keyboard.up('Control');
+            await this.sleep(100);
+            
+            // Type with error handling and verification
+            try {
+                await this.page.keyboard.type(text, { delay: 50 });
+                console.log(`   ✅ Typed text`);
+                
+                // Verify text was typed correctly
+                await this.sleep(500);
+                const typedText = await this.page.evaluate(() => {
+                    const box = document.querySelector('[data-testid="tweetTextarea_0"]') || 
+                               document.querySelector('div[contenteditable="true"][role="textbox"]');
+                    return box ? box.textContent || box.innerText || '' : '';
+                });
+                
+                // If text is incomplete, try typing again
+                if (typedText.length < text.length - 20) {
+                    console.log(`   ⚠️ Only typed ${typedText.length}/${text.length} chars. Retrying...`);
+                    
+                    // Clear and retype
+                    await this.page.keyboard.down('Control');
+                    await this.page.keyboard.press('a');
+                    await this.page.keyboard.up('Control');
+                    await this.sleep(100);
+                    
+                    // Type slower this time
+                    await this.page.keyboard.type(text, { delay: 100 });
+                    console.log(`   ✅ Retyped with slower delay`);
+                }
+                
+            } catch (typeError) {
+                console.log(`   ⚠️ Keyboard.type failed, trying alternative method...`);
+                // Fallback: type character by character
+                for (const char of text) {
+                    await this.page.keyboard.press(char);
+                    await this.sleep(100);
+                }
+                console.log(`   ✅ Typed using fallback method!`);
+            }
+            
+            // Return a reasonable typing time
+            return text.length * 50;
+            
+        } catch (error) {
+            console.log(`   ❌ Simple typing failed: ${error.message}`);
+            throw error;
+        }
+    }
+
     async humanType(element, text) {
+        console.log(`   🔍 humanType called with text: "${text}"`);
+        console.log(`   🔍 Element exists: ${!!element}`);
+        
+        // Use simple typing for now to debug
+        return await this.simpleType(element, text);
+        
         await element.click();
+        console.log(`   ✅ Clicked element`);
         await this.sleep(500);
         
         // Add read time pause before typing (GPT's micro-polish)
         const readTimeMs = Math.min(4000, 60 * text.length);
+        console.log(`   ⏱️ Read time pause: ${readTimeMs}ms`);
         await this.sleep(readTimeMs * 0.5, readTimeMs);
         
-        for (let char of text) {
-            await this.page.keyboard.type(char);
-            await this.sleep(await this.random(40, 80));
+        // Calculate total typing time (more conservative estimate)
+        const avgDelayPerChar = 80; // More conservative average (was 60)
+        const totalTypingTime = text.length * avgDelayPerChar;
+        console.log(`   📝 Total typing time will be: ${totalTypingTime}ms`);
+        
+        // Verify dialog is open before starting to type
+        console.log(`   🔍 Checking if dialog is ready...`);
+        const initialCheck = await this.page.evaluate(() => {
+            const dialog = document.querySelector('[role="dialog"]');
+            const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+            return !!(dialog && replyBox);
+        });
+        console.log(`   🔍 Dialog ready: ${initialCheck}`);
+        
+        if (!initialCheck) {
+            console.log('   ⚠️ Reply dialog not properly open before typing!');
+            throw new Error('Dialog not ready for typing');
+        }
+        
+        // Set typing state to prevent conversation checks
+        if (this.conversationFollowUp) {
+            this.conversationFollowUp.setTypingState(true);
+        }
+        
+        // Set a flag on the bot instance to prevent any navigation
+        this.isTyping = true;
+        
+        // Also set flag in page context for conversation checker
+        await this.page.evaluate(() => {
+            window.botIsTyping = true;
+        });
+        
+        // Check every 5 characters if dialog is still open (more frequent)
+        console.log(`   🔤 Starting to type ${text.length} characters...`);
+        for (let i = 0; i < text.length; i++) {
+            // Check if dialog closed every 5 chars
+            if (i > 0 && i % 5 === 0) {
+                console.log(`   📊 Progress: ${i}/${text.length} characters typed`);
+                const dialogCheck = await this.page.evaluate(() => {
+                    const dialog = document.querySelector('[role="dialog"]');
+                    const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+                    const hasReplyingTo = dialog && dialog.innerText.includes('Replying to');
+                    return {
+                        dialogOpen: !!dialog,
+                        replyBoxExists: !!replyBox,
+                        isReplyDialog: hasReplyingTo
+                    };
+                });
+                
+                if (!dialogCheck.dialogOpen || !dialogCheck.replyBoxExists) {
+                    console.log('   ⚠️ Reply dialog closed while typing!');
+                    console.log(`   📊 Dialog state: dialog=${dialogCheck.dialogOpen}, box=${dialogCheck.replyBoxExists}, isReply=${dialogCheck.isReplyDialog}`);
+                    // Clear typing state before throwing
+                    if (this.conversationFollowUp) {
+                        this.conversationFollowUp.setTypingState(false);
+                    }
+                    this.isTyping = false;
+                    throw new Error('Dialog closed during typing');
+                }
+                
+                // If dialog changed to something else (not reply dialog), stop
+                if (!dialogCheck.isReplyDialog) {
+                    console.log('   ⚠️ Dialog changed to non-reply dialog!');
+                    // Clear typing state before throwing
+                    if (this.conversationFollowUp) {
+                        this.conversationFollowUp.setTypingState(false);
+                    }
+                    this.isTyping = false;
+                    throw new Error('Dialog changed during typing');
+                }
+            }
+            
+            // Type character with error handling
+            try {
+                await this.page.keyboard.type(text[i]);
+                await this.sleep(await this.random(40, 80));
+            } catch (error) {
+                console.log(`   ⚠️ Error typing character ${i}: ${error.message}`);
+                // Check if we can continue
+                const canContinue = await this.page.evaluate(() => {
+                    const box = document.querySelector('[data-testid="tweetTextarea_0"]');
+                    return !!box;
+                });
+                
+                if (!canContinue) {
+                    // Clear typing state before throwing
+                    if (this.conversationFollowUp) {
+                        this.conversationFollowUp.setTypingState(false);
+                    }
+                    this.isTyping = false;
+                    throw new Error('Lost focus on reply box');
+                }
+                
+                // Try to refocus and continue
+                await element.click();
+                await this.sleep(100);
+                await this.page.keyboard.type(text[i]);
+            }
+        }
+        
+        // Final check after typing is complete
+        const finalCheck = await this.page.evaluate(() => {
+            const dialog = document.querySelector('[role="dialog"]');
+            const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+            const content = replyBox ? replyBox.textContent || '' : '';
+            return {
+                dialogOpen: !!dialog,
+                replyBoxExists: !!replyBox,
+                typedLength: content.length
+            };
+        });
+        
+        if (!finalCheck.dialogOpen || !finalCheck.replyBoxExists) {
+            console.log('   ⚠️ Dialog closed after typing completed!');
+            throw new Error('Dialog closed after typing');
+        }
+        
+        console.log(`   ✅ Typed ${text.length} chars successfully (box shows ${finalCheck.typedLength} chars)`);
+        
+        // Clear typing state
+        if (this.conversationFollowUp) {
+            this.conversationFollowUp.setTypingState(false);
+        }
+        
+        // Clear the bot instance flag
+        this.isTyping = false;
+        
+        // Clear flag in page context
+        await this.page.evaluate(() => {
+            window.botIsTyping = false;
+        });
+        
+        // Return the estimated typing time so caller can wait appropriately
+        return totalTypingTime;
+    }
+
+    async checkProactiveFollowUps() {
+        try {
+            console.log('\n🎯 Checking for proactive follow-ups...');
+            
+            // Get conversations that need follow-up
+            const conversationsNeedingFollowUp = await this.conversationFollowUp.getConversationsNeedingFollowUp();
+            
+            if (conversationsNeedingFollowUp.length === 0) {
+                console.log('   No conversations need follow-up right now');
+                return;
+            }
+            
+            console.log(`   Found ${conversationsNeedingFollowUp.length} conversations to follow up on`);
+            
+            // Process up to 2 follow-ups
+            let followUpsProcessed = 0;
+            
+            for (const convData of conversationsNeedingFollowUp.slice(0, 2)) {
+                const { conversation, latestReply, analysis } = convData;
+                
+                console.log(`   🎯 Following up with @${conversation.theirUsername}`);
+                console.log(`   📊 Reason: ${analysis.reason}`);
+                
+                // Generate a follow-up response based on the conversation history
+                let response;
+                try {
+                    // Build context from conversation history
+                    const threadContext = {
+                        threadLength: conversation.exchanges.length,
+                        mainTopic: conversation.context.topic,
+                        fullConversation: conversation.exchanges.map(ex => ({
+                            username: ex.type.includes('our') ? 'GlitchyGradeAi' : conversation.theirUsername,
+                            text: ex.text
+                        }))
+                    };
+                    
+                    // Generate thread-aware response for follow-up
+                    response = await this.generateThreadAwareResponse(
+                        conversation.theirUsername,
+                        latestReply.text,
+                        threadContext,
+                        null // No visual data for follow-ups currently
+                    );
+                } catch (error) {
+                    console.log(`   ⚠️ Follow-up response generation failed: ${error.message}`);
+                    continue;
+                }
+                
+                if (!response) continue;
+                
+                // Navigate to the conversation page (already handled by checkSpecificConversation)
+                // The page should already be on the tweet from the check
+                
+                // Find the tweet element and reply
+                const tweetElement = await this.page.$('article[data-testid="tweet"]');
+                if (tweetElement) {
+                    const success = await this.replyToTweet(tweetElement, response);
+                    if (success) {
+                        this.replyCount++;
+                        followUpsProcessed++;
+                        this.repliesThisHour.push(Date.now());
+                        console.log(`   ✅ Follow-up sent! [${this.replyCount}/1000]`);
+                        
+                        // Update the conversation follow-up tracker
+                        await this.conversationFollowUp.completeFollowUp(conversation.theirTweetId, response);
+                        
+                        // Update memory
+                        await this.memory.rememberUser(conversation.theirUsername, latestReply.text);
+                        await this.memory.saveUsers();
+                        
+                        // Wait before next follow-up
+                        await this.sleep(5000);
+                    }
+                }
+            }
+            
+            if (followUpsProcessed > 0) {
+                console.log(`   📊 Processed ${followUpsProcessed} follow-ups`);
+                
+                // Show follow-up stats
+                const stats = this.conversationFollowUp.getStats();
+                console.log(`   📈 Active conversations: ${stats.active}, With questions: ${stats.withQuestions}`);
+            }
+            
+        } catch (error) {
+            console.log(`   ❌ Proactive follow-up error: ${error.message}`);
+        }
+    }
+
+    async checkConversationFollowUps() {
+        try {
+            console.log('\n🔔 Checking notifications for replies...');
+            
+            // Navigate to notifications page
+            await this.page.goto('https://x.com/notifications', { waitUntil: 'networkidle2' });
+            await this.sleep(2000);
+            
+            // Click on "All" tab to see all notifications (not just mentions)
+            const allTab = await this.page.$('[role="tab"][href="/notifications"]');
+            if (allTab) {
+                await allTab.click();
+                await this.sleep(1000);
+            }
+            
+            // Scroll through notifications naturally
+            console.log('   📜 Scrolling through notifications...');
+            let scrollCount = 0;
+            let repliesFound = [];
+            let processedNotifications = new Set();
+            let emptyScrolls = 0; // Track empty scrolls to prevent infinite loops
+            let sameCountRepeats = 0; // Track when we keep finding same number
+            let lastNotificationCount = -1;
+            
+            while (scrollCount < 3 && repliesFound.length < 5) { // Max 3 scrolls, max 5 replies
+                // Get all notification divs
+                const notifications = await this.page.$$('div[data-testid="cellInnerDiv"]');
+                console.log(`   📋 Found ${notifications.length} notifications on page`);
+                
+                // Check for same notification count repeating
+                if (notifications.length === lastNotificationCount && notifications.length > 0) {
+                    sameCountRepeats++;
+                    if (sameCountRepeats >= 3) {
+                        console.log(`   ⚠️ Stuck finding same ${notifications.length} notifications repeatedly, breaking loop`);
+                        break;
+                    }
+                } else {
+                    sameCountRepeats = 0; // Reset if count changed
+                }
+                lastNotificationCount = notifications.length;
+                
+                // Check for empty notifications
+                if (notifications.length === 0) {
+                    emptyScrolls++;
+                    if (emptyScrolls >= 3) {
+                        console.log('   ⚠️ No notifications found after 3 attempts, stopping');
+                        break;
+                    }
+                } else {
+                    emptyScrolls = 0; // Reset if we found notifications
+                }
+                
+                for (const notification of notifications) {
+                    try {
+                        // Get notification text - wrap in try/catch for protocol errors
+                        let textContent;
+                        try {
+                            textContent = await notification.evaluate(el => el.innerText);
+                        } catch (protocolError) {
+                            // Skip this notification if we get a protocol error
+                            console.log(`   ⚠️ Protocol error on notification, skipping`);
+                            continue;
+                        }
+                        
+                        // Skip if we've already seen this notification
+                        if (processedNotifications.has(textContent)) continue;
+                        processedNotifications.add(textContent);
+                        
+                        // Debug: Show first 100 chars of each notification
+                        if (scrollCount === 0 && processedNotifications.size <= 5) {
+                            console.log(`   📄 Notification: "${textContent.substring(0, 100).replace(/\n/g, ' ')}..."`);
+                        }
+                        
+                        // Check if it's a reply notification (more flexible matching)
+                        const lowerText = textContent.toLowerCase();
+                        if (lowerText.includes('replied') || lowerText.includes('replying to') || 
+                            lowerText.includes('@glitchygradeai') || textContent.includes('💬')) {
+                            
+                            // Extract username - look for any @username that's not us
+                            const usernames = textContent.match(/@(\w+)/g) || [];
+                            const botUsernames = ['@glitchygradeai', '@glitchygrade'];
+                            const replyUsername = usernames.find(u => !botUsernames.includes(u.toLowerCase()));
+                            
+                            if (replyUsername) {
+                                const username = replyUsername.substring(1); // Remove @
+                                
+                                // Skip if this is our own username
+                                if (username.toLowerCase() === 'glitchygrade' || username.toLowerCase() === 'glitchygradeai') {
+                                    continue;
+                                }
+                                
+                                // Get the reply text
+                                const replyText = await notification.$eval('div[data-testid="tweetText"]', el => el.innerText).catch(() => null);
+                                
+                                if (replyText) {
+                                    // Try to extract tweet ID from notification
+                                    const tweetIdMatch = textContent.match(/status\/(\d+)/) || 
+                                                       await notification.evaluate(el => {
+                                                           const link = el.querySelector('a[href*="/status/"]');
+                                                           return link ? link.href.match(/status\/(\d+)/) : null;
+                                                       });
+                                    const tweetId = tweetIdMatch ? tweetIdMatch[1] : null;
+                                    
+                                    repliesFound.push({
+                                        username,
+                                        text: replyText,
+                                        element: notification,
+                                        tweetId
+                                    });
+                                    console.log(`   💬 Found reply from @${username}: "${replyText.substring(0, 50)}..."`);
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        // Log what went wrong for debugging
+                        console.log(`   ⚠️ Error parsing notification: ${error.message}`);
+                    }
+                }
+                
+                // Scroll down naturally
+                if (scrollCount < 2) {
+                    await this.page.evaluate(() => {
+                        window.scrollBy({
+                            top: window.innerHeight * 0.8,
+                            behavior: 'smooth'
+                        });
+                    });
+                    await this.sleep(2000);
+                    scrollCount++;
+                } else {
+                    // Exit loop after max scrolls
+                    break;
+                }
+            }
+            
+            if (repliesFound.length === 0) {
+                console.log('   No new replies found in notifications');
+                console.log(`   Processed ${processedNotifications.size} total notifications`);
+                return;
+            }
+            
+            console.log(`   📊 Found ${repliesFound.length} replies to potentially follow up on`);
+            
+            // Process up to 2 follow-ups
+            let followUpsProcessed = 0;
+            const maxFollowUps = 2;
+            
+            // Check ALL replies, but only process up to maxFollowUps
+            for (const reply of repliesFound) {
+                if (followUpsProcessed >= maxFollowUps) {
+                    console.log(`   📊 Reached max follow-ups (${maxFollowUps}), skipping remaining replies`);
+                    break;
+                }
+                // Analyze if follow-up is needed
+                const analysis = this.conversationFollowUp.analyzeReply(reply.text);
+                
+                // Skip hostile or argumentative replies
+                const hostilePatterns = /retarded|stupid|bullshit|scamm|idiot|dumb|moron|trash|garbage|imagine being|cope|coping|stay broke|falling for/gi;
+                if (hostilePatterns.test(reply.text)) {
+                    console.log(`   ❌ Skipping @${reply.username} - hostile/argumentative content detected`);
+                    continue;
+                }
+                
+                // Be more lenient - follow up on questions, corrections, or ongoing conversations
+                if (!analysis.hasQuestion && !analysis.isNegative && !analysis.wantsContinuation) {
+                    console.log(`   ⏭️ Skipping @${reply.username} - no follow-up needed (${analysis.sentiment})`);
+                    continue;
+                }
+                
+                // Check if this conversation is being tracked for context
+                const trackedConv = await this.conversationFollowUp.findTrackedConversation(reply.username);
+                
+                if (!trackedConv) {
+                    console.log(`   ℹ️ @${reply.username} is not in tracked conversations, but will still follow up`);
+                }
+                
+                // Check if we've already sent a follow-up recently
+                if (trackedConv && trackedConv.followUpCount >= 3) {
+                    console.log(`   ⏭️ Skipping @${reply.username} - already sent ${trackedConv.followUpCount} follow-ups`);
+                    continue;
+                }
+                
+                // Check if last follow-up was too recent (within last hour)
+                if (trackedConv && trackedConv.exchanges && trackedConv.exchanges.length > 0) {
+                    const lastExchange = trackedConv.exchanges[trackedConv.exchanges.length - 1];
+                    const lastExchangeTime = new Date(lastExchange.timestamp);
+                    const hoursSinceLastExchange = (Date.now() - lastExchangeTime.getTime()) / (1000 * 60 * 60);
+                    
+                    if (hoursSinceLastExchange < 1) {
+                        console.log(`   ⏭️ Skipping @${reply.username} - last follow-up was ${Math.floor(hoursSinceLastExchange * 60)} minutes ago`);
+                        continue;
+                    }
+                }
+                
+                // CHECK WITH USER INTERACTION HISTORY
+                if (this.userInteractionHistory.shouldSkipUser(reply.username)) {
+                    console.log(`   ❌ Skipping @${reply.username} - interaction history says to skip`);
+                    continue;
+                }
+                
+                console.log(`   🎯 Following up with @${reply.username}`);
+                console.log(`   📊 Reason: ${analysis.reason}`);
+                
+                // Extra check for BigRed specifically since we keep trying to respond
+                if (reply.username.toLowerCase() === 'bigreds retrogmz' || 
+                    reply.username.toLowerCase() === 'bigredsretrogmz' ||
+                    reply.text.includes("Who can say? Everyday brings new trade-ins")) {
+                    console.log(`   ❌ Skipping BigRed - we've already responded to this conversation multiple times`);
+                    continue;
+                }
+                
+                // Navigate to the tweet - try direct navigation first if we have tweet ID
+                if (reply.tweetId) {
+                    console.log(`   📍 Navigating directly to tweet: ${reply.tweetId}`);
+                    try {
+                        await this.page.goto(`https://x.com/${reply.username}/status/${reply.tweetId}`, { 
+                            waitUntil: 'networkidle2',
+                            timeout: 10000 
+                        });
+                    } catch (navError) {
+                        console.log(`   ⚠️ Direct navigation failed, trying click method`);
+                        // Fall back to clicking
+                        try {
+                            await reply.element.evaluate(el => el.click());
+                        } catch (clickError) {
+                            console.log(`   ❌ Could not navigate to tweet`);
+                            continue;
+                        }
+                    }
+                } else {
+                    // No tweet ID, try clicking the notification
+                    console.log(`   🖱️ Clicking on notification...`);
+                    try {
+                        await reply.element.evaluate(el => el.click());
+                    } catch (clickError) {
+                        console.log(`   ❌ Click failed: ${clickError.message}`);
+                        continue;
+                    }
+                }
+                await this.sleep(5000); // Give time for page to load
+                
+                // Wait for tweet to be visible
+                try {
+                    await this.page.waitForSelector('article[data-testid="tweet"]', { timeout: 5000 });
+                    console.log(`   ✅ Tweet page loaded`);
+                    // Wait specifically for reply buttons to appear
+                    await this.page.waitForSelector('button[data-testid="reply"]', { timeout: 5000 });
+                    console.log(`   ✅ Reply buttons loaded`);
+                    // Extra wait for dynamic content
+                    await this.sleep(2000);
+                } catch (error) {
+                    console.log(`   ⚠️ Page didn't load properly: ${error.message}`);
+                    // Go back to notifications
+                    await this.page.goto('https://x.com/notifications', { waitUntil: 'networkidle2' });
+                    await this.sleep(1500);
+                    continue;
+                }
+                
+                // Extract full thread context from the page
+                console.log(`   📖 Loading full thread context...`);
+                let fullThreadContext = null;
+                let skipDuplicate = false;
+                try {
+                    // Get all tweets in the thread
+                    const threadTweets = await this.page.evaluate(() => {
+                        const tweets = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
+                        return tweets.map(tweet => {
+                            // Look for username in the tweet header
+                            const userLink = tweet.querySelector('a[href^="/"][role="link"] span');
+                            let username = userLink?.textContent || '';
+                            // Clean up username - remove @ if present
+                            username = username.replace(/^@/, '');
+                            
+                            const text = tweet.querySelector('[data-testid="tweetText"]')?.innerText || '';
+                            const timeEl = tweet.querySelector('time');
+                            const timestamp = timeEl ? timeEl.getAttribute('datetime') : null;
+                            return { username, text, timestamp };
+                        }).filter(t => t.text && t.username);
+                    });
+                    
+                    // Log all tweets found in thread for debugging
+                    console.log(`   📊 Found ${threadTweets.length} tweets in thread`);
+                    threadTweets.forEach((tweet, i) => {
+                        console.log(`     ${i + 1}. @${tweet.username}: "${tweet.text.substring(0, 60)}..."`);
+                    });
+                    
+                    // Find our original message in the thread
+                    const ourOriginalMessage = threadTweets.find(t => 
+                        t.username.toLowerCase() === 'glitchygradeai' || 
+                        t.username.toLowerCase() === '@glitchygradeai' ||
+                        t.username.toLowerCase() === 'glitchygrade' || 
+                        t.username.toLowerCase() === '@glitchygrade'
+                    );
+                    
+                    if (ourOriginalMessage) {
+                        console.log(`   📝 Found our original message: "${ourOriginalMessage.text.substring(0, 50)}..."`);
+                    }
+                    
+                    // Check if we already responded to this specific user's message
+                    const ourMessages = threadTweets.filter(t => 
+                        t.username.toLowerCase() === 'glitchygradeai' || 
+                        t.username.toLowerCase() === '@glitchygradeai' ||
+                        t.username.toLowerCase() === 'glitchygrade' || 
+                        t.username.toLowerCase() === '@glitchygrade'
+                    );
+                    
+                    // Check if we already have ANY responses in this thread
+                    if (ourMessages.length > 0) {
+                        console.log(`   ⚠️ We already have ${ourMessages.length} response(s) in this thread`);
+                        
+                        // Skip if we already have 2 or more responses to prevent spam
+                        if (ourMessages.length >= 2) {
+                            console.log(`   ❌ Already have ${ourMessages.length} responses in thread - skipping to avoid spam`);
+                            skipDuplicate = true;
+                        }
+                        
+                        // Find the specific user's message we're trying to reply to
+                        const userReplyInThread = threadTweets.find(t => 
+                            t.username.toLowerCase() === reply.username.toLowerCase() && 
+                            t.text.includes(reply.text.substring(0, 30))
+                        );
+                        
+                        if (userReplyInThread) {
+                            // Check if any of our messages came after this user's reply
+                            const userReplyTime = userReplyInThread.timestamp ? new Date(userReplyInThread.timestamp) : null;
+                            
+                            for (const ourMsg of ourMessages) {
+                                const ourMsgTime = ourMsg.timestamp ? new Date(ourMsg.timestamp) : null;
+                                
+                                // If we have a message after their reply, we already responded
+                                if (userReplyTime && ourMsgTime && ourMsgTime > userReplyTime) {
+                                    console.log(`   ❌ Already responded to this thread after @${reply.username}'s message! Skipping to avoid spam.`);
+                                    skipDuplicate = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Also check if this is the same conversation we already engaged with
+                        const conversationKey = `${reply.username}-${threadTweets[0]?.text?.substring(0, 50) || 'unknown'}`;
+                        if (this.repliedUsers.has(conversationKey)) {
+                            console.log(`   ❌ Already engaged in this conversation thread! Skipping duplicate.`);
+                            skipDuplicate = true;
+                        } else {
+                            this.repliedUsers.add(conversationKey);
+                        }
+                    }
+                    
+                    // Build proper context
+                    fullThreadContext = {
+                        threadLength: threadTweets.length,
+                        mainTopic: 'Pokemon TCG', // Will be refined based on content
+                        fullConversation: threadTweets,
+                        ourOriginalMessage: ourOriginalMessage ? ourOriginalMessage.text : null,
+                        currentReply: reply.text
+                    };
+                    
+                    // Extract topic from thread content - be more specific and accurate
+                    const threadText = threadTweets.map(t => t.text).join(' ').toLowerCase();
+                    
+                    // More intelligent topic extraction that considers context
+                    const topicCounts = {
+                        blockchain: (threadText.match(/blockchain|nft|digital|fake|counterfeit/gi) || []).length,
+                        gamestop: (threadText.match(/gamestop/gi) || []).length,
+                        powerpack: (threadText.match(/power pack/gi) || []).length,
+                        charizard: (threadText.match(/charizard/gi) || []).length,
+                        pulls: (threadText.match(/pull|pulled|pulls|pulling/gi) || []).length,
+                        trade: (threadText.match(/trade|trading|traded/gi) || []).length,
+                        price: (threadText.match(/price|worth|value|\$/gi) || []).length,
+                        grading: (threadText.match(/psa|bgs|cgc|grade|graded/gi) || []).length,
+                        collection: (threadText.match(/collection|collecting|collector/gi) || []).length,
+                        market: (threadText.match(/market|bubble|crash|invest/gi) || []).length,
+                        authenticity: (threadText.match(/fake|real|authentic|legit|counterfeit/gi) || []).length
+                    };
+                    
+                    // Find the most mentioned topic with better logic
+                    let dominantTopic = 'Pokemon TCG';
+                    
+                    // Check for blockchain/authenticity discussions first
+                    if (topicCounts.blockchain >= 2 || (topicCounts.authenticity >= 2 && topicCounts.blockchain >= 1)) {
+                        dominantTopic = 'Card authenticity and technology';
+                    }
+                    // Only mention power packs if they're actually the main topic
+                    else if (topicCounts.powerpack >= 2 && topicCounts.gamestop >= 1) {
+                        dominantTopic = 'GameStop Power Packs';
+                    }
+                    else if (topicCounts.market >= 2 || (topicCounts.price >= 3 && topicCounts.market >= 1)) {
+                        dominantTopic = 'Pokemon market discussion';
+                    }
+                    else if (topicCounts.trade >= 2) {
+                        dominantTopic = 'Trading cards';
+                    }
+                    else if (topicCounts.grading >= 2) {
+                        dominantTopic = 'Card grading';
+                    }
+                    else if (topicCounts.price >= 2) {
+                        dominantTopic = 'Card values';
+                    }
+                    else if (topicCounts.charizard >= 1) {
+                        dominantTopic = 'Charizard cards';
+                    }
+                    else if (topicCounts.pulls >= 1) {
+                        dominantTopic = 'Card pulls';
+                    }
+                    else if (topicCounts.collection >= 1) {
+                        dominantTopic = 'Card collecting';
+                    }
+                    
+                    fullThreadContext.mainTopic = dominantTopic;
+                    
+                    console.log(`   🎯 Thread topic: ${fullThreadContext.mainTopic}`);
+                    
+                    // Check if thread is hostile or irrelevant - skip if so
+                    const hostilePatterns = /retarded|stupid|bullshit|scamm|idiot|dumb|moron|trash|garbage/gi;
+                    const argumentPatterns = /imagine being|cope|coping|stay broke|falling for|looking retard/gi;
+                    
+                    if (hostilePatterns.test(threadText) || argumentPatterns.test(threadText)) {
+                        console.log(`   ⚠️ Thread contains hostile/argumentative content - skipping to avoid drama`);
+                        skipDuplicate = true;
+                    }
+                    
+                    // Skip if we haven't actually participated in this conversation yet
+                    const ourBotMessages = threadTweets.filter(t => 
+                        t.username.toLowerCase() === 'glitchygradeai' || 
+                        t.username.toLowerCase() === '@glitchygradeai' ||
+                        t.username.toLowerCase() === 'glitchygrade' || 
+                        t.username.toLowerCase() === '@glitchygrade'
+                    );
+                    
+                    if (ourBotMessages.length === 0) {
+                        console.log(`   ⚠️ We haven't participated in this conversation - checking if we should join...`);
+                        
+                        // Only join if it's actually about Pokemon TCG and not just blockchain arguments
+                        const tcgRelevance = (topicCounts.charizard + topicCounts.pulls + topicCounts.trade + 
+                                            topicCounts.grading + topicCounts.collection + topicCounts.price);
+                        
+                        if (tcgRelevance < 2 && dominantTopic === 'Card authenticity and technology') {
+                            console.log(`   ❌ Not joining - conversation is about blockchain/tech with low TCG relevance`);
+                            skipDuplicate = true;
+                        }
+                    }
+                } catch (contextError) {
+                    console.log(`   ⚠️ Could not extract full thread context: ${contextError.message}`);
+                }
+                
+                // Skip if we determined this is a duplicate
+                if (skipDuplicate) {
+                    continue;
+                }
+                
+                // Generate follow-up response
+                let response;
+                try {
+                    // Use the full thread context we just extracted from the page
+                    let threadContext = fullThreadContext;
+                    
+                    // If we couldn't get full context from page, fall back to what we have
+                    if (!threadContext) {
+                        if (trackedConv) {
+                            // We have context from tracking
+                            threadContext = {
+                                threadLength: trackedConv.exchanges.length + 1,
+                                mainTopic: trackedConv.context.topic || 'Pokemon TCG',
+                                fullConversation: trackedConv.exchanges.map(ex => ({
+                                    username: ex.type.includes('our') ? 'GlitchyGradeAi' : reply.username,
+                                    text: ex.text
+                                })),
+                                ourOriginalMessage: trackedConv.ourLastResponse
+                            };
+                            
+                            // Add the new reply
+                            threadContext.fullConversation.push({
+                                username: reply.username,
+                                text: reply.text
+                            });
+                        } else {
+                            // No context at all - this will likely generate poor responses
+                            console.log(`   ⚠️ No context available - response may be generic`);
+                            threadContext = {
+                                threadLength: 2,
+                                mainTopic: 'Pokemon TCG',
+                                fullConversation: [{
+                                    username: reply.username,
+                                    text: reply.text
+                                }],
+                                ourOriginalMessage: null
+                            };
+                        }
+                    }
+                    
+                    // Log what context we're using
+                    console.log(`   🧵 Using context: ${threadContext.threadLength} messages, topic: ${threadContext.mainTopic}`);
+                    if (threadContext.ourOriginalMessage) {
+                        console.log(`   💬 Our original: "${threadContext.ourOriginalMessage.substring(0, 50)}..."`);
+                    }
+                    
+                    // Check if this is an identity question
+                    const isIdentityQuestion = /who (dis|is this|are you)|what are you/i.test(reply.text);
+                    
+                    if (isIdentityQuestion) {
+                        // Give a friendly introduction
+                        response = "Hey! I'm a Pokemon TCG enthusiast who loves talking about cards, pulls, and trades. Just here vibing with the community! 🎴";
+                    } else {
+                        // First try intelligent response generator for high-value responses
+                        try {
+                            const intelligentResponse = await this.intelligentResponseGenerator.generateResponse({
+                                text: reply.text,
+                                username: reply.username,
+                                hasImages: false,
+                                threadContext: fullThreadContext || threadContext,
+                                sentiment: analysis
+                            });
+                            
+                            if (intelligentResponse && this.intelligentResponseGenerator.validateResponse(intelligentResponse)) {
+                                response = intelligentResponse;
+                                console.log(`   🧠 Using intelligent response: "${response.substring(0, 60)}..."`);
+                                
+                                // Track in conversation memory
+                                this.intelligentResponseGenerator.rememberConversation(
+                                    reply.username,
+                                    fullThreadContext?.mainTopic || 'general',
+                                    response
+                                );
+                            }
+                        } catch (error) {
+                            console.log(`   ⚠️ Intelligent response failed: ${error.message}`);
+                        }
+                        
+                        // Fall back to thread-aware response if needed
+                        if (!response) {
+                            response = await this.generateThreadAwareResponse(
+                                reply.username,
+                                reply.text,
+                                threadContext,
+                                null
+                            );
+                        }
+                        
+                        // Check if response is too similar to recent ones
+                        if (response && this.responseVariety && this.responseVariety.isTooSimilar(reply.username, response)) {
+                            console.log(`   🔄 Response too similar to recent ones, regenerating...`);
+                            // Try to get a different response
+                            response = await this.generateThreadAwareResponse(
+                                reply.username,
+                                reply.text + " (please vary response)",
+                                threadContext,
+                                null
+                            );
+                        }
+                    }
+                    
+                    // Track response for variety
+                    if (response && this.responseVariety) {
+                        this.responseVariety.trackResponse(reply.username, response);
+                    }
+                } catch (error) {
+                    console.log(`   ⚠️ Follow-up response generation failed: ${error.message}`);
+                    // Go back to notifications
+                    await this.page.goto('https://x.com/notifications', { waitUntil: 'networkidle2' });
+                    await this.sleep(1500);
+                    continue;
+                }
+                
+                if (!response) {
+                    // Go back to notifications
+                    await this.page.goto('https://x.com/notifications', { waitUntil: 'networkidle2' });
+                    await this.sleep(1500);
+                    continue;
+                }
+                
+                // Find the reply button and respond - be very specific to avoid compose button
+                console.log(`   🔍 Looking for reply button on ${reply.username}'s comment...`);
+                // First wait a bit for tweet to fully render
+                await this.sleep(2000);
+                
+                // Find the specific reply from the user
+                const userReplyFound = await this.page.evaluate((targetUsername, replyText) => {
+                    // Find all tweet articles
+                    const tweets = document.querySelectorAll('article[data-testid="tweet"]');
+                    console.log(`Looking for @${targetUsername}'s reply among ${tweets.length} tweets`);
+                    
+                    for (const tweet of tweets) {
+                        // Look for username in different possible locations
+                        const userLinks = tweet.querySelectorAll('a[href*="/' + targetUsername + '"]');
+                        let isUserTweet = false;
+                        
+                        for (const link of userLinks) {
+                            // Check if this link contains the username
+                            const spans = link.querySelectorAll('span');
+                            for (const span of spans) {
+                                const text = span.textContent.trim();
+                                if (text === '@' + targetUsername || text === targetUsername) {
+                                    isUserTweet = true;
+                                    break;
+                                }
+                            }
+                            if (isUserTweet) break;
+                        }
+                        
+                        // Also check tweet text to confirm it's the right reply
+                        if (isUserTweet && replyText) {
+                            const tweetText = tweet.querySelector('[data-testid="tweetText"]');
+                            if (tweetText && tweetText.textContent.includes(replyText.substring(0, 50))) {
+                                // Found the correct reply
+                                const replyButton = tweet.querySelector('button[data-testid="reply"]');
+                                if (replyButton) {
+                                    console.log(`Found ${targetUsername}'s reply!`);
+                                    // Scroll to it and click
+                                    tweet.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    setTimeout(() => replyButton.click(), 500);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    console.log(`Could not find @${targetUsername}'s specific reply`);
+                    return false;
+                }, reply.username, reply.text);
+                
+                if (!userReplyFound) {
+                    console.log(`   ❌ Could not find ${reply.username}'s reply on page`);
+                    continue;
+                }
+                
+                console.log(`   ✅ Found and clicked reply button on ${reply.username}'s comment`);
+                await this.sleep(3000); // Wait for click to complete and dialog to open
+                    
+                    // Type the response
+                    console.log(`   📝 Looking for text area...`);
+                    
+                    // Make sure we're in a reply dialog by checking for "Replying to" text
+                    const isReplyDialog = await this.page.evaluate(() => {
+                        // Get the modal dialog
+                        const modal = document.querySelector('[role="dialog"]');
+                        if (!modal) return false;
+                        
+                        // Check if the dialog text contains "Replying to"
+                        const modalText = modal.innerText || '';
+                        return modalText.includes('Replying to');
+                    }).catch(() => false);
+                    
+                    if (!isReplyDialog) {
+                        console.log(`   ❌ This looks like main compose, not a reply! Canceling...`);
+                        // Close the dialog
+                        const closeButton = await this.page.$('[aria-label="Close"]');
+                        if (closeButton) {
+                            await closeButton.click();
+                            await this.sleep(1000);
+                        }
+                        continue;
+                    }
+                    
+                    const tweetTextarea = await this.page.$('div[data-testid="tweetTextarea_0"]');
+                    if (tweetTextarea) {
+                        console.log(`   ⌨️ Typing response: "${response}"`);
+                        console.log(`   🔍 REPLY FLOW: About to click textarea...`);
+                        
+                        // Test if we can type directly without humanType
+                        try {
+                            await tweetTextarea.click();
+                            await this.sleep(500);
+                            console.log(`   🔍 TEST: Typing with keyboard.type...`);
+                            await this.page.keyboard.type(response, { delay: 50 });
+                            console.log(`   ✅ TEST: Direct typing succeeded!`);
+                            const typingTime = response.length * 50;
+                        } catch (error) {
+                            console.log(`   ❌ Direct typing failed: ${error.message}`);
+                            throw error;
+                        }
+                        
+                        // Wait for full typing time plus buffer
+                        await this.sleep(Math.max(1500, typingTime + 500));
+                        
+                        // Verify text is fully typed
+                        const typedText = await this.page.evaluate(() => {
+                            const box = document.querySelector('[data-testid="tweetTextarea_0"]');
+                            return box ? box.textContent || box.innerText || '' : '';
+                        });
+                        
+                        if (typedText.length < response.length - 20) {
+                            console.log(`   ⚠️ Text not fully typed. Waiting...`);
+                            await this.sleep(2000);
+                        }
+                        
+                        // Send the reply
+                        console.log(`   🔍 Looking for send button...`);
+                        const sendButton = await this.page.$('button[data-testid="tweetButton"]');
+                        if (sendButton) {
+                            console.log(`   📤 Sending follow-up...`);
+                            await sendButton.click();
+                            await this.sleep(3000); // More time to ensure it's sent
+                            
+                            this.replyCount++;
+                            followUpsProcessed++;
+                            this.repliesThisHour.push(Date.now());
+                            console.log(`   ✅ Follow-up sent! [${this.replyCount}/1000]`);
+                            
+                            // RECORD IN USER INTERACTION HISTORY
+                            await this.userInteractionHistory.recordInteraction(
+                                reply.username,
+                                reply.tweetId,
+                                reply.text,
+                                response
+                            );
+                            
+                            // Update tracking if we have a tracked conversation
+                            if (trackedConv) {
+                                await this.conversationFollowUp.completeFollowUp(trackedConv.theirTweetId, response);
+                            }
+                            await this.memory.rememberUser(reply.username, reply.text);
+                        } else {
+                            console.log(`   ❌ Send button not found`);
+                        }
+                    } else {
+                        console.log(`   ❌ Text area not found`);
+                    }
+                
+                // Go back to notifications for next reply
+                if (followUpsProcessed < maxFollowUps && followUpsProcessed < repliesFound.length - 1) {
+                    console.log('   ⏳ Returning to notifications...');
+                    await this.page.goto('https://x.com/notifications', { waitUntil: 'networkidle2' });
+                    await this.sleep(2000);
+                }
+            }
+            
+            if (followUpsProcessed > 0) {
+                console.log(`   📊 Processed ${followUpsProcessed} follow-ups`);
+                const stats = this.conversationFollowUp.getStats();
+                console.log(`   📈 Active conversations: ${stats.active}`);
+            }
+            
+        } catch (error) {
+            console.log(`   ❌ Notification check error: ${error.message}`);
         }
     }
 
@@ -1329,9 +2518,33 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                     newConversations++;
                     this.repliesThisHour.push(Date.now()); // Track for rate limiting
                     console.log(`   ✅ Continued conversation! [${this.replyCount}/1000]`);
+
+                    // Track engagement outcome
+                    await this.engagementOutcomeTracker.trackEngagement({
+                        type: 'reply',
+                        targetTweetId: data.tweetId || 'unknown',
+                        targetUsername: data.username || 'unknown',
+                        botResponse: response,
+                        responseType: 'contextual_reply'
+                    });
                     
                     // Mark as processed
                     await this.conversationTracker.markAsProcessed(data.tweetId, data.username, data.tweetText);
+                    
+                    // Track this follow-up conversation
+                    if (this.conversationFollowUp && data.tweetId) {
+                        await this.conversationFollowUp.trackConversation(
+                            data.tweetId,
+                            data.username,
+                            response,
+                            {
+                                topic: data.threadContext?.mainTopic || 'pokemon',
+                                sentiment: this.sentimentAnalyzer.analyzeSentiment(data.tweetText).sentiment,
+                                hasImages: data.hasImages,
+                                cardsMentioned: this.extractCardNames(data.tweetText)
+                            }
+                        );
+                    }
                     
                     // Update memory
                     await this.memory.rememberUser(data.username, data.tweetText);
@@ -1369,18 +2582,135 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             await replyButton.click();
             await this.sleep(3000);
             
-            const replyBox = await this.page.waitForSelector(
-                'div[data-testid="tweetTextarea_0"]',
-                { timeout: 10000 }
-            ).catch(() => null);
+            // Try multiple possible selectors for the reply box
+            let replyBox = null;
+            const replySelectors = [
+                '[data-testid="tweetTextarea_0"]',
+                'div[role="textbox"][data-testid="tweetTextarea_0"]',
+                'div[contenteditable="true"][role="textbox"]',
+                'div[contenteditable="true"][data-text="true"]',
+                '.DraftEditor-root .public-DraftEditor-content',
+                'div[aria-label*="Tweet text"]',
+                'div[aria-label*="Reply"]',
+                'div.public-DraftStyleDefault-block'
+            ];
+            
+            for (const selector of replySelectors) {
+                try {
+                    replyBox = await this.page.waitForSelector(selector, { timeout: 3000 });
+                    if (replyBox) {
+                        console.log(`   ✅ Found reply box with selector: ${selector}`);
+                        break;
+                    }
+                } catch (e) {
+                    // Try next selector
+                }
+            }
             
             if (!replyBox) {
-                await this.page.keyboard.press('Escape');
+                console.log('   ❌ Could not find reply box with any selector');
+                // Try to close any open modal
+                try {
+                    await this.page.keyboard.press('Escape');
+                } catch (e) {}
                 return false;
             }
             
-            await this.humanType(replyBox, response);
-            await this.sleep(2000);
+            // Type the response with dialog monitoring
+            let typingTime;
+            try {
+                // Check if we have a valid response
+                if (!response || (typeof response === 'string' && response.trim().length === 0)) {
+                    console.log('   ❌ No valid response to type (response is null/empty), closing dialog...');
+                    await this.page.keyboard.press('Escape');
+                    return false;
+                }
+                
+                typingTime = await this.humanType(replyBox, response);
+            } catch (error) {
+                console.log('   ⚠️ Error during typing:', error.message);
+                // Check if dialog is still open
+                const stillOpen = await this.page.evaluate(() => {
+                    return !!document.querySelector('[role="dialog"]');
+                });
+                if (!stillOpen) {
+                    console.log('   ❌ Dialog closed during typing, aborting...');
+                    return false;
+                }
+                throw error;
+            }
+            
+            // Wait for full typing time plus buffer to ensure all text is in the box
+            await this.sleep(Math.max(2000, typingTime + 1000));
+            
+            // Verify the full text is in the reply box before sending
+            const typedText = await this.page.evaluate(() => {
+                const box = document.querySelector('[data-testid="tweetTextarea_0"]') || 
+                           document.querySelector('div[contenteditable="true"][role="textbox"]');
+                return box ? box.textContent || box.innerText || '' : '';
+            });
+            
+            // Check if we have most of the text (allow for @username prepending)
+            const expectedLength = response.length;
+            const typedLength = typedText.length;
+            if (typedLength < expectedLength - 20) { // Allow 20 char buffer for @username
+                console.log(`   ⚠️ Text not fully typed. Expected ~${expectedLength} chars, got ${typedLength}`);
+                
+                // If very little was typed (like just "y"), the dialog might have been interrupted
+                if (typedLength < 10) {
+                    console.log(`   ❌ Critical: Only ${typedLength} chars typed. Dialog was likely interrupted.`);
+                    // Clear typing state
+                    if (this.conversationFollowUp) {
+                        this.conversationFollowUp.setTypingState(false);
+                    }
+                    this.isTyping = false;
+                    await this.page.evaluate(() => {
+                        window.botIsTyping = false;
+                    });
+                    // Close dialog
+                    await this.page.keyboard.press('Escape');
+                    await this.sleep(1000);
+                    return false;
+                }
+                
+                // Wait a bit more
+                await this.sleep(3000);
+                
+                // Check again
+                const typedTextAfterWait = await this.page.evaluate(() => {
+                    const box = document.querySelector('[data-testid="tweetTextarea_0"]') || 
+                               document.querySelector('div[contenteditable="true"][role="textbox"]');
+                    return box ? box.textContent || box.innerText || '' : '';
+                });
+                
+                if (typedTextAfterWait.length < expectedLength - 20) {
+                    console.log(`   ❌ Still incomplete. Aborting reply.`);
+                    // Clear typing state
+                    if (this.conversationFollowUp) {
+                        this.conversationFollowUp.setTypingState(false);
+                    }
+                    this.isTyping = false;
+                    await this.page.evaluate(() => {
+                        window.botIsTyping = false;
+                    });
+                    await this.page.keyboard.press('Escape');
+                    return false;
+                }
+            }
+            
+            // Final safety check - ensure we're still in reply dialog before sending
+            const inReplyDialog = await this.page.evaluate(() => {
+                const dialog = document.querySelector('[role="dialog"]');
+                const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+                const hasReplyingTo = dialog && dialog.innerText.includes('Replying to');
+                return !!(dialog && replyBox && hasReplyingTo);
+            });
+            
+            if (!inReplyDialog) {
+                console.log('   ❌ Not in reply dialog! Aborting send to prevent misplaced tweet');
+                await this.page.keyboard.press('Escape');
+                return false;
+            }
             
             // Send
             const sent = await this.page.evaluate(() => {
@@ -1417,6 +2747,7 @@ Be specific and knowledgeable. Concise. No hashtags.`;
         
         await this.memory.initialize();
         await this.conversationTracker.initialize();
+        await this.userInteractionHistory.initialize();
         
         // Load previously replied users into our Set
         for (const [username, userData] of this.memory.users.entries()) {
@@ -1430,7 +2761,8 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             console.log('🔌 Connecting to Chrome...');
             this.browser = await puppeteer.connect({
                 browserURL: 'http://127.0.0.1:9222',
-                defaultViewport: null
+                defaultViewport: null,
+                protocolTimeout: 180000 // 3 minutes timeout to prevent Runtime.callFunctionOn timeouts
             });
             
             const pages = await this.browser.pages();
@@ -1439,6 +2771,33 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 if (url.includes('x.com') || url.includes('twitter.com')) {
                     this.page = page;
                     console.log(`✅ Connected to X.com\n`);
+                    
+                    // Add listener to prevent accidental retweets
+                    await this.page.evaluateOnNewDocument(() => {
+                        // Override any retweet confirmation dialogs
+                        const observer = new MutationObserver((mutations) => {
+                            for (const mutation of mutations) {
+                                if (mutation.type === 'childList') {
+                                    for (const node of mutation.addedNodes) {
+                                        if (node.nodeType === 1 && node.tagName) {
+                                            // Check for retweet confirmation dialogs
+                                            const text = node.innerText || '';
+                                            if (text.includes('Retweet') && text.includes('Quote')) {
+                                                console.warn('Blocking retweet dialog!');
+                                                // Click cancel or press Escape
+                                                const cancelBtn = node.querySelector('button[aria-label*="Cancel"]') || 
+                                                                node.querySelector('button[data-testid="close"]');
+                                                if (cancelBtn) cancelBtn.click();
+                                                else document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        observer.observe(document.body, { childList: true, subtree: true });
+                    });
+                    
                     break;
                 }
             }
@@ -1456,13 +2815,19 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 this.conversationChecker = new ConversationChecker(this.page);
                 this.visualAnalyzer = new VisualAnalyzer(this.page, { 
                     lmstudio: this.lmstudio,
-                    geminiKeys: GEMINI_API_KEYS 
+                    geminiKeys: GEMINI_API_KEYS,
+                    enableVisionAPI: process.env.ENABLE_VISION_API === 'true'
                 });
                 console.log('💬 Conversation checker initialized');
                 
                 // Initialize following monitor
                 this.followingMonitor = new FollowingMonitor(this.page);
                 console.log('👥 Following monitor initialized');
+                
+                // Initialize conversation follow-up system
+                this.conversationFollowUp = new ConversationFollowUp(this.page);
+                await this.conversationFollowUp.initialize();
+                console.log('🎯 Conversation follow-up system initialized');
             }
             
             return !!this.page;
@@ -1524,10 +2889,17 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 }
                 
                 // Check for conversation replies every 7 searches
+                // DISABLED: Pausing notification responses
+                /*
                 if (searchCounter > 0 && searchCounter % 7 === 0 && this.conversationChecker) {
                     await this.checkAndReplyToConversations();
                 }
+                */
                 
+                // Removed complex search counter logic - follow-ups now happen between searches
+                
+                // DISABLED: Original market posts - bot should only reply to others
+                /*
                 // Check if it's time for an original market post every 10 searches
                 if (searchCounter > 0 && searchCounter % 10 === 0 && this.authorityIntegration?.initialized) {
                     if (this.authorityIntegration.shouldPostOriginal()) {
@@ -1539,24 +2911,82 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                         }
                     }
                 }
+                */
                 
-                // Check Following timeline every 5 searches (more frequent for testing)
-                if (searchCounter > 0 && searchCounter % 5 === 0 && this.followingMonitor) {
+                // Check Following timeline every 3 searches for engagement opportunities  
+                if (searchCounter > 0 && searchCounter % 3 === 0 && this.followingMonitor) {
                     if (this.followingMonitor.shouldCheckFollowing()) {
-                        console.log('\n👀 Time to check what influencers are saying...');
+                        console.log('\n👥 Checking Following timeline for engagement opportunities...');
                         try {
-                            const signals = await this.followingMonitor.checkFollowingTimeline();
+                            // Navigate to Following timeline
+                            await this.followingMonitor.navigateToFollowing();
+                            await this.sleep(3000);
                             
-                            // If we found strong signals, maybe reference them later
-                            if (signals.length > 0) {
-                                const topSignal = signals[0];
-                                console.log(`   📊 Top signal: ${topSignal.cards[0]} - ${topSignal.patterns[0].type}`);
+                            // Extract tweets for engagement
+                            const followingTweets = await this.followingMonitor.extractFollowingTweets();
+                            
+                            if (followingTweets.length > 0) {
+                                console.log(`   🎯 Found ${followingTweets.length} tweets from followed accounts`);
+                                
+                                // Prioritize recent posts from followed accounts (higher value)
+                                const prioritizedTweets = followingTweets
+                                    .filter(tweet => ['very_recent', 'recent_post'].includes(tweet.postAge))
+                                    .slice(0, 2); // Limit to 2 high-priority engagements
+                                
+                                // Engage with prioritized tweets
+                                for (const tweet of prioritizedTweets) {
+                                    // Check rate limits
+                                    const recentReplies = this.repliesThisHour.filter(
+                                        time => Date.now() - time < 3600000
+                                    );
+                                    if (recentReplies.length >= 25) {
+                                        console.log('   ⚠️ Rate limit reached, skipping Following engagement');
+                                        break;
+                                    }
+                                    
+                                    console.log(`\n📄 ANALYZING FOLLOWING TWEET:`);
+                                    console.log(`   👤 User: @${tweet.username} (FOLLOWED ACCOUNT)`);
+                                    console.log(`   📝 Text: "${tweet.text.substring(0, 100)}..."`);
+                                    console.log(`   🖼️ Has images: ${tweet.hasImages}`);
+                                    console.log(`   🕐 Post age: ${tweet.postAge}`);
+                                    
+                                    // Analyze and potentially engage
+                                    const decision = await this.analyzeTweet(tweet);
+                                    
+                                    if (decision.shouldEngage) {
+                                        console.log(`   ✅ Engaging with followed account: ${decision.reason}`);
+                                        const success = await this.engageWithTweet(tweet, decision.action);
+                                        
+                                        if (success) {
+                                            engagementsThisRound++;
+                                            engagedTweets.push(tweet);
+                                            
+                                            // Longer delay after engaging with followed accounts (more natural)
+                                            await this.sleep(45000 + Math.random() * 30000); // 45-75 seconds
+                                        }
+                                    } else {
+                                        console.log(`   ❌ Skipping: ${decision.reason}`);
+                                    }
+                                }
                             }
                             
-                            // Add a natural delay after checking following
-                            await this.sleep(5000 + Math.random() * 5000);
+                            // Also check for intelligence signals while we're here
+                            const signals = await this.followingMonitor.checkFollowingTimeline();
+                            if (signals.length > 0) {
+                                const topSignal = signals[0];
+                                console.log(`   📊 Intelligence: ${topSignal.cards[0]} - ${topSignal.patterns[0].type}`);
+                            }
+                            
+                            // Navigate back to search for normal flow
+                            console.log('   🔄 Returning to search timeline...');
+                            await this.page.goto('https://x.com/search?q=&src=typed_query', {
+                                waitUntil: 'networkidle2',
+                                timeout: 15000
+                            });
+                            await this.sleep(2000);
+                            
                         } catch (error) {
-                            console.log('   ⚠️ Following check failed:', error.message);
+                            console.log('   ⚠️ Following engagement failed:', error.message);
                         }
                     }
                 }
@@ -1623,23 +3053,60 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 const seenTweets = [];
                 const processedTweetIds = new Set();
                 
+                // Add extra wait to ensure tweets are loaded
+                await this.sleep(3000);
+                
+                // Validate page is ready before proceeding
+                try {
+                    await this.page.mainFrame();
+                } catch (frameError) {
+                    if (frameError.message.includes('Requesting main frame too early')) {
+                        console.log('   ⚠️ Page not ready, waiting...');
+                        await this.sleep(5000);
+                        continue;
+                    }
+                }
+                
                 console.log(`📊 Collecting tweets for engagement analysis...`);
+                
+                // Track users found in this search
+                const foundUsers = [];
                 
                 for (let scroll = 0; scroll < 5; scroll++) {
                     const tweets = await this.page.$$('article[data-testid="tweet"]');
                     
+                    if (scroll === 0 && tweets.length === 0) {
+                        // Debug: Check what's on the page
+                        const pageContent = await this.page.evaluate(() => {
+                            const hasNoResults = document.querySelector('[data-testid="empty_state_header_text"]');
+                            const isLoading = document.querySelector('[role="progressbar"]');
+                            return {
+                                hasNoResults: !!hasNoResults,
+                                isLoading: !!isLoading,
+                                bodyText: document.body.innerText.substring(0, 200)
+                            };
+                        });
+                        console.log(`   🔍 Page status:`, pageContent);
+                    }
+                    
                     // Add only new tweets
                     for (const tweet of tweets) {
-                        const tweetId = await tweet.evaluate(el => {
+                        const tweetData = await tweet.evaluate(el => {
                             const link = el.querySelector('a[href*="/status/"]');
+                            const usernameEl = el.querySelector('a[href^="/"]');
+                            const username = usernameEl?.getAttribute('href')?.substring(1) || 'unknown';
                             // Use element position as fallback ID
                             const rect = el.getBoundingClientRect();
-                            return link?.href || `tweet-${rect.top}-${rect.left}`;
+                            return {
+                                id: link?.href || `tweet-${rect.top}-${rect.left}`,
+                                username: username
+                            };
                         });
                         
-                        if (!processedTweetIds.has(tweetId)) {
-                            processedTweetIds.add(tweetId);
+                        if (!processedTweetIds.has(tweetData.id)) {
+                            processedTweetIds.add(tweetData.id);
                             seenTweets.push(tweet);
+                            foundUsers.push(tweetData.username);
                         }
                     }
                     
@@ -1651,6 +3118,9 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 }
                 
                 console.log(`📊 Collected ${seenTweets.length} unique tweets`);
+                
+                // Track the search results to detect loops
+                this.searchEngine.trackSearchResults(query, foundUsers);
                 
                 // If no tweets found, try a simpler fallback search
                 if (seenTweets.length === 0) {
@@ -1708,9 +3178,20 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                     const recentReplies = this.repliesThisHour.filter(
                         time => Date.now() - time < 3600000
                     );
-                    if (recentReplies.length >= 15) {
-                        console.log(`⚠️ Hourly limit reached (${recentReplies.length}/15), will resume later`);
+                    if (recentReplies.length >= 25) {
+                        console.log(`⚠️ Hourly limit reached (${recentReplies.length}/25), will resume later`);
                         break;
+                    }
+                    
+                    // Burst protection: Check 15-minute window
+                    const fifteenMinutesAgo = Date.now() - (15 * 60 * 1000);
+                    const recentBurst = this.repliesThisHour.filter(
+                        time => time > fifteenMinutesAgo
+                    );
+                    if (recentBurst.length >= 8) {
+                        console.log(`⚠️ Burst limit reached (${recentBurst.length}/8 in 15 min), cooling down...`);
+                        await this.sleep(5 * 60 * 1000); // 5 minute cooldown
+                        continue;
                     }
                     
                     const decision = await this.analyzeTweet(tweet);
@@ -1744,6 +3225,79 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 
                 console.log(`✅ Completed ${engagementsThisRound}/${actualTarget} engagements this round\n`);
                 
+                // Check for conversation follow-ups between searches
+                // DISABLED: Pausing notification responses
+                /*
+                if (this.conversationFollowUp) {
+                    await this.checkConversationFollowUps();
+                }
+                */
+                
+                // DISABLED: Authority content generation - bot should only reply to others
+                /*
+                // Authority content generation with fact-checking (DISABLED FOR NOW)
+                if (Math.random() < 0.00 && this.authorityContent) { // Disabled until ready - was 0.05
+                    try {
+                        // Re-initialize with proper data sources if needed
+                        if (!this.authorityContent.redditMonitor) {
+                            this.authorityContent = new AuthorityContent(this.redditMonitor, this.priceService);
+                        }
+                        await this.authorityContent.initialize();
+                        
+                        const hour = new Date().getHours();
+                        let authorityPost = '';
+                        
+                        if (hour >= 6 && hour < 10) {
+                            authorityPost = await this.authorityContent.generateMorningReport();
+                        } else if (hour >= 11 && hour < 14) {
+                            authorityPost = await this.authorityContent.generateTrendAlert();
+                        } else if (hour >= 14 && hour < 17) {
+                            authorityPost = await this.authorityContent.generateAfternoonAlert();
+                        } else if (hour >= 19 && hour < 22) {
+                            authorityPost = await this.authorityContent.generateEveningRecap();
+                        } else {
+                            authorityPost = await this.authorityContent.makePrediction();
+                        }
+                        
+                        if (authorityPost) {
+                            // Initialize content verifier if not already done
+                            if (!this.contentVerifier) {
+                                this.contentVerifier = new ContentVerifier(
+                                    this.redditMonitor,
+                                    this.priceService,
+                                    this.marketData
+                                );
+                            }
+                            
+                            // Verify content before posting
+                            const verification = await this.contentVerifier.verifyContent(authorityPost);
+                            
+                            if (verification.verified) {
+                                const posted = await this.postOriginalTweet(authorityPost);
+                                if (posted) {
+                                    console.log('   ✅ Posted verified authority content');
+                                    this.replyCount++; // Count as engagement
+                                }
+                            } else if (verification.safeContent) {
+                                console.log('   ⚠️ Using safe alternative content');
+                                const posted = await this.postOriginalTweet(verification.safeContent);
+                                if (posted) {
+                                    console.log('   ✅ Posted safe authority content');
+                                    this.replyCount++;
+                                }
+                            } else {
+                                console.log('   ❌ Authority content failed verification:');
+                                verification.issues.forEach(issue => 
+                                    console.log(`      - ${issue}`)
+                                );
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`   ⚠️ Authority content failed: ${error.message}`);
+                    }
+                }
+                */
+                
                 // Show stats periodically
                 if (this.replyCount % 10 === 0) {
                     this.showStats();
@@ -1751,7 +3305,9 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 
             } catch (error) {
                 errorCount++;
-                console.log(`⚠️ Error: ${error.message}\n`);
+                console.log(`⚠️ Error: ${error.message}`);
+                console.error('Stack trace:', error.stack);
+                console.log('');
                 
                 // If too many errors, take a longer break
                 if (errorCount > 5) {
@@ -1776,25 +3332,90 @@ Be specific and knowledgeable. Concise. No hashtags.`;
     }
 
     async analyzeTweet(tweet) {
+        let decisionData = null; // Define at function scope
         try {
-            const data = await tweet.evaluate(el => {
-                const username = el.querySelector('a[href^="/"]')?.getAttribute('href')?.substring(1);
-                const text = el.querySelector('[data-testid="tweetText"]')?.innerText || '';
-                const hasImages = !!el.querySelector('img[alt*="Image"]');
-                const hasVideos = !!el.querySelector('video, [data-testid="videoPlayer"]');
-                return { username, text, hasImages, hasVideos };
-            });
+            // Wrap evaluate in try-catch to handle Protocol errors
+            let data;
+            try {
+                data = await tweet.evaluate(el => {
+                    const username = el.querySelector('a[href^="/"]')?.getAttribute('href')?.substring(1);
+                    const text = el.querySelector('[data-testid="tweetText"]')?.innerText || '';
+                    const hasImages = !!el.querySelector('img[alt*="Image"]');
+                    const hasVideos = !!el.querySelector('video, [data-testid="videoPlayer"]');
+                    const link = el.querySelector('a[href*="/status/"]');
+                    const tweetId = link ? link.href.split('/status/')[1] : null;
+                    return { username, text, hasImages, hasVideos, tweetId };
+                });
+            } catch (evalError) {
+                if (evalError.message.includes('Protocol error') || 
+                    evalError.message.includes('Node is detached') ||
+                    evalError.message.includes('Cannot find context')) {
+                    console.log(`   ⚠️ Tweet element detached, skipping...`);
+                    return false;
+                }
+                throw evalError; // Re-throw if it's a different error
+            }
             
             if (!data.username || !data.text || data.text.length < 20) {
                 return false;
             }
             
+            // Log exactly what we're seeing
+            console.log(`\n📄 ANALYZING TWEET:`);
+            console.log(`   👤 User: @${data.username}`);
+            console.log(`   📝 Text: "${data.text}"`);
+            console.log(`   🖼️ Has images: ${data.hasImages}`);
+            console.log(`   🎥 Has videos: ${data.hasVideos}`);
+            
+            // Track how many times we've seen this tweet
+            if (data.tweetId) {
+                const seenCount = (this.seenTweetIds.get(data.tweetId) || 0) + 1;
+                this.seenTweetIds.set(data.tweetId, seenCount);
+                
+                // Skip if we've seen this tweet more than 3 times
+                if (seenCount > 3) {
+                    console.log(`   🔁 Skipping tweet seen ${seenCount} times from @${data.username}`);
+                    this.searchEngine.trackSkippedUser(data.username);
+                    return false;
+                }
+                
+                // Clean up old entries if map gets too large
+                if (this.seenTweetIds.size > 1000) {
+                    // Remove oldest entries
+                    const entriesToKeep = 500;
+                    const entries = Array.from(this.seenTweetIds.entries());
+                    this.seenTweetIds = new Map(entries.slice(-entriesToKeep));
+                }
+            }
+            
+            // Prepare decision tracing data
+            decisionData = {
+                username: data.username,
+                tweetText: data.text,
+                hasImages: data.hasImages,
+                hasVideos: data.hasVideos,
+                features: {},
+                decision: { engage: false }
+            };
+            
             // FIRST: Check if post is recent enough to avoid bot detection
             const postTimestamp = await this.timestampFilter.extractTimestamp(tweet);
             const timestampDecision = this.timestampFilter.shouldEngageByAge(postTimestamp);
             
+            // Record timestamp decision
+            if (decisionData) {
+                decisionData.features.ageDescription = timestampDecision.details;
+                decisionData.features.timestampReason = timestampDecision.reason;
+            }
+            
             if (!timestampDecision.engage) {
                 console.log(`   🕐 Skipping old post: ${timestampDecision.details}`);
+                // Log decision for old post
+                if (this.decisionTrace && decisionData) {
+                    decisionData.decision.engage = false;
+                    decisionData.decision.reason = 'Too old';
+                    await this.decisionTrace.logDecision(decisionData);
+                }
                 return false;
             }
             
@@ -1804,7 +3425,21 @@ Be specific and knowledgeable. Concise. No hashtags.`;
         
             
             // Use engagement selector to decide if we should engage
-            const engagementDecision = await this.engagementSelector.shouldEngageWithPost(tweet, data);
+            let engagementDecision;
+            try {
+                engagementDecision = await this.engagementSelector.shouldEngageWithPost(tweet, data);
+            } catch (selectorError) {
+                // Handle Protocol errors specifically
+                if (selectorError.message.includes('Protocol error') || 
+                    selectorError.message.includes('Node is detached') ||
+                    selectorError.message.includes('Cannot find context')) {
+                    console.log(`   ⚠️ Tweet element detached during selector analysis`);
+                    return false;
+                }
+                console.log(`   ⚠️ Engagement selector error: ${selectorError.message}`);
+                return false;
+            }
+            
             if (engagementDecision.action === 'skip') {
                 console.log(`   ⏭️ [Selector] Skipping: ${engagementDecision.reason}`);
                 return false;
@@ -1837,8 +3472,26 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             // For non-replies, check if we've already interacted
             const usernameLower = data.username.toLowerCase();
             
+            // FIRST CHECK: Use interaction history to prevent ALL duplicates
+            if (this.userInteractionHistory.shouldSkipUser(data.username)) {
+                console.log(`   ❌ Skipping @${data.username} - interaction history says to skip`);
+                // Track this skip to help break search loops
+                this.searchEngine.trackSkippedUser(data.username);
+                return false;
+            }
+            
+            // Check if we've had this exact conversation before
+            if (this.userInteractionHistory.hasHadConversation(data.username, data.text)) {
+                console.log(`   ❌ Already had similar conversation with @${data.username}`);
+                // Track this skip to help break search loops
+                this.searchEngine.trackSkippedUser(data.username);
+                return false;
+            }
+            
             // Check if we've already replied to this user's original posts this session
             if (this.repliedUsers.has(usernameLower)) {
+                // Track this skip to help break search loops
+                this.searchEngine.trackSkippedUser(data.username);
                 return false;
             }
             
@@ -1852,6 +3505,8 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 if (hoursSinceLastInteraction < 6) {
                     console.log(`   ⏭️ Already interacted with @${data.username} recently`);
                     this.repliedUsers.add(usernameLower); // Add to Set for this session
+                    // Track this skip to help break search loops
+                    this.searchEngine.trackSkippedUser(data.username);
                     return false;
                 } else {
                     console.log(`   🔄 Re-engaging with @${data.username} after ${Math.floor(hoursSinceLastInteraction)} hours`);
@@ -1864,6 +3519,16 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 console.log(`   🚫 Filtered: ${filterResult.reason}`);
                 this.stats.postsFiltered++;
                 return false;
+            }
+            
+            // Check for scams
+            if (this.antiScam) {
+                const scamCheck = this.antiScam.shouldSkip(data.text, data.username);
+                if (scamCheck.skip) {
+                    console.log(`   🚨 Scam detected: ${scamCheck.reason} (${scamCheck.confidence})`);
+                    this.stats.postsFiltered++;
+                    return false;
+                }
             }
             
             // IMPROVED CHECK: Accept ALL Pokemon content, not just TCG
@@ -1904,14 +3569,32 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             
             const hasPokemonIndicator = pokemonIndicators.some(indicator => textLower.includes(indicator));
             
-            if (!hasPokemonIndicator) {
-                // Only skip if no Pokemon indicators AND no images
-                if (!data.hasImages && !data.hasVideos) {
-                    console.log(`   ⏭️ Not Pokemon related: "${data.text.substring(0, 50)}..."`);
+            // Check if this is actually about Pokemon or just has Pokemon in hashtags
+            const isActuallyAboutPokemon = () => {
+                // If Pokemon is only in hashtags at the end, it's likely spam/unrelated
+                const hashtagOnlyPattern = /#pokemon\s*$/i;
+                if (hashtagOnlyPattern.test(data.text) && !textLower.includes('pokemon') && !textLower.includes('pokémon')) {
                     return false;
                 }
-                // With media, continue - might be Pokemon visual content
-                console.log(`   📸 No Pokemon text but has media, analyzing context...`);
+                
+                // Check if the main content is about something else entirely
+                const nonPokemonIndicators = [
+                    'mymagicprophecy', 'mchoicemintawards', 'exo', 'weareone',
+                    'kpop', 'bts', 'blackpink', 'crypto', 'nft', 'forex',
+                    'giveaway', 'follow me', 'check my', 'link in bio'
+                ];
+                
+                const hasNonPokemonContent = nonPokemonIndicators.some(indicator => textLower.includes(indicator));
+                if (hasNonPokemonContent) {
+                    return false;
+                }
+                
+                return hasPokemonIndicator;
+            };
+            
+            if (!isActuallyAboutPokemon()) {
+                console.log(`   ⏭️ Not actually Pokemon related: "${data.text.substring(0, 50)}..."`);
+                return false;
             }
             
             this.stats.postsAnalyzed++;
@@ -1929,41 +3612,115 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 if (data.hasImages || data.hasVideos) s += 1;                      // visual content
                 if (filterResult.quality >= 2) s += 1;                             // quality gate
                 if (hasPokemonIndicator) s += 1;                                   // clearly Pokemon related
+                
+                // BONUS: Followed accounts get priority (high-value targets)
+                if (data.source === 'following_feed') s += 2;                      // accounts we follow
+                
                 return s;
             }
             const score = computeValueScore();
             
             // Lower threshold to be more inclusive
-            if (score < 2) return false; // skip only very low quality
+            if (score < 2) {
+                // Log low score decision
+                if (this.decisionTrace && decisionData) {
+                    decisionData.decision.engage = false;
+                    decisionData.decision.score = score;
+                    decisionData.decision.reason = `Low value score: ${score}`;
+                    await this.decisionTrace.logDecision(decisionData);
+                }
+                return { 
+                    shouldEngage: false,
+                    engage: false,
+                    reason: `Low value score: ${score}` 
+                }; // skip only very low quality
+            }
             
+            // Log engagement decision
+            if (this.decisionTrace && decisionData) {
+                decisionData.decision.engage = true;
+                decisionData.decision.action = data.engagementType || 'reply';
+                decisionData.decision.score = score;
+                await this.decisionTrace.logDecision(decisionData);
+            }
+            
+            // Build engagement reason
+            let engagementReason = `Value score: ${score}`;
+            if (data.source === 'following_feed') {
+                engagementReason = `FOLLOWED ACCOUNT (+2 bonus) - ${engagementReason}`;
+            }
+            if (isPriceQ && cards.length) {
+                engagementReason += ` - Price question about ${cards[0]}`;
+            }
+            if (timestampDecision.reason === 'recent_post') {
+                engagementReason += ` - Fresh content`;
+            }
+
             // Respect engagementSelector's action (like vs reply)
             return { 
+                shouldEngage: true,
                 engage: true, 
                 action: data.engagementType || 'reply', 
                 username: data.username, 
                 text: data.text, 
                 hasImages: data.hasImages,
-                score: score
+                score: score,
+                reason: engagementReason
             };
             
         } catch (error) {
+            // Log error decision
+            if (this.decisionTrace && decisionData) {
+                decisionData.decision.engage = false;
+                decisionData.decision.error = error.message;
+                await this.decisionTrace.logDecision(decisionData);
+            }
+            console.log(`   ⚠️ Tweet analysis error: ${error.message}`);
             return false;
         }
     }
 
     // Helper to get thread context from status page
     async getThreadContextFromStatusPage(page) {
-        // assumes you're on the status page
+        // Get the original tweet author to filter thread properly
+        const originalAuthor = await page.evaluate(() => {
+            // Find the main tweet (usually has a different style or is first)
+            const mainTweet = document.querySelector('article[data-testid="tweet"]');
+            if (mainTweet) {
+                const authorLink = mainTweet.querySelector('a[href^="/"]');
+                return authorLink ? authorLink.getAttribute('href').split('/')[1] : null;
+            }
+            return null;
+        });
+        
         const nodes = await page.$$('[data-testid="cellInnerDiv"] article[data-testid="tweet"]');
         const msgs = [];
-        for (const n of nodes.slice(-6)) {
-            const m = await n.evaluate(el => {
+        const processedUsers = new Set();
+        
+        // Only get tweets that are part of the conversation thread
+        for (const n of nodes) {
+            const m = await n.evaluate((el, origAuthor) => {
                 const u = el.querySelector('a[href^="/"]')?.getAttribute('href')?.split('/')[1] || 'user';
                 const t = el.querySelector('[data-testid="tweetText"]')?.innerText || '';
-                return { username: u, text: t };
-            });
-            if (m.text) msgs.push(m);
+                
+                // Check if this tweet mentions the original author or is from them
+                const isInThread = u === origAuthor || 
+                                 t.includes(`@${origAuthor}`) || 
+                                 el.querySelector(`a[href="/${origAuthor}"]`);
+                
+                return { username: u, text: t, isInThread };
+            }, originalAuthor);
+            
+            // Only include tweets that are part of the conversation
+            if (m.text && m.isInThread && !processedUsers.has(m.username)) {
+                msgs.push({ username: m.username, text: m.text });
+                processedUsers.add(m.username);
+            }
+            
+            // Limit to 6 messages for context
+            if (msgs.length >= 6) break;
         }
+        
         const topic = /(charizard|umbreon|pikachu|tcg|grade|psa|binder|pull|evolving skies|lost origin)/i
                         .exec(msgs.map(x=>x.text).join(' '))?.[0] || 'Pokemon TCG';
         return { threadLength: msgs.length, mainTopic: topic, fullConversation: msgs };
@@ -1989,7 +3746,11 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 await composeButton.click();
             } else {
                 // Alternative: Click the "What's happening?" input
-                const whatsHappening = await this.page.$('[data-testid="tweetTextarea_0"]');
+                // Try to find the compose tweet box
+                let whatsHappening = await this.page.$('[data-testid="tweetTextarea_0"]');
+                if (!whatsHappening) {
+                    whatsHappening = await this.page.$('div[contenteditable="true"][role="textbox"]');
+                }
                 if (whatsHappening) {
                     await whatsHappening.click();
                 }
@@ -2008,9 +3769,22 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 return false;
             }
             
-            // Type the tweet
-            await this.humanType(tweetBox, text);
-            await this.sleep(2000);
+            // Type the tweet and wait for typing to complete
+            const typingTime = await this.humanType(tweetBox, text);
+            
+            // Wait for full typing time plus buffer
+            await this.sleep(Math.max(2000, typingTime + 1000));
+            
+            // Verify text is fully typed
+            const typedText = await this.page.evaluate(() => {
+                const box = document.querySelector('[data-testid="tweetTextarea_0"]');
+                return box ? box.textContent || box.innerText || '' : '';
+            });
+            
+            if (typedText.length < text.length - 5) { // Smaller buffer for compose
+                console.log(`   ⚠️ Text not fully typed. Waiting...`);
+                await this.sleep(2000);
+            }
             
             // Send the tweet
             const sent = await this.page.evaluate(() => {
@@ -2031,8 +3805,12 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             await this.sleep(3000);
             
             // Check if tweet was posted successfully
-            const success = await this.page.$('div[data-testid="tweetTextarea_0"]')
-                .then(el => el === null);
+            // Check if reply was successful by looking for the compose box closing
+            const success = await this.page.waitForFunction(
+                () => !document.querySelector('[data-testid="tweetTextarea_0"]') && 
+                     !document.querySelector('div[contenteditable="true"][role="textbox"]'),
+                { timeout: 5000 }
+            ).then(() => true).catch(() => false);
             
             if (success) {
                 console.log('   ✅ Original market report posted!');
@@ -2051,81 +3829,297 @@ Be specific and knowledgeable. Concise. No hashtags.`;
     
     async engageWithTweet(tweet, action = 'reply') {
         try {
+            // Clean up any leftover dialogs from previous engagements
+            await this.cleanupDialogs();
+
+            // FIRST: Get basic data and click reply button IMMEDIATELY
             const data = await tweet.evaluate(el => {
                 const username = el.querySelector('a[href^="/"]')?.getAttribute('href')?.substring(1);
                 const text = el.querySelector('[data-testid="tweetText"]')?.innerText || '';
                 const hasImages = !!el.querySelector('img[alt*="Image"]');
                 const hasVideos = !!el.querySelector('video, [data-testid="videoPlayer"]');
-                return { username, text, hasImages, hasVideos };
+                // Get the actual tweet URL more carefully
+                // Look for the timestamp link which is the actual tweet URL
+                const timeLink = el.querySelector('a[href*="/status/"] time')?.parentElement;
+                const tweetUrl = timeLink ? timeLink.href : null;
+                const tweetId = tweetUrl ? tweetUrl.split('/status/')[1]?.split('?')[0] : null;
+                
+                // Verify the URL belongs to the tweet author
+                const correctUrl = tweetUrl && tweetUrl.includes(`/${username}/status/`);
+                
+                return { 
+                    username, 
+                    text, 
+                    hasImages, 
+                    hasVideos, 
+                    tweetUrl: correctUrl ? tweetUrl : null, 
+                    tweetId 
+                };
             });
             
             console.log(`\n💬 @${data.username}: "${data.text.substring(0, 80)}..."`);
             
-            // Learn from post
-            const user = await this.memory.rememberUser(data.username, data.text);
+            // Save memory quickly
+            await this.memory.rememberUser(data.username, data.text);
             await this.memory.learnFromPost(data.text, { username: data.username });
-            
-            // Save memory after each interaction
             await this.memory.saveUsers();
             await this.memory.saveKnowledge();
             console.log(`   💾 Memory saved (${this.memory.users.size} users, ${this.memory.knowledge.prices.size} prices)`);
             
-            // Try to like the tweet first
-            await this.tryLikeTweet(tweet);
+            // Check if content is Pokemon-related BEFORE any actions that might refresh the feed
+            const textLower = data.text.toLowerCase();
+            const isPokemonContent = /pokemon|pokémon|pikachu|charizard|eevee|bulbasaur|squirtle|mewtwo|arceus|palkia|dialga|rayquaza|groudon|kyogre|lucario|garchomp|gengar|snorlax|alakazam|machamp|gyarados|dragonite|tyranitar|salamence|metagross|hydreigon|goodra|kommo-o|dragapult/i.test(data.text);
             
-            // If action is like-only, we're done
+            // If not Pokemon-related at all, skip
+            if (!isPokemonContent && action === 'reply') {
+                console.log(`   ❌ Not Pokemon-related content, converting to like-only`);
+                console.log(`   📝 Text: "${data.text.substring(0, 80)}..."`);
+                action = 'like';
+            } else if (isPokemonContent && action === 'reply') {
+                console.log(`   ✅ Pokemon-related content detected!`);
+                console.log(`   📝 Will attempt to reply to: "${data.text.substring(0, 80)}..."`);
+            }
+            
+            // If action is like-only, like and we're done
             if (action === 'like') {
-                console.log('   👍 Like-only per selector. Skipping reply.');
+                await this.tryLikeTweet(tweet);
+                console.log('   👍 Like-only engagement');
                 return true;
             }
             
-            // BEFORE opening the reply modal, open the status in a new tab to harvest context
-            const url = await tweet.evaluate(el => el.querySelector('a[href*="/status/"]')?.href);
+            // CRITICAL: Click reply button IMMEDIATELY before any processing
+            console.log('   🔍 Clicking reply button immediately...');
+            let replyButton;
+            try {
+                // Re-find the tweet element to ensure it's still valid
+                const tweetStillExists = await tweet.evaluate(el => {
+                    return el && el.isConnected && document.body.contains(el);
+                }).catch(() => false);
+                
+                if (!tweetStillExists) {
+                    console.log('   ⚠️ Tweet element no longer in DOM');
+                    // Add delay to prevent rapid retries
+                    await this.sleep(3000);
+                    return false;
+                }
+                
+                // Scroll to tweet first
+                await tweet.evaluate(el => el.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                await this.sleep(500); // Shorter wait
+                
+                // Try to find and click reply button quickly
+                const clicked = await tweet.evaluate(el => {
+                    const btn = el.querySelector('button[data-testid="reply"]');
+                    if (btn) {
+                        btn.click();
+                        return true;
+                    }
+                    return false;
+                }).catch(() => false);
+                
+                if (!clicked) {
+                    console.log('   ❌ Reply button not found or couldn\'t click');
+                    return false;
+                }
+                
+                console.log('   ✅ Reply button clicked');
+            } catch (error) {
+                if (error.message.includes('Node is detached') || 
+                    error.message.includes('Cannot find context') ||
+                    error.message.includes('Execution context was destroyed')) {
+                    console.log(`   ⚠️ Tweet element detached before clicking reply`);
+                    return false;
+                }
+                throw error;
+            }
+            
+            // Wait for dialog to open
+            await this.sleep(2000);
+            
+            // Verify dialog opened - check for reply textbox instead of specific text
+            const dialogOpened = await this.page.evaluate(() => {
+                // Check for the reply textbox which is more reliable
+                const replyTextbox = document.querySelector('[data-testid="tweetTextarea_0"]');
+                const dialog = document.querySelector('[role="dialog"]');
+                // Either we have a reply textbox or a dialog is present
+                return !!(replyTextbox || dialog);
+            });
+            
+            if (!dialogOpened) {
+                console.log('   ❌ Reply dialog did not open properly');
+                await this.page.keyboard.press('Escape');
+                // Add delay to prevent rapid clicking that might trigger rate limits
+                await this.sleep(5000);
+                return false;
+            }
+            
+            console.log('   ✅ Reply dialog opened successfully');
+            
+            // NOW do all the processing while the dialog is open
+            // Get thread context
             let threadContext = null;
-            if (url) {
+            if (data.tweetUrl) {
+                console.log(`   🔍 Fetching thread context from: ${data.tweetUrl}`);
                 const ctxPage = await this.browser.newPage();
                 try {
-                    await ctxPage.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+                    await ctxPage.goto(data.tweetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
                     await this.sleep(2000);
                     threadContext = await this.getThreadContextFromStatusPage(ctxPage);
+                    
+                    // Validate thread context - ensure it includes the current tweet
+                    if (threadContext && threadContext.fullConversation) {
+                        const hasCurrentTweet = threadContext.fullConversation.some(msg => 
+                            msg.username === data.username && 
+                            msg.text.includes(data.text.substring(0, 50))
+                        );
+                        
+                        if (!hasCurrentTweet) {
+                            console.log(`   ⚠️ Thread context doesn't match current tweet - discarding`);
+                            threadContext = null;
+                        } else {
+                            console.log(`   ✅ Thread context validated - ${threadContext.fullConversation.length} messages`);
+                        }
+                    }
                 } catch (e) { 
                     console.log(`   ⚠️ Could not get thread context: ${e.message}`);
                 }
                 await ctxPage.close();
+            } else {
+                console.log(`   ℹ️ No tweet URL available for thread context`);
             }
             
             // Analyze visual content if present
             let visualData = null;
             if (data.hasImages || data.hasVideos) {
+                console.log(`   🔍 [DEBUG] Image/video detected, starting vision analysis...`);
                 if (this.visualAnalyzer) {
-                    visualData = await this.visualAnalyzer.analyzeVisualContent(tweet);
+                    try {
+                        // Add timeout to prevent hanging when Gemini is overloaded
+                        const visionPromise = this.visualAnalyzer.analyzeVisualContent(tweet);
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Vision analysis timeout')), 20000) // 20 second timeout
+                        );
+                        
+                        visualData = await Promise.race([visionPromise, timeoutPromise]);
+                        console.log(`   ✅ Vision analysis completed successfully`);
+                    } catch (error) {
+                        console.log(`   ⚠️ Vision analysis failed or timed out: ${error.message}`);
+                        console.log(`   🔄 Continuing without vision data...`);
+                        visualData = null;
+                    }
+                    
+                    // Add delay after vision analysis to prevent API overload
+                    console.log(`   ⏱️ Cooling down after vision analysis...`);
+                    await this.sleep(5000); // 5 second delay to prevent overload
+                    
+                    console.log(`   📊 [DEBUG] Vision analysis result:`, {
+                        hasVisionAnalysis: !!(visualData && visualData.visionAnalysis),
+                        hasNaturalDescription: !!(visualData && visualData.visionAnalysis && visualData.visionAnalysis.naturalDescription),
+                        visionAnalysisKeys: visualData && visualData.visionAnalysis ? Object.keys(visualData.visionAnalysis) : []
+                    });
+                    
                     if (visualData && visualData.analysis) {
                         console.log(`   🖼️ Visual: ${visualData.analysis.contentType} - ${visualData.analysis.focusArea}`);
                     }
+                    
+                    // Note if vision detected non-TCG content but continue anyway
+                    if (visualData && visualData.visionAnalysis && visualData.visionAnalysis.skipEngagement) {
+                        console.log(`   📱 Vision detected non-TCG content - will respond about general Pokemon content`);
+                        // Continue with engagement - user wants bot to handle ALL Pokemon content
+                    }
+                } else {
+                    console.log(`   ⚠️ [DEBUG] Visual analyzer not available!`);
                 }
             }
             
-            // Generate contextual response with thread context if available
-            let response;
-            if (threadContext) {
+            // Use CardKnowledge to identify specific cards mentioned
+            let cardInsights = null;
+            if (this.cardKnowledge) {
                 try {
-                    response = await this.generateThreadAwareResponse(data.username, data.text, threadContext, visualData);
+                    const cards = this.extractCardNames(data.text);
+                    if (cards.length > 0) {
+                        cardInsights = this.cardKnowledge.getCardInfo(cards[0]);
+                        if (cardInsights) {
+                            console.log(`   🎴 Card identified: ${cardInsights.name} - ${cardInsights.facts?.[0] || 'Known card'}`);
+                        }
+                    }
                 } catch (error) {
-                    console.log(`   ⚠️ Thread response failed: ${error.message}`);
-                    response = await this.generateContextualResponse(
-                        data.username, 
-                        data.text, 
+                    console.log(`   ⚠️ Card knowledge lookup failed: ${error.message}`);
+                }
+            }
+            
+            // Note what type of Pokemon content this is
+            if (visualData && visualData.visionAnalysis) {
+                const visionType = visualData.visionAnalysis.tcgType || visualData.visionAnalysis.contentType;
+                if (visionType === 'ONLINE' || visionType === 'OTHER') {
+                    console.log(`   📱 Non-TCG Pokemon content detected (${visionType}) - will respond appropriately`);
+                }
+            }
+            
+            // Generate response using simplified thread-aware method
+            let response;
+            console.log(`   🧠 Starting response generation for @${data.username}...`);
+            try {
+                // Always use the simplified thread-aware response that passes raw context to Gemini
+                const responsePromise = this.generateThreadAwareResponse(
+                    data.username, 
+                    data.text, 
+                    threadContext || { fullConversation: [] }, 
+                    visualData
+                );
+                
+                // Add 15 second timeout (reduced for faster response)
+                const timeoutPromise = new Promise((resolve) => {
+                    setTimeout(() => resolve(null), 15000);
+                });
+                
+                response = await Promise.race([responsePromise, timeoutPromise]);
+                
+                if (response === null) {
+                    console.log(`   ⚠️ Response generation timed out after 30s`);
+                }
+                console.log(`   📝 Response from thread-aware: "${response || 'NULL'}"`);
+                
+                // If thread-aware fails or returns null, try simple AI response
+                if (!response) {
+                    console.log('   ⚠️ Thread-aware returned null, trying simple AI response');
+                    response = await this.tryAIModels(
+                        data.username,
+                        data.text,
                         data.hasImages,
+                        {},
                         visualData
                     );
                 }
-            } else {
-                response = await this.generateContextualResponse(
-                    data.username, 
-                    data.text, 
-                    data.hasImages,
-                    visualData
-                );
+            } catch (error) {
+                console.log(`   ⚠️ Response generation failed: ${error.message}`);
+                console.log(`   🔍 Error stack: ${error.stack}`);
+                // Last resort - use simple fallback
+                response = "Cool Pokemon content! Thanks for sharing";
+            }
+            
+            // DEBUG: Log if we have vision data but response doesn't seem to acknowledge it
+            const naturalDesc = extractNaturalDescription(visualData);
+            if (naturalDesc && response) {
+                const responseLower = response.toLowerCase();
+                const visionLower = (naturalDesc || '').toLowerCase();
+                
+                // Check if response asks for things already visible
+                const asksForVisible = [
+                    "what.*look like",
+                    "what.*chart",
+                    "show.*chart",
+                    "can.*see",
+                    "what.*image",
+                    "which.*card",
+                    "what card"
+                ].some(pattern => new RegExp(pattern).test(responseLower));
+                
+                if (asksForVisible) {
+                    console.log(`   ⚠️ [WARNING] Response asks for visible content!`);
+                    console.log(`      Vision saw: "${naturalDesc.substring(0, 100)}..."`);
+                    console.log(`      Bot said: "${response}"`);
+                }
             }
             
             // Log vision performance after response generation
@@ -2154,45 +4148,174 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             // Learn from this interaction
             await this.learningEngine.learnFromInteraction(interaction);
             
-            // Extract tweet ID for conversation tracking
-            const tweetId = await tweet.evaluate(el => {
-                const link = el.querySelector('a[href*="/status/"]');
-                return link ? link.href.split('/status/')[1] : null;
-            });
-            
-            // Scroll to tweet
-            await tweet.evaluate(el => el.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-            await this.sleep(2000);
-            
-            // Reply
-            let replyButton;
-            try {
-                replyButton = await tweet.$('button[data-testid="reply"]');
-                if (!replyButton) return false;
+            // Final length check and cleanup before sending
+            if (response) {
+                // Check for trailing incomplete thoughts
+                const incompletePatterns = [
+                    /\.\.\.\s*$/,
+                    /\s+(Could|Would|Should|Might|Maybe|Perhaps|But|While|Though|Although|If)\s*\.?\s*$/i,
+                    /,\s*$/,
+                    /\s+-\s*$/,
+                    /\s+—\s*$/
+                ];
                 
-                await replyButton.click();
-                console.log(`   💭 Replying...`);
+                for (const pattern of incompletePatterns) {
+                    if (pattern.test(response)) {
+                        console.log(`   ⚠️ Detected incomplete thought, fixing...`);
+                        response = response.replace(pattern, '.').trim();
+                    }
+                }
+                
+                // Apply length limit with proper clamping
+                if (response.length > 280) {
+                    console.log(`   ⚠️ Response too long (${response.length} chars), clamping properly...`);
+                    response = clampTweet(response, 280);
+                }
+            }
+            
+            // Track response variety
+            if (this.responseVariety && response) {
+                this.responseVariety.trackResponse(data.username, response);
+            }
+            
+            // Record interaction in history (will update later if successful)
+            if (this.userInteractionHistory && data.tweetId) {
+                this.userInteractionHistory.recordInteraction(data.username, data.text, data.tweetId);
+            }
+            
+            // Now find the reply box in the open dialog
+            console.log('   🔍 Looking for reply textbox...');
+            console.log(`   📝 [DEBUG] Response ready to type: "${response ? response.substring(0, 50) + '...' : 'NO RESPONSE'}"`);;
+            
+            // Try multiple possible selectors for the reply box
+            let replyBox = null;
+            const replySelectors = [
+                '[data-testid="tweetTextarea_0"]',
+                'div[role="textbox"][data-testid="tweetTextarea_0"]',
+                'div[contenteditable="true"][role="textbox"]',
+                'div[contenteditable="true"][data-text="true"]',
+                '.DraftEditor-root .public-DraftEditor-content',
+                'div[aria-label*="Tweet text"]',
+                'div[aria-label*="Reply"]',
+                'div.public-DraftStyleDefault-block'
+            ];
+            
+            for (const selector of replySelectors) {
+                try {
+                    replyBox = await this.page.waitForSelector(selector, { timeout: 3000 });
+                    if (replyBox) {
+                        console.log(`   ✅ Found reply box with selector: ${selector}`);
+                        break;
+                    }
+                } catch (e) {
+                    // Try next selector
+                }
+            }
+            
+            if (!replyBox) {
+                console.log('   ❌ Could not find reply box with any selector');
+                // Try to close any open modal
+                try {
+                    await this.page.keyboard.press('Escape');
+                } catch (e) {}
+                return false;
+            }
+            
+            // Type the response with dialog monitoring
+            let typingTime;
+            try {
+                // Check if we have a valid response
+                if (!response || (typeof response === 'string' && response.trim().length === 0)) {
+                    console.log('   ❌ No valid response to type (response is null/empty), closing dialog...');
+                    await this.page.keyboard.press('Escape');
+                    return false;
+                }
+                
+                typingTime = await this.humanType(replyBox, response);
             } catch (error) {
-                if (error.message.includes('Node is detached')) {
-                    console.log(`   ⚠️ Tweet element detached, skipping...`);
+                console.log('   ⚠️ Error during typing:', error.message);
+                // Check if dialog is still open
+                const stillOpen = await this.page.evaluate(() => {
+                    return !!document.querySelector('[role="dialog"]');
+                });
+                if (!stillOpen) {
+                    console.log('   ❌ Dialog closed during typing, aborting...');
                     return false;
                 }
                 throw error;
             }
-            await this.sleep(3000);
             
-            const replyBox = await this.page.waitForSelector(
-                'div[data-testid="tweetTextarea_0"]',
-                { timeout: 10000 }
-            ).catch(() => null);
+            // Wait for full typing time plus buffer to ensure all text is in the box
+            await this.sleep(Math.max(2000, typingTime + 1000));
             
-            if (!replyBox) {
+            // Verify the full text is in the reply box before sending
+            const typedText = await this.page.evaluate(() => {
+                const box = document.querySelector('[data-testid="tweetTextarea_0"]') || 
+                           document.querySelector('div[contenteditable="true"][role="textbox"]');
+                return box ? box.textContent || box.innerText || '' : '';
+            });
+            
+            // Check if we have most of the text (allow for @username prepending)
+            const expectedLength = response.length;
+            const typedLength = typedText.length;
+            if (typedLength < expectedLength - 20) { // Allow 20 char buffer for @username
+                console.log(`   ⚠️ Text not fully typed. Expected ~${expectedLength} chars, got ${typedLength}`);
+                
+                // If very little was typed (like just "y"), the dialog might have been interrupted
+                if (typedLength < 10) {
+                    console.log(`   ❌ Critical: Only ${typedLength} chars typed. Dialog was likely interrupted.`);
+                    // Clear typing state
+                    if (this.conversationFollowUp) {
+                        this.conversationFollowUp.setTypingState(false);
+                    }
+                    this.isTyping = false;
+                    await this.page.evaluate(() => {
+                        window.botIsTyping = false;
+                    });
+                    // Close dialog
+                    await this.page.keyboard.press('Escape');
+                    await this.sleep(1000);
+                    return false;
+                }
+                
+                // Wait a bit more
+                await this.sleep(3000);
+                
+                // Check again
+                const typedTextAfterWait = await this.page.evaluate(() => {
+                    const box = document.querySelector('[data-testid="tweetTextarea_0"]') || 
+                               document.querySelector('div[contenteditable="true"][role="textbox"]');
+                    return box ? box.textContent || box.innerText || '' : '';
+                });
+                
+                if (typedTextAfterWait.length < expectedLength - 20) {
+                    console.log(`   ❌ Still incomplete. Aborting reply.`);
+                    // Clear typing state
+                    if (this.conversationFollowUp) {
+                        this.conversationFollowUp.setTypingState(false);
+                    }
+                    this.isTyping = false;
+                    await this.page.evaluate(() => {
+                        window.botIsTyping = false;
+                    });
+                    await this.page.keyboard.press('Escape');
+                    return false;
+                }
+            }
+            
+            // Final safety check - ensure we're still in reply dialog before sending
+            const inReplyDialog = await this.page.evaluate(() => {
+                const dialog = document.querySelector('[role="dialog"]');
+                const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+                const hasReplyingTo = dialog && dialog.innerText.includes('Replying to');
+                return !!(dialog && replyBox && hasReplyingTo);
+            });
+            
+            if (!inReplyDialog) {
+                console.log('   ❌ Not in reply dialog! Aborting send to prevent misplaced tweet');
                 await this.page.keyboard.press('Escape');
                 return false;
             }
-            
-            await this.humanType(replyBox, response);
-            await this.sleep(2000);
             
             // Send
             const sent = await this.page.evaluate(() => {
@@ -2212,24 +4335,116 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             
             await this.sleep(3000);
             
-            const success = await this.page.$('div[data-testid="tweetTextarea_0"]')
-                .then(el => el === null);
+            // Debug: check if button still exists
+            const buttonStillExists = await this.page.evaluate(() => {
+                return !!document.querySelector('button[data-testid="tweetButton"]');
+            });
+            console.log(`   📋 Button still exists after click: ${buttonStillExists}`);
+            
+            // Check what happened after send attempt
+            const postSendState = await this.page.evaluate(() => {
+                return {
+                    textareaExists: !!document.querySelector('[data-testid="tweetTextarea_0"]'),
+                    dialogExists: !!document.querySelector('[role="dialog"]'),
+                    errorMessage: document.querySelector('[role="alert"]')?.innerText || null,
+                    allAlerts: Array.from(document.querySelectorAll('[role="alert"]')).map(a => a.innerText)
+                };
+            });
+            
+            console.log('   📋 Post-send state:', JSON.stringify(postSendState, null, 2));
+            
+            // Check if reply was successful
+            const success = await this.page.waitForFunction(
+                () => !document.querySelector('[data-testid="tweetTextarea_0"]'),
+                { timeout: 5000 }
+            ).then(() => true).catch(() => false);
             
             if (success) {
+                // Double-check: see if we're still in a dialog
+                const stillInDialog = await this.page.evaluate(() => {
+                    return !!document.querySelector('[role="dialog"]');
+                });
+                console.log(`   📋 Still in dialog after success: ${stillInDialog}`);
+                
                 this.replyCount++;
                 this.repliedUsers.add(data.username.toLowerCase());
                 this.repliesThisHour.push(Date.now()); // Track for rate limiting
                 console.log(`   ✅ Sent! [${this.replyCount}/1000]`);
                 
+                // Like the tweet AFTER successfully sending reply
+                try {
+                    // Try to find and like the original tweet on the page
+                    const liked = await this.page.evaluate((username) => {
+                        const tweets = document.querySelectorAll('[data-testid="tweet"]');
+                        for (const tweet of tweets) {
+                            const tweetUsername = tweet.querySelector('a[href^="/"]')?.getAttribute('href')?.substring(1);
+                            if (tweetUsername === username) {
+                                const likeButton = tweet.querySelector('[data-testid="like"]');
+                                if (likeButton) {
+                                    likeButton.click();
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    }, data.username);
+                    
+                    if (liked) {
+                        console.log('   ❤️ Liked after reply');
+                    }
+                } catch (e) {
+                    // Ignore like errors
+                }
+                
+                // Wait longer to prevent page refresh issues
+                await this.sleep(5000);
+                
+                // Debug: Try to find our reply in the thread
+                const ourReplyVisible = await this.page.evaluate((replyText) => {
+                    const tweets = document.querySelectorAll('[data-testid="tweet"]');
+                    for (const tweet of tweets) {
+                        const text = tweet.querySelector('[data-testid="tweetText"]')?.innerText;
+                        if (text && text.includes(replyText.substring(0, 50))) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }, response);
+                
+                console.log(`   📋 Our reply visible on page: ${ourReplyVisible}`);
+                
+                // RECORD IN USER INTERACTION HISTORY
+                await this.userInteractionHistory.recordInteraction(
+                    data.username,
+                    data.tweetId,
+                    data.text,
+                    response
+                );
+                
                 // Update engagement selector AFTER successful reply
                 this.engagementSelector.updateAfterReply(data.username);
                 
                 // Start tracking this conversation for outcomes
-                if (tweetId) {
-                    this.conversationAnalyzer.startConversation(tweetId, {
+                if (data.tweetId) {
+                    this.conversationAnalyzer.startConversation(data.tweetId, {
                         ...interaction,
                         responseId: `resp_${Date.now()}`
                     });
+                    
+                    // Track for proactive follow-ups
+                    if (this.conversationFollowUp) {
+                        await this.conversationFollowUp.trackConversation(
+                            data.tweetId,
+                            data.username,
+                            response,
+                            {
+                                topic: interaction.topics?.[0] || 'pokemon',
+                                sentiment: interaction.sentiment?.sentiment || 'neutral',
+                                hasImages: data.hasImages,
+                                cardsMentioned: interaction.topics || []
+                            }
+                        );
+                    }
                 }
                 
                 // Update community trends
@@ -2246,7 +4461,11 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 
                 // Check rate limit
                 await this.checkRateLimit();
-                
+
+                // Close the reply dialog after successful reply
+                await this.sleep(2000); // Wait for reply to post
+                await this.page.keyboard.press('Escape');
+
                 return true;
             }
             
@@ -2273,16 +4492,69 @@ Be specific and knowledgeable. Concise. No hashtags.`;
             const likeButton = await tweet.$(selector);
             if (likeButton) {
                 try {
+                    // Double-check this is NOT a retweet button
+                    const ariaLabel = await likeButton.evaluate(el => el.getAttribute('aria-label') || '');
+                    const testId = await likeButton.evaluate(el => el.getAttribute('data-testid') || '');
+                    
+                    // Skip if this looks like a retweet button
+                    if (ariaLabel.toLowerCase().includes('retweet') || 
+                        testId.toLowerCase().includes('retweet') ||
+                        ariaLabel.toLowerCase().includes('repost')) {
+                        console.log('   ⚠️ Skipping - found retweet button instead of like');
+                        continue;
+                    }
+                    
                     await likeButton.click();
                     console.log(`   ❤️ Liked`);
                     liked = true;
-                    await this.sleep(1500);
+
+                    // Track engagement outcome
+                    await this.engagementOutcomeTracker.trackEngagement({
+                        type: 'like',
+                        targetTweetId: tweet.id || 'unknown',
+                        targetUsername: tweet.username || 'unknown',
+                        responseType: 'like_only'
+                    });
+                    
+                    // Move mouse away from tweet buttons to avoid accidental interactions
+                    await this.page.mouse.move(100, 100);
+                    await this.sleep(2000);  // Increased wait to ensure no accidental clicks
                 } catch (e) {
                     // Try next selector
                 }
             }
         }
         return liked;
+    }
+    
+    async startRedditMonitoring() {
+        try {
+            console.log('🔍 Starting Reddit narrative monitoring...');
+            // Initial scan
+            const narratives = await this.redditMonitor.monitorAll();
+            console.log(`   📊 Found ${narratives.length} active narratives`);
+            
+            // Set up periodic monitoring (every 30 minutes)
+            setInterval(async () => {
+                try {
+                    const updates = await this.redditMonitor.monitorAll();
+                    console.log(`   🔄 Reddit update: ${updates.length} narratives tracked`);
+                } catch (error) {
+                    console.log(`   ⚠️ Reddit monitoring error: ${error.message}`);
+                }
+
+        // Update engagement outcomes and response effectiveness with real measurement
+        try {
+            await this.engagementOutcomeTracker.updateResponseEffectiveness(this.page);
+            const metrics = this.engagementOutcomeTracker.getSuccessMetrics();
+            console.log(`   📊 Engagement metrics: ${metrics.successfulOutcomes}/${metrics.totalTracked} (${metrics.replyRate?.toFixed(1) || 0}%)`);
+        } catch (error) {
+            console.log(`   ⚠️ Engagement outcome update error: ${error.message}`);
+        }
+            }, 30 * 60 * 1000);
+        } catch (error) {
+            console.log(`   ⚠️ Reddit monitor startup failed: ${error.message}`);
+        }
     }
     
     showStats() {
@@ -2319,6 +4591,16 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 console.log(`   • Engaged: ${convStats.engaged}`);
                 console.log(`   • Success Rate: ${convStats.successRate}`);
                 console.log(`   • Avg Exchanges: ${convStats.avgExchanges.toFixed(1)}`);
+            }
+            
+            // Proactive follow-up stats
+            if (this.conversationFollowUp) {
+                const followUpStats = this.conversationFollowUp.getStats();
+                console.log(`\n   Proactive Follow-ups:`);
+                console.log(`   • Active Tracking: ${followUpStats.active}`);
+                console.log(`   • Archived: ${followUpStats.archived}`);
+                console.log(`   • With Questions: ${followUpStats.withQuestions}`);
+                console.log(`   • Multi-Exchange: ${followUpStats.multiExchange}`);
             }
             
             // Show recommendations
@@ -2363,7 +4645,7 @@ Be specific and knowledgeable. Concise. No hashtags.`;
                 // Fallback to regular price response
                 const response = await this.priceResponses.generatePriceResponse(primary.name, primary.set, 'casual');
                 if (response) {
-                    return clampTweet(response, 280);
+                    return clampTweet(response, 240);
                 }
             }
             
@@ -2640,8 +4922,90 @@ LMStudioAI.prototype.generateDirectResponse = async function(messages) {
 
 // Export for testing or run as main script
 if (require.main === module) {
-    const bot = new ContextualPokemonBot();
-    bot.run().catch(console.error);
+    console.log('🤖 Pokemon Bot v2 Starting...');
+    console.log('   🎯 Target: Pokemon TCG Community');
+    console.log('   🧠 Mode: Self-Aware Contextual Responses');
+    console.log('   📊 Features: Vision, Market Analysis, Learning');
+    
+    // Global error handlers for 24/7 stability
+    process.on('uncaughtException', (error) => {
+        console.error('💥 Uncaught Exception:', error);
+        console.log('🔄 Bot will continue running...');
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+        console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+        console.log('🔄 Bot will continue running...');
+    });
+
+    // Graceful shutdown handling
+    process.on('SIGTERM', () => {
+        console.log('🛑 Received SIGTERM, shutting down gracefully...');
+        process.exit(0);
+    });
+
+    process.on('SIGINT', () => {
+        console.log('🛑 Received SIGINT, shutting down gracefully...');
+        process.exit(0);
+    });
+
+    // Start bot with retry logic
+    async function startBotWithRetry(maxRetries = 3) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const bot = new ContextualPokemonBot();
+                await bot.run();
+                console.log('✅ Bot started successfully');
+                break;
+            } catch (error) {
+                console.error(`❌ Bot start attempt ${attempt} failed:`, error.message);
+                
+                if (attempt === maxRetries) {
+                    console.error('💥 All start attempts failed, exiting...');
+                    process.exit(1);
+                }
+                
+                console.log(`⏳ Waiting 10 seconds before retry ${attempt + 1}...`);
+                await new Promise(resolve => setTimeout(resolve, 10000));
+            }
+        }
+    }
+
+    startBotWithRetry();
 } else {
     module.exports = ContextualPokemonBot;
 }
+
+// Helper method to clean up any leftover dialogs
+ContextualPokemonBot.prototype.cleanupDialogs = async function() {
+    try {
+        // Check if there are any open dialogs
+        const hasDialog = await this.page.evaluate(() => {
+            return !!document.querySelector('[role="dialog"]') ||
+                   !!document.querySelector('[data-testid*="modal"]') ||
+                   !!document.querySelector('[aria-modal="true"]');
+        });
+
+        if (hasDialog) {
+            console.log('   🧹 Cleaning up leftover dialogs...');
+            await this.page.keyboard.press('Escape');
+            await this.sleep(1000);
+
+            // Double-check and close again if needed
+            const stillHasDialog = await this.page.evaluate(() => {
+                return !!document.querySelector('[role="dialog"]') ||
+                       !!document.querySelector('[data-testid*="modal"]') ||
+                       !!document.querySelector('[aria-modal="true"]');
+            });
+
+            if (stillHasDialog) {
+                await this.page.keyboard.press('Escape');
+                await this.sleep(500);
+            }
+
+            console.log('   ✅ Dialogs cleaned up');
+        }
+    } catch (error) {
+        // Ignore cleanup errors
+    }
+};

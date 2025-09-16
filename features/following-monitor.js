@@ -121,6 +121,105 @@ class FollowingMonitor {
         }
     }
     
+    // Extract tweets from followed accounts for direct engagement
+    async extractFollowingTweets() {
+        try {
+            console.log('   📋 Extracting tweets from Following timeline for engagement...');
+            
+            const tweets = await this.page.evaluate(() => {
+                const tweetElements = document.querySelectorAll('[data-testid="tweet"]');
+                const tweets = [];
+                
+                // Get up to 20 tweets for engagement
+                const limit = Math.min(tweetElements.length, 20);
+                
+                for (let i = 0; i < limit; i++) {
+                    const tweet = tweetElements[i];
+                    
+                    // Get author info
+                    const authorElement = tweet.querySelector('[data-testid="User-Name"]');
+                    const authorText = authorElement ? authorElement.innerText : '';
+                    const authorMatch = authorText.match(/@(\w+)/);
+                    const username = authorMatch ? authorMatch[1] : null;
+                    
+                    // Skip if no username
+                    if (!username) continue;
+                    
+                    // Get tweet text
+                    const textElement = tweet.querySelector('[data-testid="tweetText"]');
+                    const text = textElement ? textElement.innerText : '';
+                    
+                    // Skip if no text
+                    if (!text) continue;
+                    
+                    // Get time
+                    const timeElement = tweet.querySelector('time');
+                    const timestamp = timeElement ? timeElement.getAttribute('datetime') : null;
+                    
+                    // Get post age
+                    let postAge = 'unknown';
+                    if (timestamp) {
+                        const postTime = new Date(timestamp);
+                        const now = new Date();
+                        const diffMinutes = Math.floor((now - postTime) / (1000 * 60));
+                        
+                        if (diffMinutes < 5) {
+                            postAge = 'very_recent';
+                        } else if (diffMinutes < 15) {
+                            postAge = 'recent_post';
+                        } else if (diffMinutes < 60) {
+                            postAge = 'moderate_age';
+                        } else {
+                            postAge = 'older_post';
+                        }
+                    }
+                    
+                    // Check for images/videos
+                    const hasImages = tweet.querySelector('img[alt*="Image"]') !== null;
+                    const hasVideos = tweet.querySelector('[data-testid="videoPlayer"]') !== null || 
+                                     tweet.querySelector('video') !== null;
+                    
+                    // Get engagement metrics
+                    const getMetric = (testId) => {
+                        const element = tweet.querySelector(`[data-testid="${testId}"]`);
+                        if (!element) return 0;
+                        const text = element.textContent || '0';
+                        const num = parseInt(text.replace(/[^\d]/g, '')) || 0;
+                        return num;
+                    };
+                    
+                    const likes = getMetric('like');
+                    const replies = getMetric('reply');
+                    const retweets = getMetric('retweet');
+                    
+                    tweets.push({
+                        id: `following_${username}_${Date.now()}_${i}`,
+                        username,
+                        text,
+                        timestamp,
+                        postAge,
+                        hasImages,
+                        hasVideos,
+                        likes,
+                        replies,
+                        retweets,
+                        source: 'following_feed',
+                        element: tweet // Include element for potential interaction
+                    });
+                }
+                
+                return tweets;
+            });
+            
+            console.log(`   ✅ Found ${tweets.length} tweets from followed accounts`);
+            return tweets;
+            
+        } catch (error) {
+            console.log('   ⚠️ Error extracting following tweets:', error.message);
+            return [];
+        }
+    }
+    
     // Extract tweets from KOLs and analyze for signals
     async extractKOLSignals() {
         try {

@@ -1,0 +1,262 @@
+{
+  "engagements": {
+    "like_dragonstorm1993_tweet_1758049484773": {
+      "id": "like_dragonstorm1993_tweet_1758049484773",
+      "type": "like",
+      "targetTweetId": "dragonstorm1993_tweet",
+      "targetUsername": "dragonstorm1993",
+      "timestamp": "2025-09-16T19:04:44.774Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.157.14_1758049897166": {
+      "id": "like_-6701865626025852170.157.14_1758049897166",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.157.14",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T19:11:37.166Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.188.14_1758050154856": {
+      "id": "like_-6701865626025852170.188.14_1758050154856",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.188.14",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T19:15:54.856Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.188.15_1758050208308": {
+      "id": "like_-6701865626025852170.188.15_1758050208308",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.188.15",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T19:16:48.308Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.188.16_1758050262298": {
+      "id": "like_-6701865626025852170.188.16_1758050262298",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.188.16",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T19:17:42.298Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.188.7_1758050769719": {
+      "id": "like_-6701865626025852170.188.7_1758050769719",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.188.7",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T19:26:09.719Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.228.8_1758051476386": {
+      "id": "like_-6701865626025852170.228.8_1758051476386",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.228.8",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T19:37:56.386Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.272.7_1758052088130": {
+      "id": "like_-6701865626025852170.272.7_1758052088130",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.272.7",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T19:48:08.130Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.358.100_1758052503379": {
+      "id": "like_-6701865626025852170.358.100_1758052503379",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.358.100",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T19:55:03.379Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    },
+    "like_-6701865626025852170.358.16_1758052940460": {
+      "id": "like_-6701865626025852170.358.16_1758052940460",
+      "type": "like",
+      "targetTweetId": "-6701865626025852170.358.16",
+      "targetUsername": "unknown",
+      "timestamp": "2025-09-16T20:02:20.460Z",
+      "botResponse": null,
+      "responseType": "like_only",
+      "initialMetrics": {
+        "likes": 0,
+        "replies": 0,
+        "retweets": 0
+      },
+      "outcomes": {
+        "gotReply": false,
+        "replyTime": null,
+        "replyContent": null,
+        "engagementIncreased": false,
+        "engagementBoost": 0,
+        "conversationContinued": false,
+        "userBecameActive": false
+      },
+      "checkedAt": null,
+      "finalOutcome": null
+    }
+  },
+  "successMetrics": {
+    "totalTracked": 10,
+    "successfulOutcomes": 0,
+    "replyRate": 0,
+    "engagementBoost": 0,
+    "conversationRate": 0
+  },
+  "lastUpdated": "2025-09-16T20:02:20.460Z"
+}

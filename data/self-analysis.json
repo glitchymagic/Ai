@@ -1,0 +1,371 @@
+{
+  "lastAnalysis": 1758053239897,
+  "performanceInsights": {
+    "responseSuccess": 0,
+    "userEngagement": 0,
+    "learningVelocity": 0,
+    "marketAccuracy": 58.82352941176471
+  },
+  "strategicRecommendations": [
+    {
+      "type": "critical",
+      "category": "response_strategy",
+      "insight": "Overall response success rate is critically low",
+      "action": "Implement immediate response strategy overhaul",
+      "impact": "high"
+    },
+    {
+      "type": "important",
+      "category": "user_retention",
+      "insight": "Users are not returning for multiple interactions",
+      "action": "Focus on building stronger initial connections",
+      "impact": "high"
+    },
+    {
+      "type": "optimization",
+      "category": "learning_efficiency",
+      "insight": "Learning patterns are not translating to success",
+      "action": "Refine pattern recognition and application",
+      "impact": "medium"
+    }
+  ],
+  "learningProgress": {},
+  "adaptationHistory": [
+    {
+      "timestamp": 1758001863048,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758002018405,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758002060689,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758002065694,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758002100946,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758002105954,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758002167545,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758002172550,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758040260101,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758040280982,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758042075895,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758043875911,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758044187474,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758044516481,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758044846500,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758044884174,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758044915101,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758044920103,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758045177501,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758045460235,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758045507514,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758045790233,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758045837518,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758046120245,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758046167513,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758046450260,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758046497537,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758046780293,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758046827576,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758047110287,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758047157577,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758047486594,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758047770344,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758047817646,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758048100345,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758048147640,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758048430457,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758048477646,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758048760366,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758048807644,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758049136647,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758049422220,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758049467690,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758049750404,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758049797672,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758049891999,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758050080393,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758050127674,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758050410397,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758050457701,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758050551991,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758050740394,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758050787713,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758051070435,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758051117862,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758051400418,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758051447716,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758051730467,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758051777713,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758052060415,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758052107731,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758052390532,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758052437755,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758052720462,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758052767761,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758052832467,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    },
+    {
+      "timestamp": 1758053239897,
+      "confidence": 0.18382352941176472,
+      "insights": 3
+    }
+  ],
+  "confidenceLevel": 0.18382352941176472
+}
