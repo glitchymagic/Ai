@@ -1,6 +1,30 @@
 {
-  "context:seeking_advice": {
-    "topic": "context:seeking_advice",
+  "context:showing_pulls": {
+    "topic": "context:showing_pulls",
+    "mentions": 4,
+    "sentiment": {
+      "positive": 1,
+      "negative": 0,
+      "neutral": 2,
+      "pokemon_go": null
+    },
+    "momentum": 4,
+    "lastUpdated": 1758566143415
+  },
+  "context:mail_day": {
+    "topic": "context:mail_day",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 0,
+      "pokemon_go": null
+    },
+    "momentum": 1,
+    "lastUpdated": 1758232286359
+  },
+  "context:error_card": {
+    "topic": "context:error_card",
     "mentions": 1,
     "sentiment": {
       "positive": 0,
@@ -8,21 +32,32 @@
       "neutral": 1
     },
     "momentum": 1,
-    "lastUpdated": 1757020830463
+    "lastUpdated": 1758236355110
+  },
+  "set:twilight masquerade": {
+    "topic": "set:twilight masquerade",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 1,
+    "lastUpdated": 1758297873401
   },
   "context:question": {
     "topic": "context:question",
-    "mentions": 1,
+    "mentions": 2,
     "sentiment": {
       "positive": 0,
       "negative": 0,
-      "neutral": 1
+      "neutral": 2
     },
-    "momentum": 1,
-    "lastUpdated": 1757020830463
+    "momentum": 2,
+    "lastUpdated": 1758299025512
   },
-  "context:showing_pulls": {
-    "topic": "context:showing_pulls",
+  "set:obsidian flames": {
+    "topic": "set:obsidian flames",
     "mentions": 1,
     "sentiment": {
       "positive": 0,
@@ -30,6 +65,94 @@
       "neutral": 1
     },
     "momentum": 1,
-    "lastUpdated": 1757021097346
+    "lastUpdated": 1758298010238
+  },
+  "context:sale_post": {
+    "topic": "context:sale_post",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 1,
+    "lastUpdated": 1758298812699
+  },
+  "context:asking_value": {
+    "topic": "context:asking_value",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 1,
+    "lastUpdated": 1758299025512
+  },
+  "market:selling": {
+    "topic": "market:selling",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 0,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 1,
+    "lastUpdated": 1758299025512
+  },
+  "set:crown zenith": {
+    "topic": "set:crown zenith",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 1,
+      "negative": 0,
+      "neutral": 0
+    },
+    "momentum": 1,
+    "lastUpdated": 1758562999174
+  },
+  "context:grading_discussion": {
+    "topic": "context:grading_discussion",
+    "mentions": 2,
+    "sentiment": {
+      "positive": 1,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 2,
+    "lastUpdated": 1758566143415
+  },
+  "grading:psa": {
+    "topic": "grading:psa",
+    "mentions": 1,
+    "sentiment": {
+      "positive": 1,
+      "negative": 0,
+      "neutral": 0
+    },
+    "momentum": 1,
+    "lastUpdated": 1758562999174
+  },
+  "grading:cgc": {
+    "topic": "grading:cgc",
+    "mentions": 2,
+    "sentiment": {
+      "positive": 1,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 2,
+    "lastUpdated": 1758566143415
+  },
+  "rarity:alt_art": {
+    "topic": "rarity:alt_art",
+    "mentions": 2,
+    "sentiment": {
+      "positive": 1,
+      "negative": 0,
+      "neutral": 1
+    },
+    "momentum": 2,
+    "lastUpdated": 1758566143415
   }
 }

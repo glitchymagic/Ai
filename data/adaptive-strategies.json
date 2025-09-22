@@ -25,14 +25,13 @@
         "collection"
       ],
       "timingStrategy": "adaptive",
-      "frequencyLimit": 5
+      "frequencyLimit": 6
     },
     "learningStrategy": {
       "focusAreas": [
         "conversation_patterns",
         "response_effectiveness",
-        "user_personality",
-        "engagement_outcomes"
+        "user_personality"
       ],
       "adaptationSpeed": "fast",
       "confidenceThreshold": 0.25
@@ -44,17 +43,41 @@
     }
   },
   "performance": {
-    "lastUpdate": 1758043875892,
+    "lastUpdate": 1758581889690,
     "adaptationHistory": [
       {
-        "timestamp": 1758040875960,
-        "adaptationsMade": 5,
+        "timestamp": 1758557846380,
+        "adaptationsMade": 7,
         "effectiveness": 11.764705882352942,
         "confidence": 0.18382352941176472
       },
       {
-        "timestamp": 1758043875892,
-        "adaptationsMade": 4,
+        "timestamp": 1758563302848,
+        "adaptationsMade": 7,
+        "effectiveness": 11.764705882352942,
+        "confidence": 0.18382352941176472
+      },
+      {
+        "timestamp": 1758566302893,
+        "adaptationsMade": 7,
+        "effectiveness": 11.764705882352942,
+        "confidence": 0.18382352941176472
+      },
+      {
+        "timestamp": 1758575289697,
+        "adaptationsMade": 7,
+        "effectiveness": 11.764705882352942,
+        "confidence": 0.18382352941176472
+      },
+      {
+        "timestamp": 1758578289677,
+        "adaptationsMade": 7,
+        "effectiveness": 11.764705882352942,
+        "confidence": 0.18382352941176472
+      },
+      {
+        "timestamp": 1758581889690,
+        "adaptationsMade": 7,
         "effectiveness": 11.764705882352942,
         "confidence": 0.18382352941176472
       }
@@ -62,5 +85,5 @@
     "currentEffectiveness": 11.764705882352942,
     "improvementRate": 0
   },
-  "lastSaved": 1758043875892
+  "lastSaved": 1758581889691
 }

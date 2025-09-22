@@ -121,17 +121,29 @@ class FollowingMonitor {
         }
     }
     
+    // Create a simple hash of username + text to detect identical content
+    hashContent(username, text) {
+        const content = `${String(username || '').toLowerCase()}::${String(text || '').trim()}`;
+        let hash = 0;
+        for (let i = 0; i < content.length; i++) {
+            const char = content.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        return hash.toString();
+    }
+    
     // Extract tweets from followed accounts for direct engagement
-    async extractFollowingTweets() {
+    async extractFollowingTweets(repliedContentHashes = new Set()) {
         try {
             console.log('   📋 Extracting tweets from Following timeline for engagement...');
             
             const tweets = await this.page.evaluate(() => {
-                const tweetElements = document.querySelectorAll('[data-testid="tweet"]');
+                const tweetElements = Array.from(document.querySelectorAll('article[data-testid="tweet"], [data-testid="tweet"]') || []);
                 const tweets = [];
                 
                 // Get up to 20 tweets for engagement
-                const limit = Math.min(tweetElements.length, 20);
+                const limit = Math.min((tweetElements && tweetElements.length) ? tweetElements.length : 0, 20);
                 
                 for (let i = 0; i < limit; i++) {
                     const tweet = tweetElements[i];
@@ -152,6 +164,10 @@ class FollowingMonitor {
                     // Skip if no text
                     if (!text) continue;
                     
+                    // Get tweet ID
+                    const link = tweet.querySelector('a[href*="/status/"]');
+                    const tweetId = link ? (link.href.split('/status/')[1]?.split('?')[0] || null) : null;
+
                     // Get time
                     const timeElement = tweet.querySelector('time');
                     const timestamp = timeElement ? timeElement.getAttribute('datetime') : null;
@@ -193,7 +209,7 @@ class FollowingMonitor {
                     const retweets = getMetric('retweet');
                     
                     tweets.push({
-                        id: `following_${username}_${Date.now()}_${i}`,
+                        id: tweetId || `following_${username}_${i}`,
                         username,
                         text,
                         timestamp,
@@ -203,16 +219,26 @@ class FollowingMonitor {
                         likes,
                         replies,
                         retweets,
-                        source: 'following_feed',
-                        element: tweet // Include element for potential interaction
+                        source: 'following_feed'
                     });
                 }
                 
                 return tweets;
             });
             
-            console.log(`   ✅ Found ${tweets.length} tweets from followed accounts`);
-            return tweets;
+            // Filter out duplicates using content hash
+            console.log(`   🔍 [DEBUG] Checking ${tweets.length} tweets against ${repliedContentHashes.size} known content hashes`);
+            const filteredTweets = tweets.filter(tweet => {
+                const contentHash = this.hashContent(tweet.username, tweet.text);
+                if (repliedContentHashes.has(contentHash)) {
+                    console.log(`   ⏭️ Skipping duplicate content from @${tweet.username}: "${tweet.text.substring(0, 50)}..."`);
+                    return false;
+                }
+                return true;
+            });
+            
+            console.log(`   ✅ Found ${tweets.length} tweets from followed accounts (${filteredTweets.length} after deduplication)`);
+            return filteredTweets;
             
         } catch (error) {
             console.log('   ⚠️ Error extracting following tweets:', error.message);

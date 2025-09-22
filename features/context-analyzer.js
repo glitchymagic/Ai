@@ -430,15 +430,23 @@ class ContextAnalyzer {
     generateGeneralResponse(analysis, hasImage) {
         if (hasImage) {
             if (analysis.primaryContext && analysis.primaryContext.type === 'showing_pulls') {
+                if (analysis.specificCards.length > 0) {
+                    return `That ${analysis.specificCards[0].name} is a solid pull!`;
+                }
                 return "Nice pulls! Which one's your favorite?";
             }
             return "Great cards! The condition looks solid";
         }
-        
+
         if (analysis.sets.length > 0) {
             return `${analysis.sets[0].name} is a great set to collect`;
         }
-        
+
+        // Avoid generic responses - require more context
+        if (analysis.keyPoints.length > 0) {
+            return `Nice ${analysis.keyPoints[0].split(' ')[0].toLowerCase()}!`;
+        }
+
         return "Cool to see the collection growing!";
     }
 }

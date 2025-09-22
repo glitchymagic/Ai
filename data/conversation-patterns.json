@@ -97,7 +97,7 @@
       "hasPriceQuery": false,
       "topics": []
     },
-    "occurrences": 1,
+    "occurrences": 14,
     "successfulResponses": []
   },
   "{\"triggerType\":\"market\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"buddy\\\"\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"set:151\",\"context:asking_value\",\"context:seeking_advice\",\"context:grading_discussion\",\"context:trade_offer\",\"context:question\",\"context:disappointment\",\"grading:psa\",\"market:selling\"]}": {
@@ -165,6 +165,798 @@
       ]
     },
     "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"team rocket\\\"\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\",\"context:question\",\"context:achievement\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"team rocket\""
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls",
+        "context:question",
+        "context:achievement"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"iv\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"iv\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": []
+    },
+    "occurrences": 2,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":true,\"hasPriceQuery\":true,\"topics\":[\"context:asking_value\",\"context:question\",\"context:achievement\",\"market:price_discussion\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": true,
+      "topics": [
+        "context:asking_value",
+        "context:question",
+        "context:achievement",
+        "market:price_discussion"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:trade_offer\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:trade_offer"
+      ]
+    },
+    "occurrences": 5,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":true,\"topics\":[\"context:showing_pulls\",\"context:asking_value\",\"context:store_find\",\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": true,
+      "topics": [
+        "context:showing_pulls",
+        "context:asking_value",
+        "context:store_find",
+        "context:question"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"market\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"iv\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\",\"context:asking_value\",\"context:showing_collection\",\"context:grading_discussion\",\"context:sale_post\",\"grading:psa\",\"market:selling\"]}": {
+    "pattern": {
+      "triggerType": "market",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"iv\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls",
+        "context:asking_value",
+        "context:showing_collection",
+        "context:grading_discussion",
+        "context:sale_post",
+        "grading:psa",
+        "market:selling"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"positive\",\"score\":1,\"confidence\":\"medium\",\"negativeCount\":0,\"positiveCount\":1,\"reason\":\"0 negative, 1 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:store_find\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "positive",
+        "score": 1,
+        "confidence": "medium",
+        "negativeCount": 0,
+        "positiveCount": 1,
+        "reason": "0 negative, 1 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:store_find"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"iv\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:question\",\"rarity:shiny\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"iv\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:question",
+        "rarity:shiny"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"market\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":true,\"topics\":[\"card:charizard\",\"context:showing_pulls\",\"context:asking_value\",\"context:grading_discussion\",\"grading:psa\"]}": {
+    "pattern": {
+      "triggerType": "market",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": true,
+      "topics": [
+        "card:charizard",
+        "context:showing_pulls",
+        "context:asking_value",
+        "context:grading_discussion",
+        "grading:psa"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:question"
+      ]
+    },
+    "occurrences": 2,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:question"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"card:rayquaza\",\"context:showing_pulls\",\"context:trade_offer\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "card:rayquaza",
+        "context:showing_pulls",
+        "context:trade_offer"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"positive\",\"score\":1,\"confidence\":\"medium\",\"negativeCount\":0,\"positiveCount\":1,\"reason\":\"0 negative, 1 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"card:mewtwo\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "positive",
+        "score": 1,
+        "confidence": "medium",
+        "negativeCount": 0,
+        "positiveCount": 1,
+        "reason": "0 negative, 1 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "card:mewtwo"
+      ]
+    },
+    "occurrences": 2,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"showcase\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"iv\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:store_find\"]}": {
+    "pattern": {
+      "triggerType": "showcase",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"iv\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:store_find"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:trade_offer\",\"context:store_find\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:trade_offer",
+        "context:store_find"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"showcase\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"pokemon go\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\",\"context:mail_day\"]}": {
+    "pattern": {
+      "triggerType": "showcase",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"pokemon go\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls",
+        "context:mail_day"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"market\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":true,\"hasPriceQuery\":true,\"topics\":[\"context:asking_value\",\"context:store_find\",\"context:question\",\"market:price_discussion\"]}": {
+    "pattern": {
+      "triggerType": "market",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": true,
+      "topics": [
+        "context:asking_value",
+        "context:store_find",
+        "context:question",
+        "market:price_discussion"
+      ]
+    },
+    "occurrences": 6,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"risky_topic\",\"score\":-3,\"confidence\":\"high\",\"reason\":\"risky topic detected: \\\"loan\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "risky_topic",
+        "score": -3,
+        "confidence": "high",
+        "reason": "risky topic detected: \"loan\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": []
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"showcase\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:error_card\"]}": {
+    "pattern": {
+      "triggerType": "showcase",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:error_card"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"gym\\\"\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"card:charizard\",\"context:store_find\",\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"gym\""
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "card:charizard",
+        "context:store_find",
+        "context:question"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"set:twilight masquerade\",\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "set:twilight masquerade",
+        "context:question"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"set:obsidian flames\",\"context:showing_pulls\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "set:obsidian flames",
+        "context:showing_pulls"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:sale_post\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:sale_post"
+      ]
+    },
+    "occurrences": 2,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:asking_value\",\"context:question\",\"market:selling\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:asking_value",
+        "context:question",
+        "market:selling"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:trade_offer\",\"rarity:gold\",\"market:investment\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:trade_offer",
+        "rarity:gold",
+        "market:investment"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"showcase\",\"sentiment\":{\"sentiment\":\"positive\",\"score\":1,\"confidence\":\"medium\",\"negativeCount\":0,\"positiveCount\":1,\"reason\":\"0 negative, 1 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"set:crown zenith\",\"context:showing_pulls\",\"context:grading_discussion\",\"grading:psa\",\"grading:cgc\",\"rarity:alt_art\"]}": {
+    "pattern": {
+      "triggerType": "showcase",
+      "sentiment": {
+        "sentiment": "positive",
+        "score": 1,
+        "confidence": "medium",
+        "negativeCount": 0,
+        "positiveCount": 1,
+        "reason": "0 negative, 1 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "set:crown zenith",
+        "context:showing_pulls",
+        "context:grading_discussion",
+        "grading:psa",
+        "grading:cgc",
+        "rarity:alt_art"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:mail_day\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:mail_day"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"iv\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:grading_discussion\",\"grading:cgc\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"iv\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:grading_discussion",
+        "grading:cgc"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"market\",\"sentiment\":{\"sentiment\":\"positive\",\"score\":1,\"confidence\":\"medium\",\"negativeCount\":0,\"positiveCount\":1,\"reason\":\"0 negative, 1 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":true,\"topics\":[\"context:asking_value\",\"context:showing_collection\"]}": {
+    "pattern": {
+      "triggerType": "market",
+      "sentiment": {
+        "sentiment": "positive",
+        "score": 1,
+        "confidence": "medium",
+        "negativeCount": 0,
+        "positiveCount": 1,
+        "reason": "0 negative, 1 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": true,
+      "topics": [
+        "context:asking_value",
+        "context:showing_collection"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"market\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"card:pikachu\",\"context:asking_value\",\"context:seeking_advice\",\"context:store_find\",\"context:sale_post\",\"market:selling\"]}": {
+    "pattern": {
+      "triggerType": "market",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "card:pikachu",
+        "context:asking_value",
+        "context:seeking_advice",
+        "context:store_find",
+        "context:sale_post",
+        "market:selling"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\",\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls",
+        "context:question"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":true,\"topics\":[\"context:asking_value\",\"context:question\",\"market:price_discussion\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": true,
+      "topics": [
+        "context:asking_value",
+        "context:question",
+        "market:price_discussion"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"iv\\\"\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:seeking_advice\",\"context:trade_offer\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"iv\""
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:seeking_advice",
+        "context:trade_offer"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"showcase\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\",\"context:grading_discussion\",\"grading:cgc\",\"rarity:alt_art\"]}": {
+    "pattern": {
+      "triggerType": "showcase",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls",
+        "context:grading_discussion",
+        "grading:cgc",
+        "rarity:alt_art"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"general\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":false,\"hasPriceQuery\":false,\"topics\":[\"context:grading_discussion\",\"grading:psa\"]}": {
+    "pattern": {
+      "triggerType": "general",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": false,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:grading_discussion",
+        "grading:psa"
+      ]
+    },
+    "occurrences": 1,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"showcase\",\"sentiment\":{\"sentiment\":\"pokemon_go\",\"score\":0,\"confidence\":\"high\",\"reason\":\"Pokemon GO content detected: \\\"iv\\\"\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\",\"context:asking_value\",\"context:question\",\"market:buying\"]}": {
+    "pattern": {
+      "triggerType": "showcase",
+      "sentiment": {
+        "sentiment": "pokemon_go",
+        "score": 0,
+        "confidence": "high",
+        "reason": "Pokemon GO content detected: \"iv\""
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls",
+        "context:asking_value",
+        "context:question",
+        "market:buying"
+      ]
+    },
+    "occurrences": 2,
+    "successfulResponses": []
+  },
+  "{\"triggerType\":\"question\",\"sentiment\":{\"sentiment\":\"neutral\",\"score\":0,\"confidence\":\"low\",\"negativeCount\":0,\"positiveCount\":0,\"reason\":\"0 negative, 0 positive words\"},\"hasQuestion\":true,\"hasPriceQuery\":false,\"topics\":[\"context:showing_pulls\",\"context:question\"]}": {
+    "pattern": {
+      "triggerType": "question",
+      "sentiment": {
+        "sentiment": "neutral",
+        "score": 0,
+        "confidence": "low",
+        "negativeCount": 0,
+        "positiveCount": 0,
+        "reason": "0 negative, 0 positive words"
+      },
+      "hasQuestion": true,
+      "hasPriceQuery": false,
+      "topics": [
+        "context:showing_pulls",
+        "context:question"
+      ]
+    },
+    "occurrences": 3,
     "successfulResponses": []
   }
 }

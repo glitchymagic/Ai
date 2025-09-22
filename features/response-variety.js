@@ -76,6 +76,15 @@ class ResponseVariety {
         };
     }
     
+    // Track responses used to avoid repetition (no-op safe)
+    trackResponse({ username, text, response }) {
+        try {
+            this._recent = this._recent || [];
+            this._recent.push({ username, text, response, ts: Date.now() });
+            if (this._recent.length > 100) this._recent.shift();
+        } catch (_) {}
+    }
+    
     // Get a varied response based on context
     getVariedResponse(text, hasImage = false) {
         const textLower = text.toLowerCase();

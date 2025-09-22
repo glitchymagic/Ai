@@ -14,13 +14,13 @@ class SearchEngine {
                 'filter:replies',    // Include replies for conversation
                 '-filter:retweets'   // Exclude retweets (more original content)
             ],
-            
-            // Engagement filters for quality
+
+            // Engagement filters for quality - prioritize visual content
             quality: [
                 'min_replies:1',     // Has at least 1 reply
                 'min_faves:2',       // Has at least 2 likes
-                'filter:images',     // Has images (more engaging)
-                'filter:videos',     // Has videos
+                'filter:images',     // Has images (more engaging) - PRIORITIZED
+                'filter:videos',     // Has videos - PRIORITIZED
                 'filter:verified'    // From verified accounts
             ],
             
@@ -37,40 +37,42 @@ class SearchEngine {
             'mixed_strategy'     // Balance both
         ];
         
-        // Comprehensive search library
+        // Comprehensive search library - bias toward visual content
         this.searchQueries = {
-            // Time-based searches (simple queries that actually work)
+            // Time-based searches (simple queries that actually work) - favor image-heavy
             morning: [
-                'pokemon mail day',
-                'pokemon pulls',
-                'pokemon tcg opening',
-                'pokemon cards arrived', 
-                'pokemon delivery',
-                '#MailDayMonday',
-                'pokemon grail',
-                'pokemon mailday'
+                'pokemon pulls filter:images',      // Prioritize images
+                'pokemon tcg opening filter:images',
+                'pokemon pack opening filter:images',
+                'pokemon grail filter:images',
+                'pokemon chase card filter:images',
+                'pokemon hits filter:images',
+                'pokemon alt art filter:images',
+                'pokemon mail day filter:images',   // Add more visual terms
+                'pokemon collection filter:images'
             ],
             
             afternoon: [
-                'pokemon tcg deals',
-                'pokemon cards restock',
-                'pokemon target find',
-                'pokemon walmart stock',
-                'pokemon costco',
-                'pokemon gamestop',
-                'pokemon cards found',
-                'pokemon restock'
+                'pokemon tcg deals filter:images',
+                'pokemon cards restock filter:images',
+                'pokemon target find filter:images',
+                'pokemon walmart stock filter:images',
+                'pokemon costco filter:images',
+                'pokemon gamestop filter:images',
+                'pokemon cards found filter:images',
+                'pokemon restock filter:images'
             ],
-            
+
             evening: [
-                'pokemon collection',
-                'pokemon binder tour',
-                'pokemon display',
-                'pokemon showcase',
-                'pokemon graded cards',
-                'pokemon slab collection',
-                'pokemon collection goals',
-                'pokemon binder page'
+                'pokemon collection filter:images',
+                'pokemon binder tour filter:images',
+                'pokemon display filter:images',
+                'pokemon showcase filter:images',
+                'pokemon graded cards filter:images',
+                // Removed: 'pokemon slab collection' and 'binder page' variants (low yield)
+                'pokemon top hits filter:images',
+                'pokemon recent pulls filter:images',
+                'pokemon favorite card filter:images'
             ],
             
             night: [
@@ -82,29 +84,7 @@ class SearchEngine {
                 'pokemon investment advice'
             ],
             
-            // Specific card searches
-            specific_cards: [
-                'moonbreon vmax',
-                'charizard upc',
-                'giratina vstar alt art',
-                'umbreon vmax alt',
-                'rayquaza vmax alt',
-                'lugia v alt art',
-                'aerodactyl v alt art',
-                'machamp v alt art',
-                'gengar vmax alt art',
-                'mew vmax alt art',
-                'pikachu vmax',
-                'blaziken vmax alt',
-                'gold star pokemon',
-                'crystal charizard',
-                'base set charizard',
-                'shining pokemon cards',
-                'rainbow rare charizard',
-                'gold mew pokemon',
-                'latias latios alt art',
-                'eeveelution cards'
-            ],
+            // Specific card searches - REMOVED per user request
             
             // Set-specific searches
             sets: [
@@ -137,15 +117,15 @@ class SearchEngine {
                 'pokemon etb opening',
                 'pokemon pulls today',
                 'pokemon hits',
-                'pokemon chase card',
-                'pokemon pull rates',
-                'pokemon pack magic',
-                'pokemon god pack',
+                // Removed: 'chase card' (often stale). Add trending engagement verbs:
+                'pokemon pulled',
+                'pokemon hit',
+                'pokemon rip party',
+                'pokemon mail',
                 'pokemon error card',
                 'pokemon misprint',
                 'pokemon miscut',
                 'pokemon crimped card',
-                'pokemon test print',
                 'pokemon prerelease'
             ],
             
@@ -164,8 +144,10 @@ class SearchEngine {
                 'pokemon ebay finds',
                 'pokemon mercari',
                 'pokemon whatnot',
-                'pokemon facebook marketplace',
-                'pokemon deal alert'
+                // Lower priority set terms can be noisy; keep but supplement with popular tags:
+                '#PokemonTCG',
+                '#PokemonCards',
+                'pokemon tcg live'
             ],
             
             // Community searches (simplified)
@@ -231,6 +213,29 @@ class SearchEngine {
         
         // Flatten all searches for easy access
         this.allSearches = Object.values(this.searchQueries).flat();
+
+        // Guard list for consistently low-yield queries (observed from runtime logs)
+        this.lowValueQueries = new Set([
+            'surging sparks',
+            'prismatic evolutions',
+            'pokemon costco',
+            'pokemon slab collection',
+            // Error/misprint queries - very limited fresh content
+            'pokemon error card',
+            'pokemon misprint',
+            'pokemon miscut',
+            'pokemon crimped card',
+            'pokemon prerelease',
+            'pokemon error',
+            'pokemon misprint card',
+            // Mail day queries - often repetitive
+            'pokemon mail',
+            'pokemon mail day',
+            // Specific card searches that often yield stale results
+            'gengar vmax alt art',
+            'charizard vmax',
+            'pikachu vmax'
+        ]);
         
         // Track which searches work best
         this.successfulSearches = [];
@@ -304,7 +309,6 @@ class SearchEngine {
         
         // Add variety (60% weight)
         searchPool.push(
-            ...this.getRandomFrom(this.searchQueries.specific_cards, 3),
             ...this.getRandomFrom(this.searchQueries.sets, 2),
             ...this.getRandomFrom(this.searchQueries.activities, 2),
             ...this.getRandomFrom(this.searchQueries.market, 2),
@@ -315,9 +319,13 @@ class SearchEngine {
         const recentSearches = this.searchHistory.slice(-10);
         searchPool = searchPool.filter(s => !recentSearches.includes(s));
         
-        // Pick deterministically from pool
+        // Pick deterministically from pool, avoiding known low-value queries
         let baseQuery = searchPool[this.searchCounter % searchPool.length] || 
                        this.allSearches[this.searchCounter % this.allSearches.length];
+        if (this.lowValueQueries.has(baseQuery)) {
+            baseQuery = this.getFallbackSearch();
+            console.log(`   ⏭️ Skipping low-yield query, using fallback: ${baseQuery}`);
+        }
         
         // Choose search strategy deterministically
         const strategies = this.recentSearchStrategies;
@@ -327,7 +335,14 @@ class SearchEngine {
         this.searchCounter++;
         
         // Build advanced search with operators
-        const selected = this.buildAdvancedSearch(baseQuery, strategy);
+        let selected = this.buildAdvancedSearch(baseQuery, strategy);
+
+        // Guard: skip individual card searches completely (alt art / vmax / specific names)
+        const specificCardPattern = /(charizard|rayquaza|umbreon|gengar|lugia|aerodactyl|latias|latios|mew|machamp|blaziken|pikachu)\b.*\b(alt\s*art|vmax|vstar|sir|special\s*illustration|full\s*art)\b|\b(alt\s*art|vmax|vstar|sir|special\s*illustration|full\s*art)\b.*\b(charizard|rayquaza|umbreon|gengar|lugia|aerodactyl|latias|latios|mew|machamp|blaziken|pikachu)\b/i;
+        if (specificCardPattern.test(selected)) {
+            selected = 'pokemon tcg';
+            console.log('   ⏭️ Skipping individual card search, using generic query instead');
+        }
         
         console.log(`   🔍 Search strategy: ${strategy}`);
         console.log(`   📝 Base query: ${baseQuery}`);
@@ -381,23 +396,40 @@ class SearchEngine {
         // High priority searches that consistently have fresh content
         const highActivitySearches = [
             '#PokemonTCG',
-            '#Pokemon', 
+            '#Pokemon',
             '#PokemonCards',
             'pokemon target',
             'pokemon walmart',
-            'surging sparks',
             'pokemon pulls',
             'pokemon restock',
-            'pokemon pack opening'
+            'pokemon pack opening',
+            'pokemon tcg',
+            // Popular recent sets
+            'stellar crown',
+            'temporal forces',
+            'paradox rift',
+            // High-engagement activities
+            'pokemon booster box',
+            'pokemon etb opening',
+            'pokemon pulls today',
+            // Community favorites
+            'pokemon collection',
+            'pokemon showcase',
+            'pokemon grail',
+            'pokemon chase card'
         ];
         
         console.log(`   📊 Search counter: ${this.searchCounter}`);
         
         // Deterministic: use high activity searches every 2.5 searches (40%)
         if ((this.searchCounter % 5) < 2) {
-            const selected = highActivitySearches[
+            let selected = highActivitySearches[
                 this.searchCounter % highActivitySearches.length
             ];
+            if (this.lowValueQueries.has(selected)) {
+                selected = 'pokemon tcg';
+                console.log('   ⏭️ Skipping low-yield high-activity entry, using generic query');
+            }
             console.log(`   🔥 Using high-activity search: ${selected}`);
             this.searchCounter++; // Increment here too
             return selected;
@@ -412,6 +444,25 @@ class SearchEngine {
         
         // Otherwise normal selection (getNextSearch increments counter)
         return this.getNextSearch();
+    }
+    
+    // Track raw search results to support downstream timeline processing
+    trackSearchResults(query, tweets) {
+        try {
+            const postsFound = Array.isArray(tweets) ? tweets.length : (tweets?.length || 0);
+            // Record in history for light telemetry
+            this.searchHistory.push(query);
+            if (this.searchHistory.length > 50) this.searchHistory.shift();
+            // Seed performance map minimally so getSearchStats has data
+            if (!this.searchPerformance.has(query)) {
+                this.searchPerformance.set(query, { uses: 0, totalSuccess: 0, avgPosts: 0 });
+            }
+            const perf = this.searchPerformance.get(query);
+            perf.uses++;
+            perf.avgPosts = (perf.avgPosts * (perf.uses - 1) + postsFound) / perf.uses;
+        } catch (_) {
+            // best-effort; never throw
+        }
     }
     
     // Get a simple fallback search when advanced searches fail
@@ -445,6 +496,21 @@ class SearchEngine {
         stats.topPerformers = stats.topPerformers.slice(0, 5);
         
         return stats;
+    }
+
+    // Track when we intentionally skip a user during analysis
+    trackSkippedUser(username) {
+        try {
+            if (!this._skippedUsers) this._skippedUsers = new Map();
+            const key = String(username || 'unknown').toLowerCase();
+            const entry = this._skippedUsers.get(key) || { count: 0, last: 0 };
+            entry.count += 1;
+            entry.last = Date.now();
+            this._skippedUsers.set(key, entry);
+            console.log(`   ⏭️ Tracking skipped user: @${key} (${entry.count}×)`);
+        } catch (_) {
+            // no-op
+        }
     }
 }
 

@@ -1,32 +1,198 @@
 {
-  "timestamp": "2025-09-04T21:18:55.396Z",
+  "timestamp": "2025-09-22T22:28:51.981Z",
   "summary": {
-    "topNarratives": [],
+    "topNarratives": [
+      {
+        "id": "NARR-1758580115669-y7wvpayuj",
+        "timestamp": 1758580115669,
+        "card": "Umbreon Vmax Alt Art",
+        "strength": 1,
+        "actionability": "critical",
+        "platforms": [
+          "reddit"
+        ],
+        "classification": null,
+        "summary": "Umbreon Vmax Alt Art: Reddit community discussing.  Signal strength: 100%",
+        "suggestedAction": {
+          "type": "alert",
+          "priority": "critical",
+          "targets": [
+            {
+              "platform": "reddit",
+              "action": "monitor_threads",
+              "subreddits": [
+                "PokemonTCG",
+                "PokeInvesting"
+              ]
+            }
+          ],
+          "message": "🚨 CRITICAL SIGNAL: Umbreon Vmax Alt Art"
+        },
+        "evidence": [
+          {
+            "type": "reddit",
+            "posts": 1,
+            "momentum": 0
+          }
+        ],
+        "prediction": {
+          "id": "PRED-1758580115669-nw30nr",
+          "card": "Umbreon Vmax Alt Art",
+          "type": "neutral",
+          "confidence": 1,
+          "madeAt": 1758580115669,
+          "timeframe": "72h"
+        }
+      },
+      {
+        "id": "NARR-1758580115669-fy0m3a97p",
+        "timestamp": 1758580115669,
+        "card": "Giratina V Alt Art",
+        "strength": 1,
+        "actionability": "critical",
+        "platforms": [
+          "reddit"
+        ],
+        "classification": null,
+        "summary": "Giratina V Alt Art: Reddit community discussing.  Signal strength: 100%",
+        "suggestedAction": {
+          "type": "alert",
+          "priority": "critical",
+          "targets": [
+            {
+              "platform": "reddit",
+              "action": "monitor_threads",
+              "subreddits": [
+                "PokemonTCG",
+                "PokeInvesting"
+              ]
+            }
+          ],
+          "message": "🚨 CRITICAL SIGNAL: Giratina V Alt Art"
+        },
+        "evidence": [
+          {
+            "type": "reddit",
+            "posts": 1,
+            "momentum": 0.024177066489308105
+          }
+        ],
+        "prediction": {
+          "id": "PRED-1758580115669-oowi0z",
+          "card": "Giratina V Alt Art",
+          "type": "neutral",
+          "confidence": 1,
+          "madeAt": 1758580115669,
+          "timeframe": "72h"
+        }
+      },
+      {
+        "id": "NARR-1758580115669-8dicwkt3l",
+        "timestamp": 1758580115669,
+        "card": "Lost Origin",
+        "strength": 1,
+        "actionability": "critical",
+        "platforms": [
+          "reddit"
+        ],
+        "classification": null,
+        "summary": "Lost Origin: Reddit community discussing.  Signal strength: 100%",
+        "suggestedAction": {
+          "type": "alert",
+          "priority": "critical",
+          "targets": [
+            {
+              "platform": "reddit",
+              "action": "monitor_threads",
+              "subreddits": [
+                "PokemonTCG",
+                "PokeInvesting"
+              ]
+            }
+          ],
+          "message": "🚨 CRITICAL SIGNAL: Lost Origin"
+        },
+        "evidence": [
+          {
+            "type": "reddit",
+            "posts": 1,
+            "momentum": 0.04295281825516086
+          }
+        ],
+        "prediction": {
+          "id": "PRED-1758580115669-ayxh90",
+          "card": "Lost Origin",
+          "type": "neutral",
+          "confidence": 1,
+          "madeAt": 1758580115669,
+          "timeframe": "72h"
+        }
+      }
+    ],
     "strongestSignals": [
       {
-        "type": "reddit",
-        "card": "Crown Zenith",
-        "strength": 0.9430919631919203,
+        "type": "narrative",
+        "card": "Umbreon Vmax Alt Art",
+        "strength": 1,
+        "source": "reddit"
+      },
+      {
+        "type": "narrative",
+        "card": "Giratina V Alt Art",
+        "strength": 1,
+        "source": "reddit"
+      },
+      {
+        "type": "narrative",
+        "card": "Lost Origin",
+        "strength": 1,
         "source": "reddit"
       }
     ],
     "crossPlatformAlerts": [],
     "marketSentiment": {
-      "dominant": "bullish",
+      "dominant": "neutral",
       "breakdown": {
         "bullish": "0.0",
         "bearish": "0.0",
-        "neutral": "0.0",
+        "neutral": "100.0",
         "urgent": "0.0"
       }
     }
   },
-  "recommendations": [],
+  "recommendations": [
+    {
+      "type": "engage",
+      "priority": "high",
+      "action": "Actively engage with discussions about: Umbreon Vmax Alt Art, Giratina V Alt Art, Lost Origin",
+      "reason": "Strong narratives detected across platforms"
+    }
+  ],
   "predictions": [
     {
-      "id": "XPLAT-1757020735396-76t1jp",
-      "card": "Crown Zenith",
-      "confidence": 0.9430919631919203,
+      "id": "XPLAT-1758580131982-foa48v",
+      "card": "Umbreon Vmax Alt Art",
+      "confidence": 1,
+      "timeframe": "24-72h",
+      "source": "reddit",
+      "expectation": "significant_movement",
+      "direction": "up",
+      "range": "10-20%"
+    },
+    {
+      "id": "XPLAT-1758580131982-km7ruw",
+      "card": "Giratina V Alt Art",
+      "confidence": 1,
+      "timeframe": "24-72h",
+      "source": "reddit",
+      "expectation": "significant_movement",
+      "direction": "up",
+      "range": "10-20%"
+    },
+    {
+      "id": "XPLAT-1758580131982-znl41z",
+      "card": "Lost Origin",
+      "confidence": 1,
       "timeframe": "24-72h",
       "source": "reddit",
       "expectation": "significant_movement",
@@ -34,5 +200,24 @@
       "range": "10-20%"
     }
   ],
-  "responseStrategies": []
+  "responseStrategies": [
+    {
+      "card": "Umbreon Vmax Alt Art",
+      "strategy": "conversational",
+      "action": "monitor",
+      "confidence": 0.5
+    },
+    {
+      "card": "Giratina V Alt Art",
+      "strategy": "conversational",
+      "action": "monitor",
+      "confidence": 0.5
+    },
+    {
+      "card": "Lost Origin",
+      "strategy": "conversational",
+      "action": "monitor",
+      "confidence": 0.5
+    }
+  ]
 }

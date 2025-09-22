@@ -1,0 +1,46 @@
+{
+  "signals": [
+    {
+      "tweet": {
+        "id": "1969878783667937763",
+        "handle": "phygitals",
+        "text": "While packs and gachas are exciting, our vision for collectors goes much deeper.\n\nStreaming launches this week featuring nearly $20k worth of Evolving Skies being ripped open.\n\nApp UI showcase drops later today.",
+        "time": "2025-09-21T21:37:55.000Z",
+        "engagement": {
+          "likes": 135,
+          "retweets": 25
+        },
+        "url": "https://x.com/phygitals/status/1969878783667937763"
+      },
+      "cards": [
+        "Evolving Skies"
+      ],
+      "patterns": [
+        {
+          "type": "priceMovement",
+          "strength": 1.3,
+          "matches": 2
+        }
+      ],
+      "strength": 0.865,
+      "source": "following_timeline",
+      "detectedAt": 1758563881445
+    }
+  ],
+  "lastUpdate": "2025-09-22T17:58:01.445Z",
+  "summary": {
+    "totalSignals": 1,
+    "topCards": [
+      {
+        "card": "Evolving Skies",
+        "mentions": 1
+      }
+    ],
+    "dominantPatterns": [
+      {
+        "pattern": "priceMovement",
+        "count": 1
+      }
+    ]
+  }
+}

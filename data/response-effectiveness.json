@@ -1,7 +1,7 @@
 {
   "generic": {
     "pattern": "generic",
-    "uses": 8,
+    "uses": 9,
     "engagements": 0,
     "positiveOutcomes": 0,
     "contexts": [
@@ -100,6 +100,24 @@
           "context:question"
         ],
         "timestamp": 1757021211913
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:asking_value",
+          "context:question",
+          "context:achievement",
+          "market:price_discussion"
+        ],
+        "timestamp": 1758215590215
       }
     ]
   },
@@ -166,7 +184,7 @@
   },
   "question": {
     "pattern": "question",
-    "uses": 1,
+    "uses": 27,
     "engagements": 0,
     "positiveOutcomes": 0,
     "contexts": [
@@ -182,6 +200,1070 @@
           "context:question"
         ],
         "timestamp": 1757020797613
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": false,
+        "topics": [
+          "context:showing_pulls",
+          "context:asking_value",
+          "context:showing_collection",
+          "context:grading_discussion",
+          "context:sale_post",
+          "grading:psa",
+          "market:selling"
+        ],
+        "timestamp": 1758217152022
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:question"
+        ],
+        "timestamp": 1758222160879
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:question"
+        ],
+        "timestamp": 1758222575852
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758222855287
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758233883620
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:trade_offer"
+        ],
+        "timestamp": 1758342385889
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": true,
+        "topics": [],
+        "timestamp": 1758562719586
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758562846470
+      },
+      {
+        "sentiment": {
+          "sentiment": "positive",
+          "score": 1,
+          "confidence": "medium",
+          "negativeCount": 0,
+          "positiveCount": 1,
+          "reason": "0 negative, 1 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "set:crown zenith",
+          "context:showing_pulls",
+          "context:grading_discussion",
+          "grading:psa",
+          "grading:cgc",
+          "rarity:alt_art"
+        ],
+        "timestamp": 1758562977737
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": true,
+        "topics": [
+          "context:grading_discussion",
+          "grading:cgc"
+        ],
+        "timestamp": 1758564048907
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:showing_pulls",
+          "context:question"
+        ],
+        "timestamp": 1758564259983
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:asking_value",
+          "context:question",
+          "market:price_discussion"
+        ],
+        "timestamp": 1758564415296
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [],
+        "timestamp": 1758564503213
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758565429729
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": true,
+        "topics": [
+          "context:seeking_advice",
+          "context:trade_offer"
+        ],
+        "timestamp": 1758565816961
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:showing_pulls",
+          "context:grading_discussion",
+          "grading:cgc",
+          "rarity:alt_art"
+        ],
+        "timestamp": 1758566119330
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:grading_discussion",
+          "grading:psa"
+        ],
+        "timestamp": 1758567289034
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": true,
+        "topics": [
+          "context:showing_pulls",
+          "context:asking_value",
+          "context:question",
+          "market:buying"
+        ],
+        "timestamp": 1758567711949
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": true,
+        "topics": [
+          "context:showing_pulls",
+          "context:asking_value",
+          "context:question",
+          "market:buying"
+        ],
+        "timestamp": 1758567810451
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758569524753
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:showing_pulls",
+          "context:question"
+        ],
+        "timestamp": 1758569566441
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:showing_pulls",
+          "context:question"
+        ],
+        "timestamp": 1758569654240
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:showing_pulls",
+          "context:question"
+        ],
+        "timestamp": 1758569857199
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758574413378
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [],
+        "timestamp": 1758574614244
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [],
+        "timestamp": 1758574759809
+      }
+    ]
+  },
+  "personal": {
+    "pattern": "personal",
+    "uses": 7,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"team rocket\""
+        },
+        "hasImages": false,
+        "topics": [
+          "context:showing_pulls",
+          "context:question",
+          "context:achievement"
+        ],
+        "timestamp": 1758214177026
+      },
+      {
+        "sentiment": {
+          "sentiment": "positive",
+          "score": 1,
+          "confidence": "medium",
+          "negativeCount": 0,
+          "positiveCount": 1,
+          "reason": "0 negative, 1 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:store_find"
+        ],
+        "timestamp": 1758219441147
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:question"
+        ],
+        "timestamp": 1758222730722
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:trade_offer",
+          "context:store_find"
+        ],
+        "timestamp": 1758232162487
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [],
+        "timestamp": 1758232715553
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:trade_offer"
+        ],
+        "timestamp": 1758236957796
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"gym\""
+        },
+        "hasImages": true,
+        "topics": [
+          "card:charizard",
+          "context:store_find",
+          "context:question"
+        ],
+        "timestamp": 1758297289468
+      }
+    ]
+  },
+  "question_personal": {
+    "pattern": "question_personal",
+    "uses": 20,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:showing_pulls"
+        ],
+        "timestamp": 1758214490813
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758214924644
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:showing_pulls",
+          "context:asking_value",
+          "context:store_find",
+          "context:question"
+        ],
+        "timestamp": 1758216404408
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [],
+        "timestamp": 1758220796297
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": false,
+        "topics": [
+          "context:question",
+          "rarity:shiny"
+        ],
+        "timestamp": 1758220865571
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758223507119
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "card:rayquaza",
+          "context:showing_pulls",
+          "context:trade_offer"
+        ],
+        "timestamp": 1758223865664
+      },
+      {
+        "sentiment": {
+          "sentiment": "positive",
+          "score": 1,
+          "confidence": "medium",
+          "negativeCount": 0,
+          "positiveCount": 1,
+          "reason": "0 negative, 1 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "card:mewtwo"
+        ],
+        "timestamp": 1758225222489
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"iv\""
+        },
+        "hasImages": false,
+        "topics": [
+          "context:store_find"
+        ],
+        "timestamp": 1758225533323
+      },
+      {
+        "sentiment": {
+          "sentiment": "positive",
+          "score": 1,
+          "confidence": "medium",
+          "negativeCount": 0,
+          "positiveCount": 1,
+          "reason": "0 negative, 1 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "card:mewtwo"
+        ],
+        "timestamp": 1758226665309
+      },
+      {
+        "sentiment": {
+          "sentiment": "pokemon_go",
+          "score": 0,
+          "confidence": "high",
+          "reason": "Pokemon GO content detected: \"pokemon go\""
+        },
+        "hasImages": false,
+        "topics": [
+          "context:showing_pulls",
+          "context:mail_day"
+        ],
+        "timestamp": 1758232257393
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:asking_value",
+          "context:store_find",
+          "context:question",
+          "market:price_discussion"
+        ],
+        "timestamp": 1758235091510
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:asking_value",
+          "context:store_find",
+          "context:question",
+          "market:price_discussion"
+        ],
+        "timestamp": 1758235187106
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:error_card"
+        ],
+        "timestamp": 1758236326951
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:trade_offer"
+        ],
+        "timestamp": 1758236436211
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "set:twilight masquerade",
+          "context:question"
+        ],
+        "timestamp": 1758297850359
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "set:obsidian flames",
+          "context:showing_pulls"
+        ],
+        "timestamp": 1758297985116
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:sale_post"
+        ],
+        "timestamp": 1758298795952
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:asking_value",
+          "context:question",
+          "market:selling"
+        ],
+        "timestamp": 1758298988693
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:trade_offer",
+          "rarity:gold",
+          "market:investment"
+        ],
+        "timestamp": 1758299310204
+      }
+    ]
+  },
+  "question_excitement_personal": {
+    "pattern": "question_excitement_personal",
+    "uses": 3,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:trade_offer"
+        ],
+        "timestamp": 1758215965786
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758232857661
+      },
+      {
+        "sentiment": {
+          "sentiment": "risky_topic",
+          "score": -3,
+          "confidence": "high",
+          "reason": "risky topic detected: \"loan\""
+        },
+        "hasImages": false,
+        "topics": [],
+        "timestamp": 1758236087239
+      }
+    ]
+  },
+  "lastUpdated": "2025-09-18T23:24:07.322Z",
+  "price_mention_question_personal": {
+    "pattern": "price_mention_question_personal",
+    "uses": 5,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "card:charizard",
+          "context:showing_pulls",
+          "context:asking_value",
+          "context:grading_discussion",
+          "grading:psa"
+        ],
+        "timestamp": 1758221963518
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:asking_value",
+          "context:store_find",
+          "context:question",
+          "market:price_discussion"
+        ],
+        "timestamp": 1758234904218
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:asking_value",
+          "context:store_find",
+          "context:question",
+          "market:price_discussion"
+        ],
+        "timestamp": 1758234995466
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:asking_value",
+          "context:store_find",
+          "context:question",
+          "market:price_discussion"
+        ],
+        "timestamp": 1758235289639
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:asking_value",
+          "context:store_find",
+          "context:question",
+          "market:price_discussion"
+        ],
+        "timestamp": 1758235389891
+      }
+    ]
+  },
+  "question_data_driven_personal": {
+    "pattern": "question_data_driven_personal",
+    "uses": 1,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:trade_offer"
+        ],
+        "timestamp": 1758297663020
+      }
+    ]
+  },
+  "price_mention_question": {
+    "pattern": "price_mention_question",
+    "uses": 3,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:sale_post"
+        ],
+        "timestamp": 1758562751958
+      },
+      {
+        "sentiment": {
+          "sentiment": "positive",
+          "score": 1,
+          "confidence": "medium",
+          "negativeCount": 0,
+          "positiveCount": 1,
+          "reason": "0 negative, 1 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "context:asking_value",
+          "context:showing_collection"
+        ],
+        "timestamp": 1758564134862
+      },
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": false,
+        "topics": [
+          "card:pikachu",
+          "context:asking_value",
+          "context:seeking_advice",
+          "context:store_find",
+          "context:sale_post",
+          "market:selling"
+        ],
+        "timestamp": 1758564225816
+      }
+    ]
+  },
+  "question_excitement": {
+    "pattern": "question_excitement",
+    "uses": 1,
+    "engagements": 0,
+    "positiveOutcomes": 0,
+    "contexts": [
+      {
+        "sentiment": {
+          "sentiment": "neutral",
+          "score": 0,
+          "confidence": "low",
+          "negativeCount": 0,
+          "positiveCount": 0,
+          "reason": "0 negative, 0 positive words"
+        },
+        "hasImages": true,
+        "topics": [
+          "context:mail_day"
+        ],
+        "timestamp": 1758563681708
       }
     ]
   }

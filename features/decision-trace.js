@@ -32,32 +32,32 @@ class DecisionTrace {
         priceIntent = null,
         familiarityScore = 0,
         threadContext = null
-    }) {
+    } = {}) {
         const trace = {
             ts: timestamp,
             tweetId,
             username,
-            tweetSnippet: tweetText.substring(0, 100),
+            tweetSnippet: (tweetText || '').substring(0, 100),
             
             // Decision data
-            engaged: decision.engage,
-            action: decision.action,
-            valueScore: decision.score,
+            engaged: (decision && decision.engage) || false,
+            action: (decision && decision.action) || 'unknown',
+            valueScore: (decision && decision.score) || 0,
             
             // Features
-            age: features.ageDescription,
-            timestampReason: features.timestampReason,
-            sentiment: features.sentiment,
-            sentimentConf: features.sentimentConfidence,
-            isPriceQ: features.isPriceQ,
-            cardHits: features.cardEntities?.length || 0,
-            hasImages: features.hasImages,
-            hasStats: features.hasStats,
+            age: features?.ageDescription,
+            timestampReason: features?.timestampReason,
+            sentiment: features?.sentiment,
+            sentimentConf: features?.sentimentConfidence,
+            isPriceQ: features?.isPriceQ,
+            cardHits: features?.cardEntities?.length || 0,
+            hasImages: features?.hasImages,
+            hasStats: features?.hasStats,
             
             // Strategy
-            chosenStrategy: strategy.strategy,
-            strategyConfidence: strategy.confidence,
-            strategyReason: strategy.reason,
+            chosenStrategy: strategy?.strategy || 'unknown',
+            strategyConfidence: strategy?.confidence ?? 'unknown',
+            strategyReason: strategy?.reason || 'unspecified',
             
             // Response
             responseLength: response?.length || 0,
@@ -73,7 +73,7 @@ class DecisionTrace {
             threadHallucinated: false, // Will be set if thread claims were sanitized
             
             // Meta
-            reason: decision.reason || strategy.reason
+            reason: (decision && decision.reason) || (strategy && strategy.reason) || 'unspecified'
         };
         
         try {

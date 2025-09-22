@@ -116,9 +116,16 @@ class CardRecognition {
     // Analyze image and identify card
     async identifyCard(imageBase64, userMessage = '') {
         try {
-            // If no image provided, fall back to text analysis
+            // If no image provided, return like-only mode
             if (!imageBase64) {
-                return this.simulateCardRecognition(userMessage);
+                console.log('   📷 No image provided - using like-only mode');
+                return {
+                    identified: false,
+                    card: null,
+                    confidence: 0,
+                    fallbackType: 'like_only',
+                    noImage: true
+                };
             }
             
             // Try up to 3 times with exponential backoff for 503 errors
@@ -195,26 +202,16 @@ Important: Pokemon characters on event posters are NOT cards!`;
             
         } catch (error) {
             console.log('⚠️ Card recognition failed:', error.message);
+            console.log('   ❤️ Falling back to like-only mode');
             
-            // Check if it's a quota error
-            if (error.message && error.message.includes('429')) {
-                console.log('   🔄 Quota exceeded, trying local LLM fallback...');
-                return await this.analyzeWithLocalLLM(imageBase64, userMessage);
-            }
-            
-            // Check if it's a service overload error (503)
-            if (error.message && error.message.includes('503')) {
-                console.log('   ⚠️ Gemini service overloaded (503), using fallback...');
-                // Try local LLM first
-                if (this.lmstudio && this.lmstudio.available) {
-                    return await this.analyzeWithLocalLLM(imageBase64, userMessage);
-                }
-                // Otherwise use text-based fallback
-                return this.simulateCardRecognition(userMessage);
-            }
-            
-            // For other errors, use text-based fallback
-            return this.simulateCardRecognition(userMessage);
+            // Return failure - bot will convert to like-only
+            return {
+                identified: false,
+                card: null,
+                confidence: 0,
+                fallbackType: 'like_only',
+                visionFailed: true
+            };
         }
     }
     
@@ -284,132 +281,26 @@ Important: Pokemon characters on event posters are NOT cards!`;
             };
         }
         
-        // Fall back to text analysis
-        return this.simulateCardRecognition(userMessage);
-    }
-    
-    // Analyze image with local LLM when Gemini quota is exceeded
-    async analyzeWithLocalLLM(imageBase64, userMessage) {
-        try {
-            // Check if LM Studio is available
-            if (!this.lmstudio || !this.lmstudio.available) {
-                console.log('   ⚠️ LM Studio not available, using text fallback');
-                return this.simulateCardRecognition(userMessage);
-            }
-            
-            // Note: Most local LLMs don't support vision yet
-            // We'll use a hybrid approach: describe what we expect and use context
-            console.log('   🤖 Using LM Studio for context-aware analysis...');
-            
-            const prompt = `Based on a Pokemon TCG image posted with the text: "${userMessage}"
-            
-Common cards mentioned in similar posts:
-- Charizard ex (Obsidian Flames) - popular pull
-- Umbreon VMAX Alt Art - high value
-- Base Set cards - vintage
-- Paradox Rift pulls - recent set
-
-What Pokemon card is most likely being shown? Consider:
-1. The tweet text context
-2. Recent popular pulls
-3. Set mentions
-
-Respond with: CARD_NAME|SET_NAME|RARITY or NONE if unclear`;
-
-            const response = await this.lmstudio.generateCustom(prompt);
-            
-            if (response && response !== 'NONE') {
-                const [cardName, setName, rarity] = response.split('|');
-                console.log(`   🎯 LM Studio identified: ${cardName} from ${setName}`);
-                
-                // Look up in database
-                const searchKey = cardName.toLowerCase();
-                for (const [key, card] of Object.entries(this.cardDatabase)) {
-                    if (key.includes(searchKey) || card.name.toLowerCase().includes(searchKey)) {
-                        return {
-                            identified: true,
-                            card: card,
-                            confidence: 0.65, // Lower confidence for context-based
-                            fallbackType: 'lmstudio_context'
-                        };
-                    }
-                }
-                
-                // Return generic card info if not in database
-                return {
-                    identified: true,
-                    card: {
-                        name: cardName,
-                        set: setName || 'Unknown Set',
-                        rarity: rarity || 'Unknown Rarity',
-                        marketValue: { raw: 0, psa9: 0, psa10: 0 },
-                        notes: 'Nice pull!'
-                    },
-                    confidence: 0.6,
-                    fallbackType: 'lmstudio_generic'
-                };
-            }
-            
-            // If LM Studio couldn't determine, use text fallback
-            return this.simulateCardRecognition(userMessage);
-            
-        } catch (error) {
-            console.log('   ⚠️ LM Studio fallback failed:', error.message);
-            return this.simulateCardRecognition(userMessage);
-        }
-    }
-    
-    // Simulate card recognition based on user text (for testing)
-    simulateCardRecognition(userMessage) {
-        const message = userMessage.toLowerCase();
-        let recognizedCard = null;
-        
-        // Check for specific card mentions
-        if (message.includes('charizard ex') && message.includes('obsidian')) {
-            recognizedCard = this.cardDatabase['charizard ex 051/185'];
-        } else if (message.includes('charizard vmax') || message.includes('charizard rainbow')) {
-            recognizedCard = this.cardDatabase['charizard vmax rainbow'];
-        } else if (message.includes('base set charizard') || message.includes('base charizard')) {
-            recognizedCard = this.cardDatabase['charizard 4/102 base set'];
-        } else if (message.includes('moonbreon') || message.includes('umbreon vmax alt')) {
-            recognizedCard = this.cardDatabase['umbreon vmax alt art'];
-        } else if (message.includes('umbreon v alt') || message.includes('umbreon v')) {
-            recognizedCard = this.cardDatabase['umbreon v alt art'];
-        } else if (message.includes('lugia v alt') || message.includes('lugia alt')) {
-            recognizedCard = this.cardDatabase['lugia v alt art'];
-        } else if (message.includes('giratina') && message.includes('alt')) {
-            recognizedCard = this.cardDatabase['giratina vstar alt art'];
-        } else if (message.includes('pikachu vmax') || message.includes('pikachu rainbow')) {
-            recognizedCard = this.cardDatabase['pikachu vmax rainbow'];
-        }
-        
+        // No fallback - return like-only mode
+        console.log('   ❤️ Vision parsing failed - using like-only mode');
         return {
-            identified: !!recognizedCard,
-            card: recognizedCard,
-            confidence: recognizedCard ? 0.9 : 0.3,
-            fallbackType: this.detectCardType(message)
+            identified: false,
+            card: null,
+            confidence: 0,
+            fallbackType: 'like_only',
+            visionParseFailed: true
         };
     }
     
-    // Detect general card type for fallback responses
-    detectCardType(message) {
-        if (message.includes('charizard')) return 'charizard';
-        if (message.includes('pikachu')) return 'pikachu';
-        if (message.includes('umbreon')) return 'umbreon';
-        if (message.includes('eevee')) return 'eevee';
-        if (message.includes('rainbow')) return 'rainbow';
-        if (message.includes('alt art')) return 'alt_art';
-        if (message.includes('vintage') || message.includes('base set')) return 'vintage';
-        if (message.includes('legendary')) return 'legendary';
-        return 'modern';
-    }
+    // LM Studio fallback removed - only like-only mode used now
+    
+    // All text-based fallback methods removed - only like-only mode used now
     
     // Generate response based on card recognition
     async generateCardResponse(recognition, context = {}) {
         if (!recognition.identified || !recognition.card) {
-            // Use generic response
-            const cardType = recognition.fallbackType || 'modern';
-            return this.genericResponses[cardType] || "nice card";
+            // Return null - bot will use like-only mode
+            return null;
         }
         
         const card = recognition.card;

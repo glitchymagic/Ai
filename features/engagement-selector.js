@@ -62,7 +62,9 @@ class EngagementSelector {
         }
         
         // Check if we've engaged too recently
-        if (this.isTooSoon()) {
+        // Bypass cooldown for followed accounts
+        const isFollowedAccount = !!postData?.source && postData.source === 'following_feed';
+        if (!isFollowedAccount && this.isTooSoon()) {
             console.log('   ⏰ Too soon since last engagement');
             return { action: 'skip', reason: 'cooldown' };
         }

@@ -1,7 +1,7 @@
 // Timestamp Filter - Only engage with recent posts to avoid bot detection
 class TimestampFilter {
     constructor() {
-        this.maxPostAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        this.maxPostAge = 36 * 60 * 60 * 1000; // 24 hours in milliseconds
         this.preferredMaxAge = 6 * 60 * 60 * 1000; // 6 hours preferred (more natural)
     }
     
@@ -121,7 +121,7 @@ class TimestampFilter {
     }
     
     // Check if post is recent enough to engage with
-    shouldEngageByAge(timestamp) {
+    shouldEngageByAge(timestamp, isSpecificCardSearch = false) {
         if (!timestamp) {
             // If we can't determine age, be cautious and skip
             return { 
@@ -134,13 +134,15 @@ class TimestampFilter {
         const now = new Date();
         const postAge = now.getTime() - timestamp.getTime();
         
-        // Posts older than 24 hours - definitely skip
-        if (postAge > this.maxPostAge) {
+        // Posts older than 36 hours - skip unless it's a specific card search
+        const maxAllowedAge = isSpecificCardSearch ? (7 * 24 * 60 * 60 * 1000) : this.maxPostAge; // 7 days for specific cards vs 36h for general
+        if (postAge > maxAllowedAge) {
             const hoursOld = Math.round(postAge / (60 * 60 * 1000));
+            const maxHours = Math.round(maxAllowedAge / (60 * 60 * 1000));
             return { 
                 engage: false, 
                 reason: 'too_old',
-                details: `Post is ${hoursOld} hours old (max: 24h)`
+                details: `Post is ${hoursOld} hours old (max: ${maxHours}h)`
             };
         }
         

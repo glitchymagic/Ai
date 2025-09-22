@@ -70,7 +70,1057 @@
         "madeAt": 1756929773404,
         "timeframe": "72h"
       }
+    },
+    {
+      "id": "NARR-1758214446881-hgcubqo8d",
+      "card": "Evolving Skies",
+      "timestamp": 1758214446881,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758214446881-o587nt",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758214446881,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758214446881-v3k93rm6t",
+      "card": "Lost Origin",
+      "timestamp": 1758214446881,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758214446881-bnotat",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758214446881,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758214801249-x49g9mnsl",
+      "card": "Evolving Skies",
+      "timestamp": 1758214801249,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758214801249-90jwkz",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758214801249,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758214801249-qrt3fy4dw",
+      "card": "Lost Origin",
+      "timestamp": 1758214801249,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758214801249-iay0w9",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758214801249,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758215412416-ngcr5kend",
+      "card": "Evolving Skies",
+      "timestamp": 1758215412416,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758215412416-vy8e7o",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758215412416,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758215412416-iwof4b0k1",
+      "card": "Lost Origin",
+      "timestamp": 1758215412416,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758215412416-fm49vf",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758215412416,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758215831679-fgesp3zqg",
+      "card": "Evolving Skies",
+      "timestamp": 1758215831679,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758215831679-xrlp0v",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758215831679,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758215831679-w4zehnkap",
+      "card": "Lost Origin",
+      "timestamp": 1758215831679,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758215831679-aq2ztg",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758215831679,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758216352662-3u4mp715n",
+      "card": "Evolving Skies",
+      "timestamp": 1758216352662,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758216352662-nav9hh",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758216352662,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758216352662-v5u3aox1h",
+      "card": "Lost Origin",
+      "timestamp": 1758216352662,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758216352662-bul7sj",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758216352662,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758216839035-n2k3afwsa",
+      "card": "Evolving Skies",
+      "timestamp": 1758216839035,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758216839035-p3ynkp",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758216839035,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758216839035-m8ewp0f14",
+      "card": "Lost Origin",
+      "timestamp": 1758216839035,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758216839035-00en89",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758216839035,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758219792363-5o6hj3944",
+      "card": "Evolving Skies",
+      "timestamp": 1758219792363,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758219792363-tm6iu5",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758219792363,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758219792363-bx3vz416d",
+      "card": "Lost Origin",
+      "timestamp": 1758219792363,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758219792363-uawf2a",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758219792363,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758220477939-cn7pthaen",
+      "card": "Evolving Skies",
+      "timestamp": 1758220477939,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758220477939-duxc3b",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758220477939,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758220477939-aocgp48cx",
+      "card": "Lost Origin",
+      "timestamp": 1758220477939,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758220477939-rs12r9",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758220477939,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758220853879-d9z30naj3",
+      "card": "Evolving Skies",
+      "timestamp": 1758220853879,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758220853879-ctmg3f",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758220853879,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758220853879-ze1farhwr",
+      "card": "Lost Origin",
+      "timestamp": 1758220853879,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758220853879-0hwrpg",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758220853879,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758221939143-juaa8qrl4",
+      "card": "Evolving Skies",
+      "timestamp": 1758221939143,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758221939143-5hr5fm",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758221939143,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758221939143-v5yvi93kw",
+      "card": "Lost Origin",
+      "timestamp": 1758221939143,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758221939143-gf0et4",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758221939143,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222143574-ta01tg073",
+      "card": "Evolving Skies",
+      "timestamp": 1758222143574,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222143574-c9rw4c",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222143574,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222143574-5te37jcsl",
+      "card": "Lost Origin",
+      "timestamp": 1758222143574,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222143574-02gnaq",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222143574,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222430589-2wmdh2uxj",
+      "card": "Evolving Skies",
+      "timestamp": 1758222430589,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222430589-6yw1x7",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222430589,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222430589-mi7p7suzt",
+      "card": "Lost Origin",
+      "timestamp": 1758222430589,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222430589-jlgt0s",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222430589,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222545731-hgsaccj0w",
+      "card": "Evolving Skies",
+      "timestamp": 1758222545731,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222545731-g4n47r",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222545731,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222545732-l5cw0ngn0",
+      "card": "Lost Origin",
+      "timestamp": 1758222545731,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222545732-si2av2",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222545732,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222715739-7ihkqpsz2",
+      "card": "Evolving Skies",
+      "timestamp": 1758222715739,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222715739-gqw9qo",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222715739,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222715739-5r2zzdsm2",
+      "card": "Lost Origin",
+      "timestamp": 1758222715739,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222715739-eon2rt",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222715739,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222847573-l0emqsgtn",
+      "card": "Evolving Skies",
+      "timestamp": 1758222847573,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222847573-htuzxs",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222847573,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758222847573-8akisia52",
+      "card": "Lost Origin",
+      "timestamp": 1758222847573,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758222847573-3yws5y",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758222847573,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758223406943-p2dpm1cb7",
+      "card": "Evolving Skies",
+      "timestamp": 1758223406943,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758223406943-7qm2iu",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758223406943,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758223406943-knjwovtdn",
+      "card": "Lost Origin",
+      "timestamp": 1758223406943,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758223406943-9vv8cx",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758223406943,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758223495992-2anslxssr",
+      "card": "Evolving Skies",
+      "timestamp": 1758223495992,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758223495992-3gm1fg",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758223495992,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758223495992-hqlykf79m",
+      "card": "Lost Origin",
+      "timestamp": 1758223495992,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758223495992-imgf79",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758223495992,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758223836448-pwiplcovf",
+      "card": "Evolving Skies",
+      "timestamp": 1758223836448,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758223836448-88z3dp",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758223836448,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758223836448-waovf2xru",
+      "card": "Lost Origin",
+      "timestamp": 1758223836448,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758223836448-de9c8d",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758223836448,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758225135824-m41lgpvjy",
+      "card": "Evolving Skies",
+      "timestamp": 1758225135824,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758225135824-aim1zz",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758225135824,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758225135824-apqqdeuhe",
+      "card": "Lost Origin",
+      "timestamp": 1758225135824,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758225135824-m8n1fr",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758225135824,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758225196834-m6zyk0uiy",
+      "card": "Evolving Skies",
+      "timestamp": 1758225196834,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758225196834-4asmde",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758225196834,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758225196834-pe8vto1bz",
+      "card": "Lost Origin",
+      "timestamp": 1758225196834,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758225196834-ukr137",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758225196834,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758225300466-faurtr5ch",
+      "card": "Evolving Skies",
+      "timestamp": 1758225300466,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758225300466-rm0ty1",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758225300466,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758225300466-wobnx07d3",
+      "card": "Lost Origin",
+      "timestamp": 1758225300466,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758225300466-7c5pqw",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758225300466,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758226404413-0ksrcb98f",
+      "card": "Evolving Skies",
+      "timestamp": 1758226404413,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758226404413-l9eoa5",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758226404413,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758226404413-ql09x60m3",
+      "card": "Lost Origin",
+      "timestamp": 1758226404413,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758226404413-l2yzyl",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758226404413,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758232042329-s7wwgfdtc",
+      "card": "Evolving Skies",
+      "timestamp": 1758232042329,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758232042329-440v2z",
+        "card": "Evolving Skies",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758232042329,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758232042329-s8ls0u5wc",
+      "card": "Lost Origin",
+      "timestamp": 1758232042329,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758232042329-s3cbx7",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758232042329,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758561347882-smi49ggjy",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758561347882,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758561347882-paskrk",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758561347882,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758561347882-n32hdahz3",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758561347882,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758561347882-opdc5u",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758561347882,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758561770902-6acng6qhd",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758561770902,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758561770902-ubake8",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758561770902,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758561770902-etxf67nqt",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758561770902,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758561770902-vp8ugr",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758561770902,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758561770902-0kgtts6jy",
+      "card": "Lost Origin",
+      "timestamp": 1758561770902,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758561770902-6j1sjc",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758561770902,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758562706767-hfryv2ye2",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758562706767,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758562706767-hr7eey",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758562706767,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758562706767-z51cqkevt",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758562706767,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758562706767-g3ha18",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758562706767,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758562706767-xbh5e0tqs",
+      "card": "Lost Origin",
+      "timestamp": 1758562706767,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758562706767-tokjmc",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758562706767,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569506860-2rsujiiwr",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758569506860,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569506860-p3irxn",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569506860,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569506860-r0a3opsgh",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758569506860,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569506860-i2jybn",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569506860,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569506860-3ql2lihrr",
+      "card": "Lost Origin",
+      "timestamp": 1758569506860,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569506860-z3rvrt",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569506860,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569634270-m8lsw4z1e",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758569634270,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569634270-mp5t9f",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569634270,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569634270-rbx783c3x",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758569634270,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569634270-jucz6q",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569634270,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569634270-kjk6eqpzh",
+      "card": "Lost Origin",
+      "timestamp": 1758569634270,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569634270-0c0nsg",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569634270,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569836811-9apc83i53",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758569836811,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569836811-ddkkag",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569836811,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569836811-m7dvzhazr",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758569836811,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569836811-xvgxru",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569836811,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758569836811-uf1tt3r4g",
+      "card": "Lost Origin",
+      "timestamp": 1758569836811,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758569836811-fpqu0s",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758569836811,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574402399-1z7n2vo0l",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758574402399,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574402399-tqnsd1",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574402399,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574402399-2d34j8p94",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758574402399,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574402399-viu5g9",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574402399,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574402399-8euf8hw3d",
+      "card": "Lost Origin",
+      "timestamp": 1758574402399,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574402399-uogpmm",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574402399,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574601575-81u6larsq",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758574601575,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574601575-g4binz",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574601575,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574601575-8ip5eisu2",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758574601575,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574601575-cs1yw3",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574601575,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574601575-7odrnqgh0",
+      "card": "Lost Origin",
+      "timestamp": 1758574601575,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574601575-yhftyt",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574601575,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574694108-l7hv4fl4f",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758574694108,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574694108-izt8jm",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574694108,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574694108-lfkgj3zr0",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758574694108,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574694108-lvid12",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574694108,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758574694108-wyhnibzfd",
+      "card": "Lost Origin",
+      "timestamp": 1758574694108,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758574694108-gmcpfo",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758574694108,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758580115669-y7wvpayuj",
+      "card": "Umbreon Vmax Alt Art",
+      "timestamp": 1758580115669,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758580115669-nw30nr",
+        "card": "Umbreon Vmax Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758580115669,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758580115669-fy0m3a97p",
+      "card": "Giratina V Alt Art",
+      "timestamp": 1758580115669,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758580115669-oowi0z",
+        "card": "Giratina V Alt Art",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758580115669,
+        "timeframe": "72h"
+      }
+    },
+    {
+      "id": "NARR-1758580115669-8dicwkt3l",
+      "card": "Lost Origin",
+      "timestamp": 1758580115669,
+      "strength": 1,
+      "prediction": {
+        "id": "PRED-1758580115669-ayxh90",
+        "card": "Lost Origin",
+        "type": "neutral",
+        "confidence": 1,
+        "madeAt": 1758580115669,
+        "timeframe": "72h"
+      }
     }
   ],
-  "lastUpdate": "2025-09-04T21:18:25.716Z"
+  "lastUpdate": "2025-09-22T22:58:35.684Z"
 }

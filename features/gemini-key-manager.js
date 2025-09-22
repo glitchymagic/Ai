@@ -10,14 +10,15 @@ class GeminiKeyManager {
         this.keyStatus = new Map(); // Track quota status for each key
         this.keyUsage = new Map();  // Track usage count for load balancing
         
-        // Initialize usage counters
+        // Initialize usage counters - assume all keys are available until proven otherwise
         this.apiKeys.forEach(key => {
             this.keyUsage.set(key, 0);
-            this.keyStatus.set(key, 'unknown');
+            this.keyStatus.set(key, 'available'); // Start optimistic to conserve quota
         });
         
         console.log(`🔑 Gemini Key Manager initialized with ${this.apiKeys.length} keys`);
-        this.testAllKeys();
+        console.log(`🔑 Keys set to optimistic 'available' - will test only when used`);
+        // Don't test keys at startup to conserve quota - test them only when needed
     }
     
     async testAllKeys() {

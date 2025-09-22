@@ -9,9 +9,11 @@
   ],
   "mediumActivity": [
     "pokemon pulls",
-    "pokemon restock",
+    "pokemon restock", 
     "pokemon pack opening",
-    "stellar crown"
+    "stellar crown",
+    "pokemon grail",
+    "pokemon chase"
   ],
   "description": "Searches with consistent recent activity",
   "lastUpdated": "2025-08-26"

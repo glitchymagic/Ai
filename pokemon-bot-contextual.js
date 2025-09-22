@@ -83,12 +83,29 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY); // Keep for backward compa
 function extractNaturalDescription(visualData) {
     if (!visualData) return null;
     
-    // Try different paths where naturalDescription might be
-    return visualData.visionAnalysis?.naturalDescription || 
-           visualData.naturalDescription ||
-           visualData.videoAnalysis?.naturalDescription ||
-           visualData.visionAnalysis?.context ||
-           null;
+    // Try known fields first
+    const direct = visualData.visionAnalysis?.naturalDescription ||
+                   visualData.naturalDescription ||
+                   visualData.videoAnalysis?.naturalDescription ||
+                   visualData.visionAnalysis?.context;
+    if (direct) return direct;
+    
+    // Fallback: synthesize from recognized cards if present
+    const cards = visualData.recognizedCards || visualData.visionAnalysis?.cards || [];
+    if (Array.isArray(cards) && cards.length > 0) {
+        const top = cards.slice(0, 2).map(c => {
+            const name = c.name || 'a card';
+            const set = c.set || c.series || c.expansion || null;
+            return set ? `${name} (${set})` : name;
+        }).join(' and ');
+        return `cards shown: ${top}`;
+    }
+    
+    // Fallback: use basic media cues
+    if (visualData.hasImage) return 'a Pokemon card photo';
+    if (visualData.hasVideo) return 'a Pokemon card video';
+    
+    return null;
 }
 
 // Helper function to clamp tweets to 280 chars consistently
@@ -173,6 +190,158 @@ function clampTweet(s, max = 280) {
     }
     
     return result.substring(0, max);
+}
+
+// Sanitize reply text to avoid hashtags and @mentions
+function sanitizeReplyText(text) {
+    if (!text) return '';
+    let t = String(text);
+    // Remove hashtags
+    t = t.replace(/(^|\s)#[^\s#@]+/g, '$1').trim();
+    // Remove @mentions (tokens starting with @)
+    t = t.replace(/(^|\s)@[^\s#@]+/g, '$1').trim();
+    // Collapse extra spaces
+    t = t.replace(/\s{2,}/g, ' ').trim();
+    return t;
+}
+
+// Humanize reply per style preferences
+function humanizeReply(text, opts = {}, originalText = '') {
+    if (!text) return '';
+    let t = String(text).trim();
+    const options = Object.assign({
+        minLen: 80,
+        maxLen: 140,
+        maxSentences: 2,
+        slangLevel: 'medium', // none | light | medium
+        allowEmoji: false,
+        maxExclamations: 1,
+        questionChance: 0.02, // Very low - only 2% chance to avoid stupid questions
+        voice: 'collector_casual'
+    }, opts);
+    
+    // 1) Remove emojis and collapse punctuation
+    t = t
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '') // remove emoji/symbols
+        .replace(/!{2,}/g, '!')
+        .replace(/\?{2,}/g, '?')
+        .replace(/\.{4,}/g, '...')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    
+    // 2) Limit exclamations
+    const exclamations = (t.match(/!/g) || []).length;
+    if (exclamations > options.maxExclamations) {
+        // Keep first, drop the rest
+        let kept = false;
+        t = t.replace(/!/g, () => (kept ? '' : ((kept = true), '!')));
+    }
+    
+    // 3) Remove AI-sounding phrases
+    const aiPhrases = [
+        /\bas an ai\b/gi,
+        /\bi am an ai\b/gi,
+        /\bi'm an ai\b/gi,
+        /\bi am a bot\b/gi,
+        /\bi'm a bot\b/gi,
+        /\bi cannot\b/gi,
+        /\bi can not\b/gi,
+        /\bi do not have the capability\b/gi
+    ];
+    aiPhrases.forEach(rx => { t = t.replace(rx, '').trim(); });
+    
+    // 3b) Remove generic openers (strengthened)
+    const genericOpeners = [
+        /^(great|nice|awesome|amazing|cool|sweet|fire|lit|dope)\s+(post|card|pull|haul|hit)[.!]?\s*/i,
+        /^thanks\s+for\s+(sharing|posting|showing)[.!]?\s*/i,
+        /^(wow|whoa|dang|damn|nice|cool|awesome)\s*[!]*\s*/i,
+        /^(totally|definitely|absolutely)\s*[!]*\s*/i
+    ];
+    genericOpeners.forEach(rx => { t = t.replace(rx, '').trim(); });
+
+    // 3c) Remove action-claim phrases (no “following/liked/entered” claims)
+    const actionClaims = [
+        /(i\s*(just\s*)?)?follow(ed)?\s+(you|back)?[^.!?]*[.!?]?/gi,
+        /following\s+(you\s+)?(now)?[^.!?]*[.!?]?/gi,
+        /i\s*(just\s*)?liked[^.!?]*[.!?]?/gi,
+        /i\s*(just\s*)?entered[^.!?]*[.!?]?/gi,
+        /good\s+luck(\s+to\s+everyone)?(\s+entering)?[^.!?]*[.!?]?/gi
+    ];
+    actionClaims.forEach(rx => { t = t.replace(rx, '').trim(); });
+    
+    // 4) Medium slang sprinkling (light touch)
+    if (options.slangLevel === 'medium') {
+        // Replace a few formal terms
+        t = t
+            .replace(/\bhowever\b/gi, 'but')
+            .replace(/\btherefore\b/gi, 'so')
+            .replace(/\bnevertheless\b/gi, 'still')
+            .replace(/\bmoreover\b/gi, 'also');
+        // Optional casual filler if short and not ending with question
+        const rnd = Math.random();
+        if (rnd < 0.2 && t.length < options.maxLen - 8 && !/[?!.]$/.test(t)) {
+            t += ' tbh';
+        } else if (rnd >= 0.2 && rnd < 0.35 && t.length < options.maxLen - 8 && !/[?!.]$/.test(t)) {
+            t += ' low-key';
+        }
+    }
+    
+    // 5) Enforce sentence cap
+    const sentences = t.split(/(?<=[.!?])\s+/).filter(Boolean);
+    if (sentences.length > options.maxSentences) {
+        t = sentences.slice(0, options.maxSentences).join(' ');
+    }
+    
+    // 6) Enforce length range (pad if too short)
+    if (t.length < options.minLen && t.length > 10) {
+        // Pad with a natural follow-up question or detail
+        const lowerOrig = String(originalText || '').toLowerCase();
+        const hasQuestion = /\?/g.test(t);
+        if (!hasQuestion && t.length + 10 <= options.maxLen) {
+            let q = null;
+            if (/grade|slab|psa|cgc|bgs/.test(lowerOrig)) q = 'grading it?';
+            else if (/pull|pulled|hit|etb|booster|box|opened/.test(lowerOrig)) q = 'best pull?';
+            else if (/sell|for sale|fs:|wtb|wts|price|\$\d+/.test(lowerOrig)) q = 'keeping or selling?';
+            else q = 'what set?';
+            t = /[.?!]$/.test(t) ? `${t} ${q}` : `${t}. ${q}`;
+        }
+        // If still short, add "Nice find!" or similar as last resort
+        if (t.length < options.minLen && t.length + 12 <= options.maxLen) {
+            t = `Nice find! ${t}`;
+        }
+    }
+
+    // 7) Sometimes add one thoughtful follow-up question (only if not already padded, context warrants it, and post invites conversation)
+    const lowerOrig = String(originalText || '').toLowerCase();
+    const hasQuestion = /\?/g.test(t);
+    const postInvitesConversation = /\?|\b(what|how|why|should|think|help|advice|opinions)\b/i.test(lowerOrig);
+    if (!hasQuestion && Math.random() < options.questionChance && t.length + 10 <= options.maxLen && postInvitesConversation) {
+        let q = null;
+        // Only ask specific questions if there's clear missing info AND the post seems open to it
+        if (/grade|slab|psa|cgc|bgs/.test(lowerOrig) && !/graded|slabbed|psa|cgc|bgs|\d+/.test(lowerOrig)) {
+            q = 'grading it?';
+        } else if (/pull|pulled|hit|etb|booster|box|opened/.test(lowerOrig) && !/charizard|moonbreon|umbreon|alt art|specific card/.test(lowerOrig) && /what|which|favorite/.test(lowerOrig)) {
+            q = 'best pull?';
+        } else if (/sell|for sale|fs:|wtb|wts|price|\$\d+/.test(lowerOrig) && !/keeping|selling|trade|\$\d+/.test(lowerOrig)) {
+            q = 'keeping or selling?';
+        } else if (!/set:|151|paradox|obsidian|evolving skies|crown zenith/.test(lowerOrig) && /what|which/.test(lowerOrig)) {
+            q = 'what set?';
+        }
+        if (q) {
+            t = /[.?!]$/.test(t) ? `${t} ${q}` : `${t}. ${q}`;
+        }
+    }
+    
+    // 7) Trim length to range
+    if (t.length > options.maxLen) {
+        t = clampTweet(t, options.maxLen);
+    }
+    // Prefer >= minLen but don't force padding; keep natural
+    
+    // 8) Final cleanup of spaces and punctuation
+    t = t.replace(/\s{2,}/g, ' ').trim();
+    
+    return t;
 }
 
 // Deterministic hash function for consistent randomness
@@ -329,8 +498,42 @@ class ContextualPokemonBot {
             successfulEngagements: 0
         };
         
+        // Track tweet IDs we've already replied to (session-level)
+        this.repliedTweetIds = new Set();
+        // Fallback dedupe by username + text prefix when tweetId is missing
+        this.repliedTextKeys = new Set();
+        // Track recent replies to prevent spamming same user
+        this.recentReplies = new Map(); // username -> timestamp of last reply
+        // Track text content hashes to prevent replying to same content multiple times
+        this.repliedContentHashes = new Set();
+        // Track tweets processed this session to prevent infinite loops
+        this.processedTweetsThisSession = new Set();
+        
         // Start Reddit monitoring in background
         this.startRedditMonitoring();
+    }
+
+    async findTweetByUserAndText(username, textStartsWith) {
+        try {
+            const handle = await this.page.evaluateHandle((u, t) => {
+                const candidates = document.querySelectorAll('article[data-testid="tweet"], [data-testid="tweet"]');
+                for (const el of candidates) {
+                    const author = el.querySelector('[data-testid="User-Name"]')?.innerText || '';
+                    const match = author.match(/@(\w+)/);
+                    const user = match ? match[1] : null;
+                    const tx = el.querySelector('[data-testid="tweetText"]')?.innerText || '';
+                    if (user === u && tx && t && tx.startsWith(t.substring(0, Math.min(40, t.length)))) {
+                        return el;
+                    }
+                }
+                return null;
+            }, username, textStartsWith);
+            const element = handle.asElement();
+            if (!element) return null;
+            return element;
+        } catch (_) {
+            return null;
+        }
     }
 
     // Helper function to clean text for JSON/API calls
@@ -366,13 +569,18 @@ class ContextualPokemonBot {
             // Add thread history if available
             if (threadContext?.fullConversation?.length > 0) {
                 context += `Here's the conversation so far:\n`;
-                // Show last few messages for context
-                const recentMessages = threadContext.fullConversation.slice(-5);
+                // Show MORE messages for better context (up to 10 instead of 5)
+                const recentMessages = threadContext.fullConversation.slice(-10);
                 recentMessages.forEach(msg => {
                     const cleanMsgUsername = this.cleanTextForAPI(msg.username);
                     const cleanMsgText = this.cleanTextForAPI(msg.text);
                     context += `@${cleanMsgUsername}: "${cleanMsgText}"\n`;
                 });
+                
+                // Add topic context if available
+                if (threadContext.mainTopic && threadContext.mainTopic !== 'Pokemon TCG') {
+                    context += `\nMain topic being discussed: ${threadContext.mainTopic}\n`;
+                }
             } else {
                 context += `They said: "${cleanLatestMessage}"\n`;
             }
@@ -383,16 +591,33 @@ class ContextualPokemonBot {
                 context += `\nThey also shared an image showing: ${naturalDescription}\n`;
             }
             
-            // Ultra-minimal prompt - let Gemini be completely natural
+            // Enhanced context-aware prompt
             const prompt = `${context}
-Reply naturally. Keep it under 280 characters. End your response with a specific question about their post to encourage conversation.
-${naturalDescription ? 'You can see their image.' : ''}`;
 
-            console.log('   🧠 Simplified prompt created');
+You're a knowledgeable Pokemon TCG collector replying to this conversation.
+
+Tone rules:
+- 1–2 sentences, aim ~80–140 chars
+- Use contractions and casual phrasing; no formal disclaimers
+- Limit punctuation (≤1 "!") and avoid emojis
+- Sometimes ask one natural follow-up question (not every time)
+
+Content rules:
+- Do NOT include hashtags or @mentions
+- Never say things like "as an AI" or meta commentary
+- Mirror a specific detail from their text or image
+- Avoid generic openers like "Great post" or "Thanks for sharing"
+- Keep focused; no over-explaining
+${naturalDescription ? '- You can see their image; reference a specific visible detail' : ''}
+
+Reply naturally and contextually in a collector-casual voice:`;
+
+            console.log('   🧠 Enhanced context-aware prompt created');
             console.log('   📋 Context being sent to Gemini:');
-            console.log('   ', context.split('\n').slice(0, 3).join('\n    '));
+            console.log('   ', context.split('\n').slice(0, 6).join('\n    ')); // Show more context lines
             if (threadContext?.fullConversation?.length > 0) {
                 console.log(`   📊 Thread depth: ${threadContext.fullConversation.length} messages`);
+                console.log(`   🎯 Topic: ${threadContext.mainTopic || 'General Pokemon TCG'}`);
             }
             if (naturalDescription) {
                 console.log(`   👁️ Vision: "${naturalDescription.substring(0, 100)}..."`);
@@ -403,11 +628,9 @@ ${naturalDescription ? 'You can see their image.' : ''}`;
             const result = await model.generateContent(prompt);
             let response = result.response.text().trim().replace(/^[\"']|[\"']$/g, '');
             
-            // Validate response mentions the correct user
-            if (response && cleanUsername && !response.toLowerCase().includes(`@${cleanUsername.toLowerCase()}`)) {
-                console.log(`   ⚠️ Response doesn't mention @${cleanUsername}, fixing...`);
-                // Prepend the username if it's missing
-                response = `@${cleanUsername} ${response}`;
+            // Remove any @mentions (we don't tag users in replies)
+            if (response) {
+                response = response.replace(/(^|\s)@[^\s#@]+/g, '$1').trim();
             }
             
             // Check for wrong mentions and remove them
@@ -444,13 +667,13 @@ ${naturalDescription ? 'You can see their image.' : ''}`;
     async generateContextualResponse(username, tweetContent, hasImages = false, visualData = null) {
         // 🧠 SELF-AWARE: Get adaptive strategies based on current performance
         const userProfile = this.learningEngine.userProfiles.get(username);
-        const responseStrategy = this.adaptiveStrategy.getResponseStrategy({ 
-            userProfile, 
-            topics: this.extractTopics(tweetContent) 
+        const responseStrategy = this.adaptiveStrategy.getResponseStrategy({
+            userProfile,
+            topics: this.contextAnalyzer.extractTopics(tweetContent)
         });
-        const engagementStrategy = this.adaptiveStrategy.getEngagementStrategy({ 
-            userProfile, 
-            topics: this.extractTopics(tweetContent) 
+        const engagementStrategy = this.adaptiveStrategy.getEngagementStrategy({
+            userProfile,
+            topics: this.contextAnalyzer.extractTopics(tweetContent)
         });
         
         console.log(`   🧠 Self-aware mode: confidence ${(responseStrategy.confidence * 100).toFixed(1)}%, tone: ${responseStrategy.tone}`);
@@ -500,7 +723,7 @@ ${naturalDescription ? 'You can see their image.' : ''}`;
         // FORCE vision-aware response when we have vision data
         const naturalDescription = extractNaturalDescription(visualData);
         if (naturalDescription && hasImages) {
-            console.log(`   🎯 [VISION] Forcing vision-aware response path`);
+            console.log(`   🎯 [VISION] Forcing vision-aware response path - ${naturalDescription.substring(0, 50)}...`);
             // Skip all the complex logic and go straight to AI generation with vision context
             return await this.tryAIModels(username, tweetContent, hasImages, {}, visualData);
         }
@@ -764,10 +987,22 @@ ${naturalDescription ? 'You can see their image.' : ''}`;
             }
         }
         
-        // HYBRID APPROACH: Use thread-aware for social posts, composer for educational
-        if (isSocialPost && !visionFailedOnImage && keyManager.getNextAvailableKey()) {
-            // Let thread-aware handle community/social posts with its personality
-            console.log('   💬 [Social Post] Using thread-aware for community engagement');
+        // HYBRID APPROACH: Use thread-aware for more posts to get better Gemini context
+        // Expanded conditions: social posts OR any Pokemon TCG related content
+        // Prefer thread-aware whenever there's a thread or media, unless vision explicitly failed on image
+        const hasThread = !!(enhancedThreadContext && (enhancedThreadContext.fullConversation?.length || enhancedThreadContext.threadLength));
+        const hasMedia = !!hasImages;
+        const useThreadAware = (
+            hasThread || hasMedia || isSocialPost ||
+            contextAnalysis.primary === 'tcgContent' || 
+            contextAnalysis.primary === 'salesTrading' ||
+            contextAnalysis.primary === 'showcase' ||
+            contextAnalysis.primary === 'priceInquiry'
+        ) && !visionFailedOnImage && keyManager.getNextAvailableKey();
+                              
+        if (useThreadAware) {
+            // Let thread-aware handle posts with enhanced Gemini context
+            console.log('   💬 [Enhanced Context] Using thread-aware for better responses');
             // Use minimal thread context if none exists
             const socialThreadContext = threadContext || {
                 threadLength: 1,
@@ -1348,20 +1583,35 @@ Keep it conversational and under 280 characters.`;
         return min + (hash % range);
     }
 
+    hashContent(username, text) {
+        // Create a simple hash of username + text to detect identical content
+        const content = `${String(username || '').toLowerCase()}::${String(text || '').trim()}`;
+        let hash = 0;
+        for (let i = 0; i < content.length; i++) {
+            const char = content.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        return hash.toString();
+    }
+
     async checkRateLimit() {
         // Clean up old entries (older than 1 hour)
         const oneHourAgo = Date.now() - (60 * 60 * 1000);
         this.repliesThisHour = this.repliesThisHour.filter(time => time > oneHourAgo);
         
-        // Check if we've hit the rate limit (25 replies per hour)
-        if (this.repliesThisHour.length >= 25) {
+        // High engagement rate - allow up to 150 replies per hour
+        const maxRepliesPerHour = 150;
+        
+        // Check if we've hit the high rate limit
+        if (this.repliesThisHour.length >= maxRepliesPerHour) {
             const oldestReply = Math.min(...this.repliesThisHour);
             const timeSinceOldest = Date.now() - oldestReply;
             const waitTime = (60 * 60 * 1000) - timeSinceOldest;
             
             if (waitTime > 0) {
-                console.log(`\n⚠️ RATE LIMIT: ${this.repliesThisHour.length}/25 replies in last hour`);
-                console.log(`   ⏰ Waiting ${Math.ceil(waitTime / 60000)} minutes...`);
+                console.log(`\n⚠️ HIGH ENGAGEMENT LIMIT: ${this.repliesThisHour.length}/${maxRepliesPerHour} replies in last hour`);
+                console.log(`   ⏰ Brief cooldown: ${Math.ceil(waitTime / 60000)} minutes...`);
                 await this.sleep(waitTime);
                 this.repliesThisHour = []; // Reset after waiting
             }
@@ -1407,11 +1657,23 @@ Keep it conversational and under 280 characters.`;
             
             await this.sleep(500);
             
-            // Clear any existing text first
-            await this.page.keyboard.down('Control');
-            await this.page.keyboard.press('a');
-            await this.page.keyboard.up('Control');
+            // Clear any existing text first (try Meta+A then Control+A, then triple-click+Backspace)
+            try {
+                await this.page.keyboard.down('Meta');
+                await this.page.keyboard.press('a');
+                await this.page.keyboard.up('Meta');
+            } catch (_) {}
             await this.sleep(100);
+            try {
+                await this.page.keyboard.down('Control');
+                await this.page.keyboard.press('a');
+                await this.page.keyboard.up('Control');
+            } catch (_) {}
+            await this.sleep(100);
+            try {
+                await element.click({ clickCount: 3 });
+                await this.page.keyboard.press('Backspace');
+            } catch (_) {}
             
             // Type with error handling and verification
             try {
@@ -1431,9 +1693,11 @@ Keep it conversational and under 280 characters.`;
                     console.log(`   ⚠️ Only typed ${typedText.length}/${text.length} chars. Retrying...`);
                     
                     // Clear and retype
-                    await this.page.keyboard.down('Control');
-                    await this.page.keyboard.press('a');
-                    await this.page.keyboard.up('Control');
+                    try { await this.page.keyboard.down('Meta'); await this.page.keyboard.press('a'); await this.page.keyboard.up('Meta'); } catch (_) {}
+                    await this.sleep(50);
+                    try { await this.page.keyboard.down('Control'); await this.page.keyboard.press('a'); await this.page.keyboard.up('Control'); } catch (_) {}
+                    await this.sleep(50);
+                    try { await element.click({ clickCount: 3 }); await this.page.keyboard.press('Backspace'); } catch (_) {}
                     await this.sleep(100);
                     
                     // Type slower this time
@@ -1450,6 +1714,26 @@ Keep it conversational and under 280 characters.`;
                 }
                 console.log(`   ✅ Typed using fallback method!`);
             }
+
+            // Final fallback: execCommand insertText if still incomplete
+            const finalCheck = await this.page.evaluate((desired) => {
+                const box = document.querySelector('[data-testid="tweetTextarea_0"]') || 
+                           document.querySelector('div[contenteditable="true"][role="textbox"]');
+                const current = box ? (box.textContent || box.innerText || '') : '';
+                if (!box) return { ok: false, length: 0 };
+                if (current.length < desired.length - 20) {
+                    box.focus();
+                    try {
+                        document.execCommand('selectAll', false, null);
+                        document.execCommand('insertText', false, desired);
+                    } catch (e) {}
+                }
+                const after = box ? (box.textContent || box.innerText || '') : '';
+                return { ok: after.length >= desired.length - 20, length: after.length };
+            }, text);
+            if (!finalCheck.ok) {
+                console.log(`   ⚠️ execCommand fallback length=${finalCheck.length}`);
+            }
             
             // Return a reasonable typing time
             return text.length * 50;
@@ -1464,8 +1748,11 @@ Keep it conversational and under 280 characters.`;
         console.log(`   🔍 humanType called with text: "${text}"`);
         console.log(`   🔍 Element exists: ${!!element}`);
         
-        // Use simple typing for now to debug
-        return await this.simpleType(element, text);
+        // Set typing state early to block navigation
+        if (this.conversationFollowUp) {
+            this.conversationFollowUp.setTypingState(true);
+        }
+        this.isTyping = true;
         
         await element.click();
         console.log(`   ✅ Clicked element`);
@@ -1495,13 +1782,7 @@ Keep it conversational and under 280 characters.`;
             throw new Error('Dialog not ready for typing');
         }
         
-        // Set typing state to prevent conversation checks
-        if (this.conversationFollowUp) {
-            this.conversationFollowUp.setTypingState(true);
-        }
-        
-        // Set a flag on the bot instance to prevent any navigation
-        this.isTyping = true;
+        // typing state already set above
         
         // Also set flag in page context for conversation checker
         await this.page.evaluate(() => {
@@ -2254,7 +2535,7 @@ Keep it conversational and under 280 characters.`;
                     
                     // Track response for variety
                     if (response && this.responseVariety) {
-                        this.responseVariety.trackResponse(reply.username, response);
+                        this.responseVariety.trackResponse({ username: reply.username, text: reply.text, response });
                     }
                 } catch (error) {
                     console.log(`   ⚠️ Follow-up response generation failed: ${error.message}`);
@@ -2484,6 +2765,7 @@ Keep it conversational and under 280 characters.`;
                 let response;
                 if (data.threadContext) {
                     // Use full thread context for better response
+                    console.log(`   📝 [CONTEXT] Using thread context (${data.threadContext.fullConversation.length} messages)`);
                     try {
                         response = await this.generateThreadAwareResponse(
                             data.username,
@@ -2713,10 +2995,15 @@ Keep it conversational and under 280 characters.`;
             }
             
             // Send
-            const sent = await this.page.evaluate(() => {
-                const btn = document.querySelector('button[data-testid="tweetButton"]');
-                if (btn && !btn.disabled) {
-                    btn.click();
+            let sent = await this.page.evaluate(() => {
+                const primary = document.querySelector('button[data-testid="tweetButton"]');
+                if (primary && !primary.disabled) {
+                    primary.click();
+                    return true;
+                }
+                const inline = document.querySelector('button[data-testid="tweetButtonInline"]');
+                if (inline && !inline.disabled) {
+                    inline.click();
                     return true;
                 }
                 return false;
@@ -2913,81 +3200,138 @@ Keep it conversational and under 280 characters.`;
                 }
                 */
                 
-                // Check Following timeline every 3 searches for engagement opportunities  
-                if (searchCounter > 0 && searchCounter % 3 === 0 && this.followingMonitor) {
-                    if (this.followingMonitor.shouldCheckFollowing()) {
-                        console.log('\n👥 Checking Following timeline for engagement opportunities...');
-                        try {
-                            // Navigate to Following timeline
-                            await this.followingMonitor.navigateToFollowing();
-                            await this.sleep(3000);
+                // PRIORITY: Check Following timeline for engagement opportunities first
+                if (this.followingMonitor) {
+                    console.log('\n👥 Checking Following timeline for engagement opportunities...');
+                    try {
+                        // Navigate to Following timeline
+                        await this.followingMonitor.navigateToFollowing();
+                        await this.sleep(3000);
+
+                        // Extract tweets for engagement (includes postAge and meta)
+                        const followingTweets = await this.followingMonitor.extractFollowingTweets(this.repliedContentHashes);
+                        
+                        // COMPREHENSIVE FILTERING: Check session tracking AND already replied tweets
+                        console.log(`   🔍 [DEBUG] Session has ${this.processedTweetsThisSession.size} processed tweets`);
+                        const safeTweets = followingTweets.filter(tweet => {
+                            const sessionKey = `${tweet.username}::${tweet.text.substring(0, 100)}`;
+                            const textKey = `${tweet.username.toLowerCase()}::${tweet.text.substring(0, 60)}`;
                             
-                            // Extract tweets for engagement
-                            const followingTweets = await this.followingMonitor.extractFollowingTweets();
+                            // Check session tracking first
+                            if (this.processedTweetsThisSession?.has(sessionKey)) {
+                                console.log(`   ⏭️ Skipping tweet already processed this session: @${tweet.username} - "${tweet.text.substring(0, 50)}..."`);
+                                return false;
+                            }
                             
-                            if (followingTweets.length > 0) {
-                                console.log(`   🎯 Found ${followingTweets.length} tweets from followed accounts`);
+                            // Check if already replied to this tweet
+                            if (tweet.id && this.repliedTweetIds?.has(tweet.id)) {
+                                console.log(`   ⏭️ Already replied to tweet ${tweet.id}; skipping from Following timeline`);
+                                return false;
+                            }
+                            
+                            // Check text-based duplicate for tweets without IDs
+                            if (!tweet.id && this.repliedTextKeys?.has(textKey)) {
+                                console.log(`   ⏭️ Already replied to similar post by @${tweet.username}; skipping from Following timeline`);
+                                return false;
+                            }
+                            
+                            return true;
+                        });
+
+                        if (safeTweets.length > 0) {
+                            console.log(`   🎯 Found ${safeTweets.length} safe tweets from followed accounts (${followingTweets.length} total extracted)`);
+
+                            // IMPROVED: Sort by actual timestamp (newest first) and prioritize truly fresh content
+                            const sortedTweets = safeTweets.sort((a, b) => {
+                                // Parse timestamps and sort newest first
+                                const timeA = new Date(a.timestamp || 0).getTime();
+                                const timeB = new Date(b.timestamp || 0).getTime();
+                                return timeB - timeA; // Newest first
+                            });
+                            
+                            // Prefer very recent content, but fall back to newest if none qualify
+                            const preferredCategories = ['very_recent', 'recent_post', 'ideal_range', 'slightly_old'];
+                            const preferredTweets = sortedTweets.filter(t => preferredCategories.includes(t.postAge));
+                            console.log(`   🕐 Found ${preferredTweets.length} fresh-or-recent tweets (${sortedTweets.length} total after sorting)`);
+                            
+                            // Take only the top candidates; if none are fresh, use newest overall
+                            const basePool = preferredTweets.length > 0 ? preferredTweets : sortedTweets;
+                            const candidates = basePool.slice(0, 2);
+
+                            for (const ft of candidates) {
+                                // Duplicate guard (before any DOM work)
+                                const priorId = ft.id && this.repliedTweetIds && this.repliedTweetIds.has(ft.id);
+                                const textKeyCandidate = `${String(ft.username || '').toLowerCase()}::${String(ft.text || '').substring(0, 60)}`;
+                                const priorTextKey = this.repliedTextKeys && this.repliedTextKeys.has(textKeyCandidate);
+                                if (priorId || (!ft.id && priorTextKey)) {
+                                    console.log('   ⏭️ Already replied to this followed tweet; skipping');
+                                    continue;
+                                }
+                                // Skip if this tweet is from our own account (avoid replying to ourselves)
+                                const selfNames = new Set([
+                                    String(process.env.TWITTER_USERNAME || '').toLowerCase(),
+                                    String(process.env.TWITTER_USERNAME || '').replace(/^@/, '').toLowerCase(),
+                                    'glitchygrade',
+                                    'glitchygradeai'
+                                ].filter(Boolean));
+                                if (selfNames.has(String(ft.username || '').toLowerCase())) {
+                                    console.log('   ⏭️ Skipping self tweet on Following timeline');
+                                    continue;
+                                }
+                // High engagement rate limit check  
+                const maxRepliesPerHour = 150;
+                const recentReplies = this.repliesThisHour.filter(time => Date.now() - time < 3600000);
+                if (recentReplies.length >= maxRepliesPerHour) {
+                    console.log(`   ⚠️ High engagement limit reached (${recentReplies.length}/${maxRepliesPerHour}), brief pause on Following engagement`);
+                    break;
+                }
+
+                                // Find the tweet element again by matching text and username
+                                const tweetHandle = await this.findTweetByUserAndText(ft.username, ft.text);
+                                if (!tweetHandle) {
+                                    console.log('   ⚠️ Could not re-locate followed tweet element; skipping');
+                                    continue;
+                                }
+
+                                // Proceed to engage; we've already session-guarded earlier in this loop
+                                const finalSessionKey = `${ft.username}::${ft.text.substring(0, 100)}`;
                                 
-                                // Prioritize recent posts from followed accounts (higher value)
-                                const prioritizedTweets = followingTweets
-                                    .filter(tweet => ['very_recent', 'recent_post'].includes(tweet.postAge))
-                                    .slice(0, 2); // Limit to 2 high-priority engagements
+                                // Force reply for followed accounts; bypass selector restrictions
+                                console.log(`   ✅ Engaging with followed account (reply)`);
+                                this.currentEngagementSource = 'following_feed';
                                 
-                                // Engage with prioritized tweets
-                                for (const tweet of prioritizedTweets) {
-                                    // Check rate limits
-                                    const recentReplies = this.repliesThisHour.filter(
-                                        time => Date.now() - time < 3600000
-                                    );
-                                    if (recentReplies.length >= 25) {
-                                        console.log('   ⚠️ Rate limit reached, skipping Following engagement');
-                                        break;
-                                    }
-                                    
-                                    console.log(`\n📄 ANALYZING FOLLOWING TWEET:`);
-                                    console.log(`   👤 User: @${tweet.username} (FOLLOWED ACCOUNT)`);
-                                    console.log(`   📝 Text: "${tweet.text.substring(0, 100)}..."`);
-                                    console.log(`   🖼️ Has images: ${tweet.hasImages}`);
-                                    console.log(`   🕐 Post age: ${tweet.postAge}`);
-                                    
-                                    // Analyze and potentially engage
-                                    const decision = await this.analyzeTweet(tweet);
-                                    
-                                    if (decision.shouldEngage) {
-                                        console.log(`   ✅ Engaging with followed account: ${decision.reason}`);
-                                        const success = await this.engageWithTweet(tweet, decision.action);
-                                        
-                                        if (success) {
-                                            engagementsThisRound++;
-                                            engagedTweets.push(tweet);
-                                            
-                                            // Longer delay after engaging with followed accounts (more natural)
-                                            await this.sleep(45000 + Math.random() * 30000); // 45-75 seconds
-                                        }
-                                    } else {
-                                        console.log(`   ❌ Skipping: ${decision.reason}`);
-                                    }
+                                // Mark as engaged IMMEDIATELY to prevent duplicates
+                                this.processedTweetsThisSession.add(finalSessionKey);
+                                
+                                let success;
+                                try {
+                                    success = await this.engageWithTweet(tweetHandle, 'reply');
+                                } finally {
+                                    this.currentEngagementSource = null;
+                                }
+                                if (success) {
+                                    await this.sleep(8000 + Math.random() * 7000);
                                 }
                             }
-                            
-                            // Also check for intelligence signals while we're here
-                            const signals = await this.followingMonitor.checkFollowingTimeline();
-                            if (signals.length > 0) {
-                                const topSignal = signals[0];
-                                console.log(`   📊 Intelligence: ${topSignal.cards[0]} - ${topSignal.patterns[0].type}`);
-                            }
-                            
-                            // Navigate back to search for normal flow
-                            console.log('   🔄 Returning to search timeline...');
-                            await this.page.goto('https://x.com/search?q=&src=typed_query', {
-                                waitUntil: 'networkidle2',
-                                timeout: 15000
-                            });
-                            await this.sleep(2000);
-                            
-                        } catch (error) {
-                            console.log('   ⚠️ Following engagement failed:', error.message);
                         }
+
+                        // Also check for intelligence signals while we're here
+                        const signals = await this.followingMonitor.checkFollowingTimeline();
+                        if (signals.length > 0) {
+                            const topSignal = signals[0];
+                            console.log(`   📊 Intelligence: ${topSignal.cards[0]} - ${topSignal.patterns[0].type}`);
+                        }
+
+                        // Navigate back to search for normal flow
+                        console.log('   🔄 Returning to search timeline...');
+                        await this.page.goto('https://x.com/search?q=&src=typed_query', {
+                            waitUntil: 'networkidle2',
+                            timeout: 15000
+                        });
+                        await this.sleep(2000);
+
+                    } catch (error) {
+                        console.log('   ⚠️ Following engagement failed:', error.message);
                     }
                 }
                 
@@ -3006,6 +3350,8 @@ Keep it conversational and under 280 characters.`;
                 
                 const query = this.searchEngine.getTrendingSearch();
                 console.log(`📍 Searching: "${query}"`);
+                // Track current search query for session management
+                this.currentSearchQuery = query;
                 searchCounter++;
                 
                 // Perform human-like search instead of direct URL navigation
@@ -3174,12 +3520,32 @@ Keep it conversational and under 280 characters.`;
                 for (const tweet of seenTweets) {
                     if (engagementsThisRound >= actualTarget) break;
                     
-                    // Check hourly rate limit
+                    // Check session tracking for search timeline (same as Following timeline)
+                    try {
+                        const tweetData = await tweet.evaluate(el => {
+                            const username = el.querySelector('a[href^="/"]')?.getAttribute('href')?.substring(1) || 'unknown';
+                            const text = el.querySelector('[data-testid="tweetText"]')?.innerText || '';
+                            return { username, text };
+                        });
+                        
+                        const sessionKey = `${tweetData.username}::${tweetData.text.substring(0, 100)}`;
+                        if (this.processedTweetsThisSession?.has(sessionKey)) {
+                            console.log(`   ⏭️ Skipping tweet already processed this session: @${tweetData.username} - "${tweetData.text.substring(0, 50)}..."`);
+                            continue;
+                        }
+                        // Mark as processed immediately when we encounter it
+                        this.processedTweetsThisSession.add(sessionKey);
+                    } catch (error) {
+                        console.log(`   ⚠️ Session tracking check failed, proceeding: ${error.message}`);
+                    }
+                    
+                    // Check high engagement rate limit
+                    const maxRepliesPerHour = 150;
                     const recentReplies = this.repliesThisHour.filter(
                         time => Date.now() - time < 3600000
                     );
-                    if (recentReplies.length >= 25) {
-                        console.log(`⚠️ Hourly limit reached (${recentReplies.length}/25), will resume later`);
+                    if (recentReplies.length >= maxRepliesPerHour) {
+                        console.log(`⚠️ High engagement limit reached (${recentReplies.length}/${maxRepliesPerHour}), brief pause then resume`);
                         break;
                     }
                     
@@ -3189,8 +3555,8 @@ Keep it conversational and under 280 characters.`;
                         time => time > fifteenMinutesAgo
                     );
                     if (recentBurst.length >= 8) {
-                        console.log(`⚠️ Burst limit reached (${recentBurst.length}/8 in 15 min), cooling down...`);
-                        await this.sleep(5 * 60 * 1000); // 5 minute cooldown
+                        console.log(`⚠️ Burst limit reached (${recentBurst.length}/8 in 15 min), short cool down...`);
+                        await this.sleep(60 * 1000); // 1 minute cooldown
                         continue;
                     }
                     
@@ -3215,7 +3581,7 @@ Keep it conversational and under 280 characters.`;
                             
                             // Wait between engagements (longer if multiple)
                             if (engagementsThisRound < actualTarget) {
-                                const waitTime = await this.random(30000, 60000);
+                                const waitTime = await this.random(8000, 15000);
                                 console.log(`⏰ Engagement ${engagementsThisRound}/${actualTarget} complete. Waiting ${Math.floor(waitTime/1000)}s...\n`);
                                 await this.sleep(waitTime);
                             }
@@ -3224,6 +3590,13 @@ Keep it conversational and under 280 characters.`;
                 }
                 
                 console.log(`✅ Completed ${engagementsThisRound}/${actualTarget} engagements this round\n`);
+                try {
+                    this.searchEngine.trackSearchSuccess(
+                        this.currentSearchQuery || 'unknown',
+                        seenTweets.length,
+                        engagementsThisRound
+                    );
+                } catch (_) { /* no-op */ }
                 
                 // Check for conversation follow-ups between searches
                 // DISABLED: Pausing notification responses
@@ -3343,7 +3716,7 @@ Keep it conversational and under 280 characters.`;
                     const hasImages = !!el.querySelector('img[alt*="Image"]');
                     const hasVideos = !!el.querySelector('video, [data-testid="videoPlayer"]');
                     const link = el.querySelector('a[href*="/status/"]');
-                    const tweetId = link ? link.href.split('/status/')[1] : null;
+                    const tweetId = link ? (link.href.split('/status/')[1]?.split('?')[0] || null) : null;
                     return { username, text, hasImages, hasVideos, tweetId };
                 });
             } catch (evalError) {
@@ -3356,7 +3729,7 @@ Keep it conversational and under 280 characters.`;
                 throw evalError; // Re-throw if it's a different error
             }
             
-            if (!data.username || !data.text || data.text.length < 20) {
+            if (!data.username || !data.text || data.text.length < 5) {
                 return false;
             }
             
@@ -3366,6 +3739,40 @@ Keep it conversational and under 280 characters.`;
             console.log(`   📝 Text: "${data.text}"`);
             console.log(`   🖼️ Has images: ${data.hasImages}`);
             console.log(`   🎥 Has videos: ${data.hasVideos}`);
+            
+            // Initialize session tracking if not already done
+            if (!this.processedTweetsThisSession) {
+                this.processedTweetsThisSession = new Set();
+            }
+            if (!this.currentSearchQuery) {
+                this.currentSearchQuery = '';
+            }
+            
+            // Session tracking: Check if we've already processed this tweet in this session
+            // BUT be more permissive for specific valuable card searches
+            const sessionKey = `${data.username}::${data.text.substring(0, 100)}`;
+            const isSpecificCardSearch = this.currentSearchQuery && /\b(alt art|vmax|sir|special illustration|full art|secret rare|gold|rainbow|promo)\b/i.test(this.currentSearchQuery);
+            
+            if (this.processedTweetsThisSession?.has(sessionKey) && !isSpecificCardSearch) {
+                console.log(`   ⏭️ Already processed this tweet in this session: @${data.username} - "${data.text.substring(0, 50)}..."`);
+                return false;
+            } else if (this.processedTweetsThisSession?.has(sessionKey) && isSpecificCardSearch) {
+                console.log(`   🔍 Specific card search - allowing re-analysis: @${data.username} - "${data.text.substring(0, 50)}..."`);
+            }
+            // Mark as processed immediately to prevent duplicate analysis
+            this.processedTweetsThisSession.add(sessionKey);
+            
+            // Dedupe: if we've already replied to this tweet ID, skip
+            if (data.tweetId && this.repliedTweetIds.has(data.tweetId)) {
+                console.log(`   ⏭️ Already replied to tweet ${data.tweetId}; skipping duplicate reply`);
+                return false;
+            }
+            // Dedupe fallback: when tweetId missing, use username+text prefix key
+            const textKey = `${data.username.toLowerCase()}::${data.text.substring(0, 60)}`;
+            if (!data.tweetId && this.repliedTextKeys.has(textKey)) {
+                console.log(`   ⏭️ Already replied to similar post by @${data.username}; skipping`);
+                return false;
+            }
             
             // Track how many times we've seen this tweet
             if (data.tweetId) {
@@ -3400,7 +3807,7 @@ Keep it conversational and under 280 characters.`;
             
             // FIRST: Check if post is recent enough to avoid bot detection
             const postTimestamp = await this.timestampFilter.extractTimestamp(tweet);
-            const timestampDecision = this.timestampFilter.shouldEngageByAge(postTimestamp);
+            const timestampDecision = this.timestampFilter.shouldEngageByAge(postTimestamp, isSpecificCardSearch);
             
             // Record timestamp decision
             if (decisionData) {
@@ -3414,7 +3821,7 @@ Keep it conversational and under 280 characters.`;
                 if (this.decisionTrace && decisionData) {
                     decisionData.decision.engage = false;
                     decisionData.decision.reason = 'Too old';
-                    await this.decisionTrace.logDecision(decisionData);
+            await this.decisionTrace.logDecision(decisionData || {});
                 }
                 return false;
             }
@@ -3440,7 +3847,7 @@ Keep it conversational and under 280 characters.`;
                 return false;
             }
             
-            if (engagementDecision.action === 'skip') {
+            if (this.currentEngagementSource !== 'following_feed' && engagementDecision.action === 'skip') {
                 console.log(`   ⏭️ [Selector] Skipping: ${engagementDecision.reason}`);
                 return false;
             }
@@ -3513,7 +3920,9 @@ Keep it conversational and under 280 characters.`;
                 }
             }
             
-            const filterResult = this.contentFilter.shouldEngageWithPost(data.text, data.username, false);
+            const filterResult = this.currentEngagementSource === 'following_feed'
+                ? { engage: true, reason: 'following_bypass' }
+                : this.contentFilter.shouldEngageWithPost(data.text, data.username, false);
             
             if (!filterResult.engage) {
                 console.log(`   🚫 Filtered: ${filterResult.reason}`);
@@ -3592,8 +4001,9 @@ Keep it conversational and under 280 characters.`;
                 return hasPokemonIndicator;
             };
             
-            if (!isActuallyAboutPokemon()) {
-                console.log(`   ⏭️ Not actually Pokemon related: "${data.text.substring(0, 50)}..."`);
+            // SIMPLIFIED: Just use the basic Pokemon indicator check
+            if (!hasPokemonIndicator) {
+                console.log(`   ⏭️ No Pokemon indicators found: "${data.text.substring(0, 50)}..."`);
                 return false;
             }
             
@@ -3627,7 +4037,7 @@ Keep it conversational and under 280 characters.`;
                     decisionData.decision.engage = false;
                     decisionData.decision.score = score;
                     decisionData.decision.reason = `Low value score: ${score}`;
-                    await this.decisionTrace.logDecision(decisionData);
+            await this.decisionTrace.logDecision(decisionData || {});
                 }
                 return { 
                     shouldEngage: false,
@@ -3638,10 +4048,12 @@ Keep it conversational and under 280 characters.`;
             
             // Log engagement decision
             if (this.decisionTrace && decisionData) {
+                // Ensure strategy object is present for logging
+                decisionData.strategy = decisionData.strategy || { strategy: 'composed', confidence: 'unknown', reason: 'auto-default' };
                 decisionData.decision.engage = true;
                 decisionData.decision.action = data.engagementType || 'reply';
                 decisionData.decision.score = score;
-                await this.decisionTrace.logDecision(decisionData);
+            await this.decisionTrace.logDecision(decisionData || {});
             }
             
             // Build engagement reason
@@ -3671,9 +4083,10 @@ Keep it conversational and under 280 characters.`;
         } catch (error) {
             // Log error decision
             if (this.decisionTrace && decisionData) {
+                decisionData.strategy = decisionData.strategy || { strategy: 'error', confidence: 'unknown', reason: 'exception' };
                 decisionData.decision.engage = false;
                 decisionData.decision.error = error.message;
-                await this.decisionTrace.logDecision(decisionData);
+            await this.decisionTrace.logDecision(decisionData || {});
             }
             console.log(`   ⚠️ Tweet analysis error: ${error.message}`);
             return false;
@@ -3788,9 +4201,14 @@ Keep it conversational and under 280 characters.`;
             
             // Send the tweet
             const sent = await this.page.evaluate(() => {
-                const btn = document.querySelector('button[data-testid="tweetButton"]');
-                if (btn && !btn.disabled) {
-                    btn.click();
+                const primary = document.querySelector('button[data-testid="tweetButton"]');
+                if (primary && !primary.disabled) {
+                    primary.click();
+                    return true;
+                }
+                const inline = document.querySelector('button[data-testid="tweetButtonInline"]');
+                if (inline && !inline.disabled) {
+                    inline.click();
                     return true;
                 }
                 return false;
@@ -3857,6 +4275,49 @@ Keep it conversational and under 280 characters.`;
                 };
             });
             
+            // Duplicate guard (session-level)
+            if (data.tweetId && this.repliedTweetIds && this.repliedTweetIds.has(data.tweetId)) {
+                console.log(`   ⏭️ Already replied to tweet ${data.tweetId}; skipping duplicate reply`);
+                return false;
+            }
+            const dedupeKey = `${String(data.username || '').toLowerCase()}::${String(data.text || '').substring(0, 60)}`;
+            if (!data.tweetId && this.repliedTextKeys && this.repliedTextKeys.has(dedupeKey)) {
+                console.log('   ⏭️ Already replied to this post (text-key); skipping duplicate reply');
+                return false;
+            }
+            
+            // Strong content-based duplicate detection using hash
+            const contentHash = this.hashContent(data.username, data.text);
+            if (this.repliedContentHashes.has(contentHash)) {
+                console.log(`   ⏭️ Already replied to identical content from @${data.username}; skipping duplicate`);
+                return false;
+            }
+
+            // Guard: never reply to our own tweets
+            const botNames = new Set([
+                String(process.env.TWITTER_USERNAME || '').toLowerCase(),
+                String(process.env.TWITTER_USERNAME || '').replace(/^@/, '').toLowerCase(),
+                'glitchygrade',
+                'glitchygradeai'
+            ].filter(Boolean));
+            if (botNames.has(String(data.username || '').toLowerCase())) {
+                console.log('   ⏭️ Skipping self tweet; not replying to our own account');
+                return false;
+            }
+
+            // Guard: prevent spamming same user too frequently (10 minute cooldown)
+            const username = String(data.username || '').toLowerCase();
+            const lastReplyTime = this.recentReplies.get(username);
+            const now = Date.now();
+            const cooldownMs = 10 * 60 * 1000; // 10 minutes
+            if (lastReplyTime && (now - lastReplyTime) < cooldownMs) {
+                const remainingMinutes = Math.ceil((cooldownMs - (now - lastReplyTime)) / 60000);
+                console.log(`   ⏰ User @${data.username} cooldown active (${remainingMinutes}m remaining); converting to like-only`);
+                await this.tryLikeTweet(tweet);
+                console.log('   👍 Like-only due to user cooldown');
+                return true;
+            }
+
             console.log(`\n💬 @${data.username}: "${data.text.substring(0, 80)}..."`);
             
             // Save memory quickly
@@ -3868,16 +4329,31 @@ Keep it conversational and under 280 characters.`;
             
             // Check if content is Pokemon-related BEFORE any actions that might refresh the feed
             const textLower = data.text.toLowerCase();
-            const isPokemonContent = /pokemon|pokémon|pikachu|charizard|eevee|bulbasaur|squirtle|mewtwo|arceus|palkia|dialga|rayquaza|groudon|kyogre|lucario|garchomp|gengar|snorlax|alakazam|machamp|gyarados|dragonite|tyranitar|salamence|metagross|hydreigon|goodra|kommo-o|dragapult/i.test(data.text);
+            // SIMPLIFIED and MUCH more permissive Pokemon detection 
+            // If it mentions ANY of these terms, it's Pokemon content!
+            const isPokemonContent = /pokemon|pokémon|tcg|ptcg|pikachu|charizard|eevee|mewtwo|gengar|snorlax|lucario|garchomp|dragonite|rayquaza|arceus|mew|skarmory|umbreon|espeon|vaporeon|jolteon|flareon|leafeon|glaceon|sylveon|cards?|pack|booster|collection|graded|grade|slab|psa|cgc|bgs|alt.art|full.art|secret.rare|rainbow.rare|gold.card|shiny|holo|foil|mint|nm|lp|mp|hp|dmg|1st.edition|shadowless|base.set|jungle|fossil|gym|neo|stellar|crown|surging|sparks|twilight|masquerade|temporal|forces|obsidian|flames|lost|origin|astral|radiance|celebrations|evolving|skies|fusion|strike|vivid|voltage|battle|styles|sword|shield|scarlet|violet/i.test(data.text);
             
-            // If not Pokemon-related at all, skip
-            if (!isPokemonContent && action === 'reply') {
-                console.log(`   ❌ Not Pokemon-related content, converting to like-only`);
-                console.log(`   📝 Text: "${data.text.substring(0, 80)}..."`);
-                action = 'like';
-            } else if (isPokemonContent && action === 'reply') {
-                console.log(`   ✅ Pokemon-related content detected!`);
+            // REMOVE ALL FILTERING - ALWAYS ALLOW REPLIES
+            const shouldReply = true;
+            
+            // FILTER REMOVED - ALL POSTS CAN BE REPLIED TO
+            
+            if (action === 'reply') {
+                if (isPokemonContent) {
+                    console.log(`   ✅ Pokemon-related content detected!`);
+                } else if (isFollowedAccount) {
+                    console.log(`   ✅ Followed account with card-related content - will reply`);
+                }
                 console.log(`   📝 Will attempt to reply to: "${data.text.substring(0, 80)}..."`);
+                
+                // IMMEDIATE DUPLICATE PREVENTION: Mark as replied BEFORE starting reply process
+                // This prevents multiple simultaneous attempts to the same tweet
+                if (data.tweetId) {
+                    this.repliedTweetIds.add(data.tweetId);
+                } else {
+                    const textKey = `${data.username.toLowerCase()}::${data.text.substring(0, 60)}`;
+                    this.repliedTextKeys.add(textKey);
+                }
             }
             
             // If action is like-only, like and we're done
@@ -4022,10 +4498,32 @@ Keep it conversational and under 280 characters.`;
                         console.log(`   🖼️ Visual: ${visualData.analysis.contentType} - ${visualData.analysis.focusArea}`);
                     }
                     
-                    // Note if vision detected non-TCG content but continue anyway
-                    if (visualData && visualData.visionAnalysis && visualData.visionAnalysis.skipEngagement) {
-                        console.log(`   📱 Vision detected non-TCG content - will respond about general Pokemon content`);
-                        // Continue with engagement - user wants bot to handle ALL Pokemon content
+                    // Guard: if media present but vision yielded no meaningful content
+                    const mediaPresent = data.hasImages || data.hasVideos;
+                    const va = (visualData && visualData.visionAnalysis) ? visualData.visionAnalysis : null;
+                    const noMeaningfulVision = !va || (va.analyzed === true && (!va.cards || va.cards.length === 0) && !va.isEventPoster && !va.isFanArt && !va.naturalDescription);
+                    if (mediaPresent && noMeaningfulVision) {
+                        // If this engagement originated from Following flow, allow safe text-only reply
+                        const isFollowedSource = this.currentEngagementSource === 'following_feed';
+                        if (!isFollowedSource) {
+                            console.log('   ❌ Vision could not extract content from media — converting to like-only');
+                            await this.page.keyboard.press('Escape');
+                            await this.sleep(1000);
+                            await this.tryLikeTweet(tweet);
+                            console.log('   👍 Like-only engagement');
+                            return true;
+                        } else {
+                            console.log('   ⚠️ Vision low-confidence but user is followed/source prioritized — proceeding with text-only reply');
+                        }
+                    }
+                    // If vision explicitly flags to skip engagement, also convert to like-only
+                    if (va && va.skipEngagement) {
+                        console.log('   📱 Vision flagged non-TCG content — converting to like-only');
+                        await this.page.keyboard.press('Escape');
+                        await this.sleep(1000);
+                        await this.tryLikeTweet(tweet);
+                        console.log('   👍 Like-only engagement');
+                        return true;
                     }
                 } else {
                     console.log(`   ⚠️ [DEBUG] Visual analyzer not available!`);
@@ -4056,7 +4554,7 @@ Keep it conversational and under 280 characters.`;
                 }
             }
             
-            // Generate response using simplified thread-aware method
+            // Generate response using simplified thread-aware method (always prefer thread/vision when present)
             let response;
             console.log(`   🧠 Starting response generation for @${data.username}...`);
             try {
@@ -4064,7 +4562,7 @@ Keep it conversational and under 280 characters.`;
                 const responsePromise = this.generateThreadAwareResponse(
                     data.username, 
                     data.text, 
-                    threadContext || { fullConversation: [] }, 
+                    (threadContext && threadContext.fullConversation ? threadContext : { fullConversation: [] }), 
                     visualData
                 );
                 
@@ -4078,6 +4576,11 @@ Keep it conversational and under 280 characters.`;
                 if (response === null) {
                     console.log(`   ⚠️ Response generation timed out after 30s`);
                 }
+                // Filter out self-mentions to prevent tagging ourselves
+                if (response) {
+                    response = response.replace(/@GlitchyGrade\s*/gi, '').trim();
+                }
+                
                 console.log(`   📝 Response from thread-aware: "${response || 'NULL'}"`);
                 
                 // If thread-aware fails or returns null, try simple AI response
@@ -4090,6 +4593,50 @@ Keep it conversational and under 280 characters.`;
                         {},
                         visualData
                     );
+                }
+                // Deterministic text-only fallback if AI not available or response still empty
+                if (!response) {
+                    const textSnippet = (data.text || '').slice(0, 120);
+                    
+                    // First check if it's actually Pokemon/TCG related for appropriate responses
+                    if (/pokemon|pokémon|card|tcg|pack|pull|booster|collection/i.test(textSnippet)) {
+                        // Use varied Pokemon-specific fallback responses
+                        const pokemonFallbacks = [
+                            "Nice pull! 🔥",
+                            "Sweet card! 💯", 
+                            "Great find! 👍",
+                            "Awesome pickup! ⭐",
+                            "Solid addition! 🎯",
+                            "Nice one! 🙌",
+                            "Clean card! ✨",
+                            "Good stuff! 👌",
+                            "Fire pull! 🚀",
+                            "Beautiful card! 😍"
+                        ];
+                        const randomIndex = Math.floor(Math.random() * pokemonFallbacks.length);
+                        response = pokemonFallbacks[randomIndex];
+                        
+                        // Tailor for specific contexts
+                        if (/for sale|fs:|wtb|wts|price|\$\d+/i.test(textSnippet)) {
+                            response = `Looks solid. Are you taking offers, or firm on price?`;
+                        } else if (/stream|live|twitch|youtube/i.test(textSnippet)) {
+                            response = `Sounds fun—what time are you going live and what are you opening?`;
+                        } else if (/pull|pulled|hit|pack|etb|booster/i.test(textSnippet)) {
+                            response = `Let's go! What was the best pull from that run?`;
+                        }
+                    } else {
+                        // Generic responses for non-Pokemon content (followed accounts only)
+                        const genericFallbacks = [
+                            "Interesting! 👀",
+                            "Nice! 👍",
+                            "Cool stuff! ✨", 
+                            "Sounds good! 😊",
+                            "That's awesome! 🔥",
+                            "Love it! ❤️"
+                        ];
+                        const randomIndex = Math.floor(Math.random() * genericFallbacks.length);
+                        response = genericFallbacks[randomIndex];
+                    }
                 }
             } catch (error) {
                 console.log(`   ⚠️ Response generation failed: ${error.message}`);
@@ -4150,6 +4697,35 @@ Keep it conversational and under 280 characters.`;
             
             // Final length check and cleanup before sending
             if (response) {
+                // Check if response is too generic - require at least one specific reference
+                const originalText = data.text || '';
+                const hasSpecificReference = /charizard|moonbreon|umbreon|alt art|psa|cgc|bgs|pull|set:|151|paradox|obsidian|evolving skies|crown zenith|gamestop|target|walmart|grade|slab|condition|market|price|power pack|mega evolutions|mail day|booster box/i.test(response);
+                if (!hasSpecificReference && originalText.length > 10 && response.length > 20) {
+                    console.log(`   ⚠️ Response too generic, enhancing with details...`);
+                    // Add a specific element from the original tweet
+                    const specificElements = originalText.match(/\b(charizard|moonbreon|umbreon|alt art|psa \d+|cgc \d+|bgs \d+|pull|set|151|paradox|obsidian|evolving skies|crown zenith|power pack|mega evolutions|booster|etb|mail day)\b/i);
+                    if (specificElements) {
+                        response = `${response} That ${specificElements[0]} is what caught my eye.`;
+                    } else if (/pull|opened|hit/i.test(originalText)) {
+                        response = `${response} Solid pull.`;
+                    } else {
+                        response = `${response} Nice find.`;
+                    }
+                }
+
+                // Remove hashtags and @mentions per user policy
+                response = sanitizeReplyText(response);
+                // Humanize tone (medium slang, no emojis, sometimes ask question)
+                response = humanizeReply(response, {
+                    slangLevel: 'medium',
+                    allowEmoji: false,
+                    questionChance: 0.1,
+                    maxExclamations: 1,
+                    minLen: 80,
+                    maxLen: 140,
+                    maxSentences: 2,
+                    voice: 'collector_casual'
+                }, data.text || '');
                 // Check for trailing incomplete thoughts
                 const incompletePatterns = [
                     /\.\.\.\s*$/,
@@ -4170,12 +4746,15 @@ Keep it conversational and under 280 characters.`;
                 if (response.length > 280) {
                     console.log(`   ⚠️ Response too long (${response.length} chars), clamping properly...`);
                     response = clampTweet(response, 280);
+                } else if (response.length < 10) {
+                    console.log(`   ⚠️ Response too short (${response.length} chars), skipping...`);
+                    response = null; // Skip very short responses
                 }
             }
             
             // Track response variety
             if (this.responseVariety && response) {
-                this.responseVariety.trackResponse(data.username, response);
+                this.responseVariety.trackResponse({ username: data.username, text: data.text, response });
             }
             
             // Record interaction in history (will update later if successful)
@@ -4319,9 +4898,14 @@ Keep it conversational and under 280 characters.`;
             
             // Send
             const sent = await this.page.evaluate(() => {
-                const btn = document.querySelector('button[data-testid="tweetButton"]');
-                if (btn && !btn.disabled) {
-                    btn.click();
+                const primary = document.querySelector('button[data-testid="tweetButton"]');
+                if (primary && !primary.disabled) {
+                    primary.click();
+                    return true;
+                }
+                const inline = document.querySelector('button[data-testid="tweetButtonInline"]');
+                if (inline && !inline.disabled) {
+                    inline.click();
                     return true;
                 }
                 return false;
@@ -4368,6 +4952,17 @@ Keep it conversational and under 280 characters.`;
                 
                 this.replyCount++;
                 this.repliedUsers.add(data.username.toLowerCase());
+                if (data.tweetId) {
+                    this.repliedTweetIds.add(data.tweetId);
+                } else {
+                    const textKey = `${data.username.toLowerCase()}::${data.text.substring(0, 60)}`;
+                    this.repliedTextKeys.add(textKey);
+                }
+                // Track user reply timestamp for cooldown
+                this.recentReplies.set(data.username.toLowerCase(), Date.now());
+                // Track content hash to prevent duplicate replies to same content
+                const contentHash = this.hashContent(data.username, data.text);
+                this.repliedContentHashes.add(contentHash);
                 this.repliesThisHour.push(Date.now()); // Track for rate limiting
                 console.log(`   ✅ Sent! [${this.replyCount}/1000]`);
                 

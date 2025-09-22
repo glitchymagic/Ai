@@ -94,6 +94,42 @@ class CardKnowledge {
         };
     }
     
+    // Return structured info for a card or card name
+    getCardInfo(cardOrName) {
+        try {
+            const raw = typeof cardOrName === 'string' ? cardOrName : (cardOrName?.name || cardOrName?.card || '');
+            const nameLower = String(raw || '').toLowerCase();
+            if (!nameLower) return null;
+            
+            // Try direct chase card match by key or full name
+            for (const [key, info] of Object.entries(this.chaseCards)) {
+                if (nameLower.includes(key) || (info.name && nameLower.includes(info.name.toLowerCase()))) {
+                    return {
+                        name: info.name || raw,
+                        set: info.set || this.detectSet(info.name || raw)?.name || null,
+                        approxValue: info.value || null,
+                        notes: info.note || null,
+                        era: this.determineEra(info.name || raw)?.era || null
+                    };
+                }
+            }
+            
+            // Try set detection for context
+            const setInfo = this.detectSet(raw);
+            const eraInfo = this.determineEra(raw);
+            
+            return {
+                name: raw,
+                set: setInfo?.name || null,
+                approxValue: null,
+                notes: setInfo?.chaseCard ? `Chase: ${setInfo.chaseCard}` : null,
+                era: eraInfo?.era || null
+            };
+        } catch (_) {
+            return null;
+        }
+    }
+    
     // Detect what cards are being discussed
     detectCards(text) {
         const textLower = text.toLowerCase();

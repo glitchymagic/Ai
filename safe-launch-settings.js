@@ -4,18 +4,18 @@
 module.exports = {
     // WEEK 1 SETTINGS (Days 4-7)
     week1: {
-        maxRepliesPerHour: 5,        // Very conservative
-        maxRepliesPerDay: 30,         // Total daily limit
+        maxRepliesPerHour: 12,       // Increase for higher engagement
+        maxRepliesPerDay: 80,        // Raise daily ceiling
         breakEvery: 10,               // Break after 10 replies
-        breakDuration: 10 * 60 * 1000,// 10 minute breaks
-        hoursPerDay: 4,               // Only run 4 hours/day
+        breakDuration: 2 * 60 * 1000, // 2 minute breaks
+        hoursPerDay: 10,              // Run longer
         scheduledPosts: false,        // No scheduled posts yet
         conversationChecking: false,  // No conversation monitoring
         
         // Extra safety
-        minimumFollowers: 50,         // Only reply to accounts with 50+ followers
-        avoidNewAccounts: true,       // Skip accounts < 30 days old
-        requireImages: true,          // Only reply to posts with images
+        minimumFollowers: 0,          // Engage broadly
+        avoidNewAccounts: false,      // Allow new accounts
+        requireImages: false,         // Allow text-only posts
         
         // Response settings
         responseVariation: 'maximum', // Maximum variety

@@ -179,5 +179,864 @@
     "responsePreferences": {},
     "engagementRate": 1,
     "trustScore": 0.5
+  },
+  "Pokepulls1992": {
+    "username": "Pokepulls1992",
+    "firstSeen": 1758214177024,
+    "lastSeen": 1758214177024,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "XieonGaming": {
+    "username": "XieonGaming",
+    "firstSeen": 1758214490811,
+    "lastSeen": 1758214490811,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "ov": 1,
+      "nev": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "XanderWilde1": {
+    "username": "XanderWilde1",
+    "firstSeen": 1758214924643,
+    "lastSeen": 1758214924643,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "tv": 1,
+      "liv": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "stock_trends_": {
+    "username": "stock_trends_",
+    "firstSeen": 1758215590214,
+    "lastSeen": 1758215590214,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "high v": 1,
+      "ev": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "thriftx3": {
+    "username": "thriftx3",
+    "firstSeen": 1758215965784,
+    "lastSeen": 1758215965784,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45592885375494074,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "ev": 1,
+      "fav": 1,
+      "av": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "grok": {
+    "username": "grok",
+    "firstSeen": 1758216404407,
+    "lastSeen": 1758216404407,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.45592885375494074,
+      "expertise": 0.5,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "ev": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "i/communities/1950699007514448040": {
+    "username": "i/communities/1950699007514448040",
+    "firstSeen": 1758217152021,
+    "lastSeen": 1758217152021,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.4561728395061728,
+      "expertise": 0.55,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "any ex": 1,
+      "cultiv": 1,
+      "small v": 1,
+      "the ex": 1,
+      "modern": 1,
+      "investing": 1,
+      "collecting": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "JAKL_KIDS": {
+    "username": "JAKL_KIDS",
+    "firstSeen": 1758219441145,
+    "lastSeen": 1758219441145,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.4631578947368421,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "ev": 1,
+      "megaev": 1,
+      "orangev": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "empress_pandora": {
+    "username": "empress_pandora",
+    "firstSeen": 1758220796296,
+    "lastSeen": 1758220796296,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.55,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "TheAbsol": {
+    "username": "TheAbsol",
+    "firstSeen": 1758220865570,
+    "lastSeen": 1758220865570,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "competitiv": 1,
+      "flav": 1,
+      "playing": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "SteeloAndKri": {
+    "username": "SteeloAndKri",
+    "firstSeen": 1758221963516,
+    "lastSeen": 1758236087238,
+    "interactions": 5,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.4546980549589202,
+      "expertise": 0.55,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "ev": 1,
+      "hav": 2,
+      "charizard promos": 1,
+      "rayquaza from": 1,
+      "_lupex": 2,
+      "mewtwo vstar": 2,
+      "modern": 2,
+      "giv": 1,
+      "receiv": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "OoCPokemon": {
+    "username": "OoCPokemon",
+    "firstSeen": 1758222160877,
+    "lastSeen": 1758222730722,
+    "interactions": 2,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.405,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "GlitchyGrade": {
+    "username": "GlitchyGrade",
+    "firstSeen": 1758222575850,
+    "lastSeen": 1758222575850,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.48,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "peeled_pokemon": {
+    "username": "peeled_pokemon",
+    "firstSeen": 1758222855287,
+    "lastSeen": 1758222855287,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "seymourbutts741": {
+    "username": "seymourbutts741",
+    "firstSeen": 1758223507119,
+    "lastSeen": 1758223507119,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.55,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "supesantos": {
+    "username": "supesantos",
+    "firstSeen": 1758225533322,
+    "lastSeen": 1758225533322,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.4599009900990099,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "rav": 1,
+      "archiv": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "TCGTracker": {
+    "username": "TCGTracker",
+    "firstSeen": 1758232162486,
+    "lastSeen": 1758574413377,
+    "interactions": 6,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.28254357692307697,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "ev": 5,
+      "mav": 1,
+      "hoopa v ": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "funkochar": {
+    "username": "funkochar",
+    "firstSeen": 1758232257392,
+    "lastSeen": 1758232257392,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "ev": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "wdn_es": {
+    "username": "wdn_es",
+    "firstSeen": 1758232715553,
+    "lastSeen": 1758232715553,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "tv ": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "wwwXzlocz": {
+    "username": "wwwXzlocz",
+    "firstSeen": 1758232857660,
+    "lastSeen": 1758232857660,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "poliwrath ex  ": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "i/communities/1854625027108262396": {
+    "username": "i/communities/1854625027108262396",
+    "firstSeen": 1758233883620,
+    "lastSeen": 1758233883620,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "poliwrath ex  ": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "PokeTCGAlerts": {
+    "username": "PokeTCGAlerts",
+    "firstSeen": 1758234904218,
+    "lastSeen": 1758297289467,
+    "interactions": 7,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.24426790392491474,
+      "expertise": 0.5,
+      "priceAwareness": 1,
+      "humor": 0.5
+    },
+    "interests": {
+      "region ex": 1,
+      "clusiv": 1,
+      "charizard ex ": 1,
+      "copies ex": 1,
+      "charizard ex": 1,
+      "vintage": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "DrJet123": {
+    "username": "DrJet123",
+    "firstSeen": 1758236326950,
+    "lastSeen": 1758236326950,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "sv": 1,
+      "2udv": 1,
+      "ebay v": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "CMEActiveTrader": {
+    "username": "CMEActiveTrader",
+    "firstSeen": 1758236436211,
+    "lastSeen": 1758236436211,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "nomorerobotshq": {
+    "username": "nomorerobotshq",
+    "firstSeen": 1758236957796,
+    "lastSeen": 1758236957796,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.4884615384615385,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "fxifycom": {
+    "username": "fxifycom",
+    "firstSeen": 1758297663019,
+    "lastSeen": 1758297663019,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.46119402985074626,
+      "expertise": 0.55,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "investing": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "Khaotic_Kimchi": {
+    "username": "Khaotic_Kimchi",
+    "firstSeen": 1758297850358,
+    "lastSeen": 1758297850358,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.4598039215686275,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "xtsv": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "m1ke100": {
+    "username": "m1ke100",
+    "firstSeen": 1758297985116,
+    "lastSeen": 1758297985116,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "ev": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "DaPokeMang": {
+    "username": "DaPokeMang",
+    "firstSeen": 1758298795951,
+    "lastSeen": 1758298795951,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "hav": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "atotheden": {
+    "username": "atotheden",
+    "firstSeen": 1758298988693,
+    "lastSeen": 1758298988693,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "hav": 1,
+      "investing": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "msectors": {
+    "username": "msectors",
+    "firstSeen": 1758299310204,
+    "lastSeen": 1758299310204,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "inv": 1,
+      "to ex": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "TCGplayer": {
+    "username": "TCGplayer",
+    "firstSeen": 1758342385888,
+    "lastSeen": 1758342385888,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45773195876288664,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "not ex": 1,
+      "marv": 1,
+      "mtgx": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "BlastoiseBaller": {
+    "username": "BlastoiseBaller",
+    "firstSeen": 1758562719585,
+    "lastSeen": 1758567289033,
+    "interactions": 2,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.42063706563706565,
+      "expertise": 0.6000000000000001,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "giv": 1,
+      "fav": 1,
+      "collecting": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "JoeyZaddy": {
+    "username": "JoeyZaddy",
+    "firstSeen": 1758562751957,
+    "lastSeen": 1758562751957,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.55,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "flareon ex ": 1,
+      "55\nv": 1,
+      "aporeon ex ": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "pontashiki": {
+    "username": "pontashiki",
+    "firstSeen": 1758562977737,
+    "lastSeen": 1758562977737,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.65,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "sv ": 1,
+      "fest ex ": 1,
+      "jolteon ex ": 1,
+      "ev": 1,
+      "giratina vstar ": 1,
+      "giratina vstar": 1,
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "SakurasCardShop": {
+    "username": "SakurasCardShop",
+    "firstSeen": 1758563681707,
+    "lastSeen": 1758563681707,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.48614457831325303,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "PokeTCGiveaways": {
+    "username": "PokeTCGiveaways",
+    "firstSeen": 1758564048906,
+    "lastSeen": 1758564048906,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45833333333333337,
+      "expertise": 0.6,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "lov": 1,
+      "pokemongiv": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "NytazaPokemon": {
+    "username": "NytazaPokemon",
+    "firstSeen": 1758564134862,
+    "lastSeen": 1758574759808,
+    "interactions": 5,
+    "personality": {
+      "formality": 0.45,
+      "enthusiasm": 0.36897221674876857,
+      "expertise": 0.5,
+      "priceAwareness": 0.7,
+      "humor": 0.5
+    },
+    "interests": {
+      "hav": 1,
+      "av": 1,
+      "collecting": 1,
+      "a v": 1,
+      "ev": 1,
+      "giv": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "Catscollecttcg": {
+    "username": "Catscollecttcg",
+    "firstSeen": 1758564225815,
+    "lastSeen": 1758564225815,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.6,
+      "humor": 0.5
+    },
+    "interests": {
+      "adv": 1,
+      "pikachu will": 1,
+      "investing": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "JohnnyCrambo": {
+    "username": "JohnnyCrambo",
+    "firstSeen": 1758564503213,
+    "lastSeen": 1758564503213,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.45,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "Mikail__x": {
+    "username": "Mikail__x",
+    "firstSeen": 1758566119330,
+    "lastSeen": 1758566119330,
+    "interactions": 1,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.466304347826087,
+      "expertise": 0.6,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {
+      "modern": 1
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "Peak_Hobby": {
+    "username": "Peak_Hobby",
+    "firstSeen": 1758567711948,
+    "lastSeen": 1758567810449,
+    "interactions": 2,
+    "personality": {
+      "formality": 0.4,
+      "enthusiasm": 0.405,
+      "expertise": 0.5,
+      "priceAwareness": 0.7,
+      "humor": 0.5
+    },
+    "interests": {
+      "massiv": 2,
+      "riv": 2,
+      "youtube v": 2,
+      "investing": 2
+    },
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
+  },
+  "powerpacks": {
+    "username": "powerpacks",
+    "firstSeen": 1758569566441,
+    "lastSeen": 1758569857198,
+    "interactions": 3,
+    "personality": {
+      "formality": 0.5,
+      "enthusiasm": 0.36450000000000005,
+      "expertise": 0.5,
+      "priceAwareness": 0.5,
+      "humor": 0.5
+    },
+    "interests": {},
+    "responsePreferences": {},
+    "engagementRate": 1,
+    "trustScore": 0.5
   }
 }

@@ -1,60 +1,342 @@
 {
-  "timestamp": "2025-09-04T21:18:55.386Z",
+  "timestamp": "2025-09-22T22:58:52.750Z",
   "narratives": [
     {
-      "card": "Crown Zenith",
+      "card": "Umbreon Vmax Alt Art",
       "narratives": [
         {
-          "id": "1n85gm0_Crown Zenith_priceDiscovery",
+          "id": "1nml0cc_Umbreon Vmax Alt Art_priceDiscovery",
           "subreddit": "PokeInvesting",
           "subredditWeight": 1.5,
-          "card": "Crown Zenith",
-          "cardWeight": 0.9,
+          "card": "Umbreon Vmax Alt Art",
+          "cardWeight": 1.5,
           "pattern": "priceDiscovery",
           "patternStrength": 1,
           "post": {
-            "id": "1n85gm0",
-            "title": "Crown Zenith seems under rated",
-            "url": "https://reddit.com/r/PokeInvesting/comments/1n85gm0/crown_zenith_seems_under_rated/",
-            "author": "Flipnation1991",
-            "created": 1756977993000,
-            "score": 114,
-            "comments": 68,
-            "upvoteRatio": 0.81
+            "id": "1nml0cc",
+            "title": "$17,000 for 2 sequential rayquaza ponchos",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nml0cc/17000_for_2_sequential_rayquaza_ponchos/",
+            "author": "No_Detail_1276",
+            "created": 1758437433000,
+            "score": 453,
+            "comments": 67,
+            "upvoteRatio": 0.93
           },
-          "engagement": 4.228733402651576,
-          "detectedAt": 1757020716171,
-          "strength": 0.9430919631919203
+          "engagement": 2.812273452860336,
+          "detectedAt": 1758581920907,
+          "strength": 1
+        },
+        {
+          "id": "1nml0cc_Umbreon Vmax Alt Art_fomo",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Umbreon Vmax Alt Art",
+          "cardWeight": 1.5,
+          "pattern": "fomo",
+          "patternStrength": 1.4,
+          "post": {
+            "id": "1nml0cc",
+            "title": "$17,000 for 2 sequential rayquaza ponchos",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nml0cc/17000_for_2_sequential_rayquaza_ponchos/",
+            "author": "No_Detail_1276",
+            "created": 1758437433000,
+            "score": 453,
+            "comments": 67,
+            "upvoteRatio": 0.93
+          },
+          "engagement": 2.812273452860336,
+          "detectedAt": 1758581920907,
+          "strength": 1
+        },
+        {
+          "id": "1nml0cc_Umbreon Vmax Alt Art_grading",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Umbreon Vmax Alt Art",
+          "cardWeight": 1.5,
+          "pattern": "grading",
+          "patternStrength": 1.1,
+          "post": {
+            "id": "1nml0cc",
+            "title": "$17,000 for 2 sequential rayquaza ponchos",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nml0cc/17000_for_2_sequential_rayquaza_ponchos/",
+            "author": "No_Detail_1276",
+            "created": 1758437433000,
+            "score": 453,
+            "comments": 67,
+            "upvoteRatio": 0.93
+          },
+          "engagement": 2.812273452860336,
+          "detectedAt": 1758581920907,
+          "strength": 1
         }
       ],
-      "totalStrength": 0.9430919631919203,
+      "totalStrength": 3,
       "patterns": {},
       "posts": [
         {
-          "id": "1n85gm0",
-          "title": "Crown Zenith seems under rated",
-          "url": "https://reddit.com/r/PokeInvesting/comments/1n85gm0/crown_zenith_seems_under_rated/",
-          "author": "Flipnation1991",
-          "created": 1756977993000,
-          "score": 114,
-          "comments": 68,
-          "upvoteRatio": 0.81
+          "id": "1nml0cc",
+          "title": "$17,000 for 2 sequential rayquaza ponchos",
+          "url": "https://reddit.com/r/PokeInvesting/comments/1nml0cc/17000_for_2_sequential_rayquaza_ponchos/",
+          "author": "No_Detail_1276",
+          "created": 1758437433000,
+          "score": 453,
+          "comments": 67,
+          "upvoteRatio": 0.93
         }
       ],
-      "firstSeen": 1757020716171,
-      "lastSeen": 1757020716171,
-      "avgStrength": 0.9430919631919203,
+      "firstSeen": 1758581920907,
+      "lastSeen": 1758581920907,
+      "avgStrength": 1,
       "dominantPattern": {
         "type": "priceDiscovery",
-        "strength": 0.9430919631919203,
+        "strength": 1,
+        "sentiment": "neutral"
+      },
+      "momentum": 0
+    },
+    {
+      "card": "Giratina V Alt Art",
+      "narratives": [
+        {
+          "id": "1nml0cc_Giratina V Alt Art_priceDiscovery",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Giratina V Alt Art",
+          "cardWeight": 1.3,
+          "pattern": "priceDiscovery",
+          "patternStrength": 1,
+          "post": {
+            "id": "1nml0cc",
+            "title": "$17,000 for 2 sequential rayquaza ponchos",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nml0cc/17000_for_2_sequential_rayquaza_ponchos/",
+            "author": "No_Detail_1276",
+            "created": 1758437433000,
+            "score": 453,
+            "comments": 67,
+            "upvoteRatio": 0.93
+          },
+          "engagement": 2.812273452860336,
+          "detectedAt": 1758581920907,
+          "strength": 0.9755016777763426
+        },
+        {
+          "id": "1nml0cc_Giratina V Alt Art_fomo",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Giratina V Alt Art",
+          "cardWeight": 1.3,
+          "pattern": "fomo",
+          "patternStrength": 1.4,
+          "post": {
+            "id": "1nml0cc",
+            "title": "$17,000 for 2 sequential rayquaza ponchos",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nml0cc/17000_for_2_sequential_rayquaza_ponchos/",
+            "author": "No_Detail_1276",
+            "created": 1758437433000,
+            "score": 453,
+            "comments": 67,
+            "upvoteRatio": 0.93
+          },
+          "engagement": 2.812273452860336,
+          "detectedAt": 1758581920907,
+          "strength": 1
+        },
+        {
+          "id": "1nml0cc_Giratina V Alt Art_grading",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Giratina V Alt Art",
+          "cardWeight": 1.3,
+          "pattern": "grading",
+          "patternStrength": 1.1,
+          "post": {
+            "id": "1nml0cc",
+            "title": "$17,000 for 2 sequential rayquaza ponchos",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nml0cc/17000_for_2_sequential_rayquaza_ponchos/",
+            "author": "No_Detail_1276",
+            "created": 1758437433000,
+            "score": 453,
+            "comments": 67,
+            "upvoteRatio": 0.93
+          },
+          "engagement": 2.812273452860336,
+          "detectedAt": 1758581920907,
+          "strength": 1
+        }
+      ],
+      "totalStrength": 2.9755016777763426,
+      "patterns": {},
+      "posts": [
+        {
+          "id": "1nml0cc",
+          "title": "$17,000 for 2 sequential rayquaza ponchos",
+          "url": "https://reddit.com/r/PokeInvesting/comments/1nml0cc/17000_for_2_sequential_rayquaza_ponchos/",
+          "author": "No_Detail_1276",
+          "created": 1758437433000,
+          "score": 453,
+          "comments": 67,
+          "upvoteRatio": 0.93
+        }
+      ],
+      "firstSeen": 1758581920907,
+      "lastSeen": 1758581920907,
+      "avgStrength": 0.9918338925921142,
+      "dominantPattern": {
+        "type": "fomo",
+        "strength": 1,
+        "sentiment": "bullish"
+      },
+      "momentum": 0.025113562366700797
+    },
+    {
+      "card": "Lost Origin",
+      "narratives": [
+        {
+          "id": "1nnfj1a_Lost Origin_priceDiscovery",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Lost Origin",
+          "cardWeight": 0.8,
+          "pattern": "priceDiscovery",
+          "patternStrength": 1,
+          "post": {
+            "id": "1nnfj1a",
+            "title": "Are these cars worth grading, selling, or keeping?",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nnfj1a/are_these_cars_worth_grading_selling_or_keeping/",
+            "author": "Successful_Cost_8809",
+            "created": 1758524195000,
+            "score": 18,
+            "comments": 25,
+            "upvoteRatio": 0.75
+          },
+          "engagement": 2.3445054862393615,
+          "detectedAt": 1758581920907,
+          "strength": 0.8746193122710836
+        },
+        {
+          "id": "1nnfj1a_Lost Origin_bearish",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Lost Origin",
+          "cardWeight": 0.8,
+          "pattern": "bearish",
+          "patternStrength": 1.2,
+          "post": {
+            "id": "1nnfj1a",
+            "title": "Are these cars worth grading, selling, or keeping?",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nnfj1a/are_these_cars_worth_grading_selling_or_keeping/",
+            "author": "Successful_Cost_8809",
+            "created": 1758524195000,
+            "score": 18,
+            "comments": 25,
+            "upvoteRatio": 0.75
+          },
+          "engagement": 2.3445054862393615,
+          "detectedAt": 1758581920907,
+          "strength": 0.9246193122710836
+        },
+        {
+          "id": "1nnfj1a_Lost Origin_grading",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Lost Origin",
+          "cardWeight": 0.8,
+          "pattern": "grading",
+          "patternStrength": 1.1,
+          "post": {
+            "id": "1nnfj1a",
+            "title": "Are these cars worth grading, selling, or keeping?",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nnfj1a/are_these_cars_worth_grading_selling_or_keeping/",
+            "author": "Successful_Cost_8809",
+            "created": 1758524195000,
+            "score": 18,
+            "comments": 25,
+            "upvoteRatio": 0.75
+          },
+          "engagement": 2.3445054862393615,
+          "detectedAt": 1758581920907,
+          "strength": 0.8996193122710836
+        }
+      ],
+      "totalStrength": 2.698857936813251,
+      "patterns": {},
+      "posts": [
+        {
+          "id": "1nnfj1a",
+          "title": "Are these cars worth grading, selling, or keeping?",
+          "url": "https://reddit.com/r/PokeInvesting/comments/1nnfj1a/are_these_cars_worth_grading_selling_or_keeping/",
+          "author": "Successful_Cost_8809",
+          "created": 1758524195000,
+          "score": 18,
+          "comments": 25,
+          "upvoteRatio": 0.75
+        }
+      ],
+      "firstSeen": 1758581920907,
+      "lastSeen": 1758581920907,
+      "avgStrength": 0.8996193122710836,
+      "dominantPattern": {
+        "type": "bearish",
+        "strength": 0.9246193122710836,
+        "sentiment": "bearish"
+      },
+      "momentum": 0.042875796902569485
+    },
+    {
+      "card": "Evolving Skies",
+      "narratives": [
+        {
+          "id": "1nncvvm_Evolving Skies_priceDiscovery",
+          "subreddit": "PokeInvesting",
+          "subredditWeight": 1.5,
+          "card": "Evolving Skies",
+          "cardWeight": 0.8,
+          "pattern": "priceDiscovery",
+          "patternStrength": 1,
+          "post": {
+            "id": "1nncvvm",
+            "title": "Why is this sealed pencil box cheaper than the packs inside !?",
+            "url": "https://reddit.com/r/PokeInvesting/comments/1nncvvm/why_is_this_sealed_pencil_box_cheaper_than_the/",
+            "author": "yoshijohnson",
+            "created": 1758514769000,
+            "score": 16,
+            "comments": 15,
+            "upvoteRatio": 0.67
+          },
+          "engagement": 1.8383331715511162,
+          "detectedAt": 1758581920907,
+          "strength": 0.8608592919032445
+        }
+      ],
+      "totalStrength": 0.8608592919032445,
+      "patterns": {},
+      "posts": [
+        {
+          "id": "1nncvvm",
+          "title": "Why is this sealed pencil box cheaper than the packs inside !?",
+          "url": "https://reddit.com/r/PokeInvesting/comments/1nncvvm/why_is_this_sealed_pencil_box_cheaper_than_the/",
+          "author": "yoshijohnson",
+          "created": 1758514769000,
+          "score": 16,
+          "comments": 15,
+          "upvoteRatio": 0.67
+        }
+      ],
+      "firstSeen": 1758581920907,
+      "lastSeen": 1758581920907,
+      "avgStrength": 0.8608592919032445,
+      "dominantPattern": {
+        "type": "priceDiscovery",
+        "strength": 0.8608592919032445,
         "sentiment": "neutral"
       },
       "momentum": 0
     }
   ],
   "stats": {
-    "totalAnalyzed": 127,
-    "topCard": "Crown Zenith",
+    "totalAnalyzed": 144,
+    "topCard": "Umbreon Vmax Alt Art",
     "dominantSentiment": "neutral"
   }
 }
